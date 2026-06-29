@@ -30,7 +30,7 @@ jobs:
           usesh: true
           envs: "CODEX_SOURCE_URL CODEX_SOURCE_DIR TARGET RUST_TOOLCHAIN CARGO_BUILD_JOBS CARGO_TERM_COLOR"
           prepare: |
-            pkg install -y curl ca_root_nss unzip cmake gmake perl5 pkgconf
+            pkg install -y curl ca_root_nss unzip cmake gmake perl5 pkgconf dbus
           run: |
             set -eu
 
@@ -50,6 +50,8 @@ jobs:
               -o "$CODEX_SOURCE_DIR.zip" \
               "$CODEX_SOURCE_URL"
             unzip -q "$CODEX_SOURCE_DIR.zip"
+
+            pkgconf --modversion dbus-1
 
             (
               cd "$CODEX_SOURCE_DIR/codex-rs"
