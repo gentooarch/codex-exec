@@ -51,7 +51,6 @@ jobs:
         run: |
           cargo zigbuild \
             --release \
-            --locked \
             --package codex-exec \
             --bin codex-exec \
             --target "$TARGET"
