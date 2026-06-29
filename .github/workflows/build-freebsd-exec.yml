@@ -21,6 +21,7 @@ jobs:
       RUST_TOOLCHAIN: 1.95.0
       CARGO_BUILD_JOBS: 1
       CARGO_TERM_COLOR: always
+      V8_FROM_SOURCE: "1"
 
     steps:
       - name: Build codex-exec in FreeBSD
@@ -28,9 +29,9 @@ jobs:
         with:
           release: "14.4"
           usesh: true
-          envs: "CODEX_SOURCE_URL CODEX_SOURCE_DIR TARGET RUST_TOOLCHAIN CARGO_BUILD_JOBS CARGO_TERM_COLOR"
+          envs: "CODEX_SOURCE_URL CODEX_SOURCE_DIR TARGET RUST_TOOLCHAIN CARGO_BUILD_JOBS CARGO_TERM_COLOR V8_FROM_SOURCE"
           prepare: |
-            pkg install -y curl ca_root_nss unzip cmake gmake perl5 pkgconf dbus
+            pkg install -y curl ca_root_nss unzip cmake gmake perl5 pkgconf dbus python ninja git
           run: |
             set -eu
 
