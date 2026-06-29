@@ -21,7 +21,6 @@ jobs:
       RUST_TOOLCHAIN: 1.95.0
       CARGO_BUILD_JOBS: 1
       CARGO_TERM_COLOR: always
-      V8_FROM_SOURCE: "1"
 
     steps:
       - name: Build codex-exec in FreeBSD
@@ -29,9 +28,9 @@ jobs:
         with:
           release: "14.4"
           usesh: true
-          envs: "CODEX_SOURCE_URL CODEX_SOURCE_DIR TARGET RUST_TOOLCHAIN CARGO_BUILD_JOBS CARGO_TERM_COLOR V8_FROM_SOURCE"
+          envs: "CODEX_SOURCE_URL CODEX_SOURCE_DIR TARGET RUST_TOOLCHAIN CARGO_BUILD_JOBS CARGO_TERM_COLOR"
           prepare: |
-            pkg install -y curl ca_root_nss unzip cmake gmake perl5 pkgconf dbus python ninja git
+            pkg install -y curl ca_root_nss unzip cmake gmake perl5 pkgconf dbus
           run: |
             set -eu
 
@@ -51,6 +50,175 @@ jobs:
               -o "$CODEX_SOURCE_DIR.zip" \
               "$CODEX_SOURCE_URL"
             unzip -q "$CODEX_SOURCE_DIR.zip"
+
+            cat > "$CODEX_SOURCE_DIR/codex-rs/code-mode/Cargo.toml" <<'EOF'
+            [package]
+            edition.workspace = true
+            license.workspace = true
+            name = "codex-code-mode"
+            version.workspace = true
+
+            [lib]
+            doctest = false
+            name = "codex_code_mode"
+            path = "src/lib.rs"
+
+            [lints]
+            workspace = true
+
+            [dependencies]
+            codex-code-mode-protocol = { workspace = true }
+            tokio = { workspace = true, features = ["sync"] }
+            tokio-util = { workspace = true, features = ["rt"] }
+            EOF
+
+            cat > "$CODEX_SOURCE_DIR/codex-rs/code-mode/src/lib.rs" <<'EOF'
+            use std::sync::Arc;
+
+            pub use codex_code_mode_protocol::*;
+            use tokio::sync::oneshot;
+            use tokio_util::sync::CancellationToken;
+
+            const UNAVAILABLE: &str =
+                "code mode is unavailable on FreeBSD because rusty_v8 does not publish x86_64-unknown-freebsd binaries";
+
+            pub struct NoopCodeModeSessionDelegate;
+
+            impl CodeModeSessionDelegate for NoopCodeModeSessionDelegate {
+                fn invoke_tool<'a>(
+                    &'a self,
+                    _invocation: CodeModeNestedToolCall,
+                    _cancellation_token: CancellationToken,
+                ) -> ToolInvocationFuture<'a> {
+                    Box::pin(async { Err(UNAVAILABLE.to_string()) })
+                }
+
+                fn notify<'a>(
+                    &'a self,
+                    _call_id: String,
+                    _cell_id: CellId,
+                    _text: String,
+                    _cancellation_token: CancellationToken,
+                ) -> NotificationFuture<'a> {
+                    Box::pin(async { Ok(()) })
+                }
+
+                fn cell_closed(&self, _cell_id: &CellId) {}
+            }
+
+            #[derive(Default)]
+            pub struct InProcessCodeModeSessionProvider;
+
+            impl CodeModeSessionProvider for InProcessCodeModeSessionProvider {
+                fn create_session<'a>(
+                    &'a self,
+                    delegate: Arc<dyn CodeModeSessionDelegate>,
+                ) -> CodeModeSessionProviderFuture<'a> {
+                    Box::pin(async move {
+                        let session: Arc<dyn CodeModeSession> =
+                            Arc::new(CodeModeService::with_delegate(delegate));
+                        Ok(session)
+                    })
+                }
+            }
+
+            pub struct CodeModeService {
+                _delegate: Arc<dyn CodeModeSessionDelegate>,
+            }
+
+            impl CodeModeService {
+                pub fn new() -> Self {
+                    Self::with_delegate(Arc::new(NoopCodeModeSessionDelegate))
+                }
+
+                pub fn with_delegate(delegate: Arc<dyn CodeModeSessionDelegate>) -> Self {
+                    Self { _delegate: delegate }
+                }
+
+                pub async fn execute(&self, request: ExecuteRequest) -> Result<StartedCell, String> {
+                    let cell_id = CellId::new(request.tool_call_id);
+                    let (response_tx, response_rx) = oneshot::channel();
+                    let _ = response_tx.send(Ok(unavailable_response(cell_id.clone())));
+                    Ok(StartedCell::from_result_receiver(cell_id, response_rx))
+                }
+
+                pub async fn execute_to_pending(
+                    &self,
+                    request: ExecuteRequest,
+                ) -> Result<ExecuteToPendingOutcome, String> {
+                    Ok(ExecuteToPendingOutcome::Completed(unavailable_response(
+                        CellId::new(request.tool_call_id),
+                    )))
+                }
+
+                pub async fn wait(&self, request: WaitRequest) -> Result<WaitOutcome, String> {
+                    Ok(WaitOutcome::MissingCell(unavailable_response(request.cell_id)))
+                }
+
+                pub async fn terminate(&self, cell_id: CellId) -> Result<WaitOutcome, String> {
+                    Ok(WaitOutcome::MissingCell(unavailable_response(cell_id)))
+                }
+
+                pub async fn wait_to_pending(
+                    &self,
+                    request: WaitToPendingRequest,
+                ) -> Result<WaitToPendingOutcome, String> {
+                    Ok(WaitToPendingOutcome::MissingCell(unavailable_response(
+
+                        request.cell_id,
+                    )))
+                }
+
+                pub async fn shutdown(&self) -> Result<(), String> {
+                    Ok(())
+                }
+            }
+
+            impl Default for CodeModeService {
+                fn default() -> Self {
+                    Self::new()
+                }
+            }
+
+            impl CodeModeSession for CodeModeService {
+                fn is_alive(&self) -> bool {
+                    true
+                }
+
+                fn execute<'a>(
+                    &'a self,
+                    request: ExecuteRequest,
+                ) -> CodeModeSessionResultFuture<'a, StartedCell> {
+                    Box::pin(CodeModeService::execute(self, request))
+                }
+
+                fn wait<'a>(
+                    &'a self,
+                    request: WaitRequest,
+                ) -> CodeModeSessionResultFuture<'a, WaitOutcome> {
+                    Box::pin(CodeModeService::wait(self, request))
+                }
+
+                fn terminate<'a>(
+                    &'a self,
+                    cell_id: CellId,
+                ) -> CodeModeSessionResultFuture<'a, WaitOutcome> {
+                    Box::pin(CodeModeService::terminate(self, cell_id))
+                }
+
+                fn shutdown<'a>(&'a self) -> CodeModeSessionResultFuture<'a, ()> {
+                    Box::pin(CodeModeService::shutdown(self))
+                }
+            }
+
+            fn unavailable_response(cell_id: CellId) -> RuntimeResponse {
+                RuntimeResponse::Result {
+                    cell_id,
+                    content_items: Vec::new(),
+                    error_text: Some(UNAVAILABLE.to_string()),
+                }
+            }
+            EOF
 
             pkgconf --modversion dbus-1
 
