@@ -18,6 +18,7 @@ jobs:
       CODEX_SOURCE_URL: https://github.com/openai/codex/archive/refs/tags/rust-v0.142.4.zip
       CODEX_SOURCE_DIR: codex-rust-v0.142.4
       TARGET: x86_64-unknown-freebsd
+      RUST_TOOLCHAIN: 1.95.0
       CARGO_TERM_COLOR: always
 
     steps:
@@ -29,7 +30,8 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-freebsd
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          targets: ${{ env.TARGET }}
 
       - name: Install Zig
         uses: mlugg/setup-zig@v2
