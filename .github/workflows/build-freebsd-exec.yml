@@ -1,0 +1,76 @@
+name: Build FreeBSD codex-exec
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/build-freebsd-exec.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: x86_64-unknown-freebsd
+    runs-on: ubuntu-latest
+
+    env:
+      CODEX_SOURCE_URL: https://github.com/openai/codex/archive/refs/tags/rust-v0.142.4.zip
+      CODEX_SOURCE_DIR: codex-rust-v0.142.4
+      TARGET: x86_64-unknown-freebsd
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - name: Install archive tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-freebsd
+
+      - name: Install Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Install cargo-zigbuild
+        uses: taiki-e/install-action@cargo-zigbuild
+
+      - name: Download source
+        run: |
+          curl -L --fail --retry 3 --retry-delay 5 \
+            -o codex-rust-v0.142.4.zip \
+            "$CODEX_SOURCE_URL"
+          unzip -q codex-rust-v0.142.4.zip
+
+      - name: Build codex-exec
+        working-directory: ${{ env.CODEX_SOURCE_DIR }}/codex-rs
+        run: |
+          cargo zigbuild \
+            --release \
+            --locked \
+            --package codex-exec \
+            --bin codex-exec \
+            --target "$TARGET"
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp "$CODEX_SOURCE_DIR/codex-rs/target/$TARGET/release/codex-exec" \
+            "dist/codex-exec-$TARGET"
+          chmod +x "dist/codex-exec-$TARGET"
+          tar -C dist -czf "dist/codex-exec-$TARGET.tar.gz" "codex-exec-$TARGET"
+          sha256sum "dist/codex-exec-$TARGET.tar.gz" > "dist/codex-exec-$TARGET.tar.gz.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-exec-x86_64-unknown-freebsd
+          path: |
+            dist/codex-exec-x86_64-unknown-freebsd
+            dist/codex-exec-x86_64-unknown-freebsd.tar.gz
+            dist/codex-exec-x86_64-unknown-freebsd.tar.gz.sha256
+          if-no-files-found: error
