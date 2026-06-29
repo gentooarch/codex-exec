@@ -19,7 +19,7 @@ jobs:
       CODEX_SOURCE_DIR: codex-rust-v0.142.4
       TARGET: x86_64-unknown-freebsd
       RUST_TOOLCHAIN: 1.95.0
-      CARGO_BUILD_JOBS: 4
+      CARGO_BUILD_JOBS: 2
       CARGO_TERM_COLOR: always
 
     steps:
@@ -27,7 +27,7 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           release: "14.4"
-          cpu: "4"
+          cpu: "2"
           usesh: true
           envs: "CODEX_SOURCE_URL CODEX_SOURCE_DIR TARGET RUST_TOOLCHAIN CARGO_BUILD_JOBS CARGO_TERM_COLOR"
           prepare: |
@@ -232,25 +232,17 @@ jobs:
                 --jobs "$CARGO_BUILD_JOBS"
             )
 
+            strip -s "$CODEX_SOURCE_DIR/codex-rs/target/$TARGET/release/codex-exec"
+
             mkdir -p dist
             cp "$CODEX_SOURCE_DIR/codex-rs/target/$TARGET/release/codex-exec" \
               "dist/codex-exec-$TARGET"
             chmod +x "dist/codex-exec-$TARGET"
             rm -rf "$CODEX_SOURCE_DIR" "$CODEX_SOURCE_DIR.zip" rustup-init.sh
 
-      - name: Package binary
-        run: |
-          test -x "dist/codex-exec-$TARGET"
-          chmod +x "dist/codex-exec-$TARGET"
-          tar -C dist -czf "dist/codex-exec-$TARGET.tar.gz" "codex-exec-$TARGET"
-          sha256sum "dist/codex-exec-$TARGET.tar.gz" > "dist/codex-exec-$TARGET.tar.gz.sha256"
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: codex-exec-x86_64-unknown-freebsd
-          path: |
-            dist/codex-exec-x86_64-unknown-freebsd
-            dist/codex-exec-x86_64-unknown-freebsd.tar.gz
-            dist/codex-exec-x86_64-unknown-freebsd.tar.gz.sha256
+          path: dist/codex-exec-x86_64-unknown-freebsd
           if-no-files-found: error
