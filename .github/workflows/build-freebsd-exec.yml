@@ -27,11 +27,9 @@ jobs:
           sudo apt-get install -y unzip
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Add FreeBSD target explicitly
-        run: |
-          rustup target add "$TARGET"
+       uses: dtolnay/rust-toolchain@stable
+       with:
+         targets: x86_64-unknown-freebsd
 
       - name: Install Zig
         uses: mlugg/setup-zig@v2
@@ -40,12 +38,6 @@ jobs:
 
       - name: Install cargo-zigbuild
         uses: taiki-e/install-action@cargo-zigbuild
-
-      - name: Verify FreeBSD target is available
-        run: |
-          rustup target list --installed
-          rustc --print target-libdir --target "$TARGET"
-          ls -la "$(rustc --print target-libdir --target "$TARGET")" | head -20
 
       - name: Download source
         run: |
@@ -80,4 +72,4 @@ jobs:
             dist/codex-exec-x86_64-unknown-freebsd
             dist/codex-exec-x86_64-unknown-freebsd.tar.gz
             dist/codex-exec-x86_64-unknown-freebsd.tar.gz.sha256
-          if-no-files-found: error#
+          if-no-files-found: error
