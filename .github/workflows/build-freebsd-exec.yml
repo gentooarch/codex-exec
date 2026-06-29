@@ -19,49 +19,57 @@ jobs:
       CODEX_SOURCE_DIR: codex-rust-v0.142.4
       TARGET: x86_64-unknown-freebsd
       RUST_TOOLCHAIN: 1.95.0
+      CARGO_BUILD_JOBS: 1
       CARGO_TERM_COLOR: always
 
     steps:
-      - name: Install archive tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Build codex-exec in FreeBSD
+        uses: vmactions/freebsd-vm@v1
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          targets: ${{ env.TARGET }}
+          release: "14.4"
+          usesh: true
+          envs: "CODEX_SOURCE_URL CODEX_SOURCE_DIR TARGET RUST_TOOLCHAIN CARGO_BUILD_JOBS CARGO_TERM_COLOR"
+          prepare: |
+            pkg install -y curl ca_root_nss unzip cmake gmake perl5 pkgconf
+          run: |
+            set -eu
 
-      - name: Install Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.13.0
+            rm -rf "$CODEX_SOURCE_DIR" "$CODEX_SOURCE_DIR.zip" dist
 
-      - name: Install cargo-zigbuild
-        uses: taiki-e/install-action@cargo-zigbuild
+            curl --proto '=https' --tlsv1.2 --fail --retry 3 -sSf \
+              -o rustup-init.sh \
+              https://sh.rustup.rs
+            sh rustup-init.sh -y \
+              --profile minimal \
+              --default-toolchain "$RUST_TOOLCHAIN" \
+              --target "$TARGET" \
+              --component rust-src
+            . "$HOME/.cargo/env"
 
-      - name: Download source
-        run: |
-          curl -L --fail --retry 3 --retry-delay 5 \
-            -o codex-rust-v0.142.4.zip \
-            "$CODEX_SOURCE_URL"
-          unzip -q codex-rust-v0.142.4.zip
+            curl -L --fail --retry 3 --retry-delay 5 \
+              -o "$CODEX_SOURCE_DIR.zip" \
+              "$CODEX_SOURCE_URL"
+            unzip -q "$CODEX_SOURCE_DIR.zip"
 
-      - name: Build codex-exec
-        working-directory: ${{ env.CODEX_SOURCE_DIR }}/codex-rs
-        run: |
-          cargo zigbuild \
-            --release \
-            --package codex-exec \
-            --bin codex-exec \
-            --target "$TARGET"
+            (
+              cd "$CODEX_SOURCE_DIR/codex-rs"
+              cargo build \
+                --release \
+                --package codex-exec \
+                --bin codex-exec \
+                --target "$TARGET" \
+                --jobs "$CARGO_BUILD_JOBS"
+            )
+
+            mkdir -p dist
+            cp "$CODEX_SOURCE_DIR/codex-rs/target/$TARGET/release/codex-exec" \
+              "dist/codex-exec-$TARGET"
+            chmod +x "dist/codex-exec-$TARGET"
+            rm -rf "$CODEX_SOURCE_DIR" "$CODEX_SOURCE_DIR.zip" rustup-init.sh
 
       - name: Package binary
         run: |
-          mkdir -p dist
-          cp "$CODEX_SOURCE_DIR/codex-rs/target/$TARGET/release/codex-exec" \
-            "dist/codex-exec-$TARGET"
+          test -x "dist/codex-exec-$TARGET"
           chmod +x "dist/codex-exec-$TARGET"
           tar -C dist -czf "dist/codex-exec-$TARGET.tar.gz" "codex-exec-$TARGET"
           sha256sum "dist/codex-exec-$TARGET.tar.gz" > "dist/codex-exec-$TARGET.tar.gz.sha256"
