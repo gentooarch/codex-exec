@@ -519,13 +519,13 @@ jobs:
                     #[source]
                     source: std::io::Error,
                 },
-                #[error("failed to decode image at {path}: {source}")]
+                #[error("failed to decode image at {path}: {reason}")]
                 Decode {
                     path: std::path::PathBuf,
-                    source: String,
+                    reason: String,
                 },
-                #[error("failed to encode image as {format}: {source}")]
-                Encode { format: String, source: String },
+                #[error("failed to encode image as {format}: {reason}")]
+                Encode { format: String, reason: String },
                 #[error("unsupported image `{mime}`")]
                 UnsupportedImageFormat { mime: String },
                 #[error("invalid image data URL: {reason}")]
@@ -542,10 +542,9 @@ jobs:
                 pub fn decode_error(path: &Path, source: impl std::fmt::Display) -> Self {
                     ImageProcessingError::Decode {
                         path: path.to_path_buf(),
-                        source: source.to_string(),
+                        reason: source.to_string(),
                     }
                 }
-
 
                 pub fn is_invalid_image(&self) -> bool {
                     false
@@ -861,6 +860,7 @@ jobs:
                 fn cell_closed(&self, _cell_id: &CellId) {}
             }
 
+
             #[derive(Default)]
             pub struct InProcessCodeModeSessionProvider;
 
@@ -928,7 +928,6 @@ jobs:
                     Ok(())
                 }
             }
-
 
             impl Default for CodeModeService {
                 fn default() -> Self {
