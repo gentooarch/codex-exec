@@ -1,0 +1,4574 @@
+--- /dev/null
++++ b/exec-server/src/noise_channel_freebsd.rs
+@@ -0,0 +1,60 @@
++use serde::Deserialize;
++use serde::Serialize;
++
++pub(crate) const NOISE_CHANNEL_SUITE: &str = "Noise_hybridIK_X25519+MLKEM768_AESGCM_SHA256";
++
++/// Public key material for the exec-server Noise suite.
++///
++/// FreeBSD exec builds do not include the Noise relay implementation, but these
++/// types remain serializable so registry-facing APIs keep their shape.
++#[derive(Clone, Eq, PartialEq, Serialize, Deserialize)]
++#[serde(deny_unknown_fields)]
++pub struct NoiseChannelPublicKey {
++    suite: String,
++    x25519_public_key: String,
++    mlkem768_public_key: String,
++}
++
++impl std::fmt::Debug for NoiseChannelPublicKey {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        f.debug_struct("NoiseChannelPublicKey")
++            .field("suite", &self.suite)
++            .field("x25519_public_key", &"<redacted>")
++            .field("mlkem768_public_key", &"<redacted>")
++            .finish()
++    }
++}
++
++/// Static Noise identity placeholder for FreeBSD exec builds.
++#[derive(Clone)]
++pub struct NoiseChannelIdentity;
++
++impl NoiseChannelIdentity {
++    pub fn generate() -> Result<Self, NoiseChannelError> {
++        Err(NoiseChannelError::KeyGeneration(
++            "Noise relay is disabled in FreeBSD exec builds".to_string(),
++        ))
++    }
++
++    pub fn public_key(&self) -> NoiseChannelPublicKey {
++        NoiseChannelPublicKey {
++            suite: NOISE_CHANNEL_SUITE.to_string(),
++            x25519_public_key: String::new(),
++            mlkem768_public_key: String::new(),
++        }
++    }
++}
++
++#[derive(Debug, thiserror::Error)]
++pub enum NoiseChannelError {
++    #[error("Noise channel key generation failed: {0}")]
++    KeyGeneration(String),
++    #[error("invalid Noise channel public key: {0}")]
++    InvalidPublicKey(&'static str),
++    #[error("invalid Noise channel message: {0}")]
++    InvalidMessage(&'static str),
++    #[error("Noise channel handshake failed: {0}")]
++    Handshake(String),
++    #[error("Noise channel transport failed: {0}")]
++    Transport(String),
++}
+--- /dev/null
++++ b/execpolicy/src/parser_freebsd.rs
+@@ -0,0 +1,20 @@
++use crate::error::Result;
++use crate::policy::Policy;
++
++#[derive(Default)]
++pub struct PolicyParser;
++
++impl PolicyParser {
++    pub fn new() -> Self {
++        Self
++    }
++
++    pub fn parse(&mut self, _policy_identifier: &str, _policy_file_contents: &str) -> Result<()> {
++        // The FreeBSD exec build omits Starlark and treats .rules files as empty.
++        Ok(())
++    }
++
++    pub fn build(self) -> Policy {
++        Policy::empty()
++    }
++}
+--- /dev/null
++++ b/network-proxy/src/certs_freebsd.rs
+@@ -0,0 +1,17 @@
++// Keep the public TLS-env surface available without compiling the managed MITM CA stack.
++pub const CUSTOM_CA_ENV_KEYS: [&str; 10] = [
++    "CODEX_CA_CERTIFICATE",
++    "SSL_CERT_FILE",
++    "REQUESTS_CA_BUNDLE",
++    "CURL_CA_BUNDLE",
++    "NODE_EXTRA_CA_CERTS",
++    "GIT_SSL_CAINFO",
++    "PIP_CERT",
++    "BUNDLE_SSL_CA_CERT",
++    "npm_config_cafile",
++    "NPM_CONFIG_CAFILE",
++];
++
++pub fn is_managed_mitm_ca_trust_bundle_path(_path: &str) -> bool {
++    false
++}
+--- /dev/null
++++ b/network-proxy/src/mitm_freebsd.rs
+@@ -0,0 +1,16 @@
++use anyhow::Result;
++
++#[derive(Debug)]
++pub struct MitmState;
++
++pub(crate) struct MitmUpstreamConfig {
++    pub(crate) allow_upstream_proxy: bool,
++    pub(crate) allow_local_binding: bool,
++}
++
++impl MitmState {
++    pub(crate) fn new(config: MitmUpstreamConfig) -> Result<Self> {
++        let _ = (config.allow_upstream_proxy, config.allow_local_binding);
++        anyhow::bail!("managed network proxy MITM is disabled in FreeBSD exec builds")
++    }
++}
+--- /dev/null
++++ b/network-proxy/src/mitm_hook_freebsd.rs
+@@ -0,0 +1,79 @@
++#![cfg_attr(not(test), allow(dead_code))]
++
++use crate::config::NetworkProxyConfig;
++use serde::Deserialize;
++use serde::Serialize;
++use std::collections::BTreeMap;
++
++#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
++#[serde(default)]
++pub struct MitmHookConfig {
++    pub host: String,
++    #[serde(rename = "match", default)]
++    pub matcher: MitmHookMatchConfig,
++    #[serde(default)]
++    pub actions: MitmHookActionsConfig,
++}
++
++#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
++#[serde(default)]
++pub struct MitmHookMatchConfig {
++    pub methods: Vec<String>,
++    pub path_prefixes: Vec<String>,
++    pub query: BTreeMap<String, Vec<String>>,
++    pub headers: BTreeMap<String, Vec<String>>,
++    pub body: Option<MitmHookBodyConfig>,
++}
++
++#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
++#[serde(default)]
++pub struct MitmHookActionsConfig {
++    pub strip_request_headers: Vec<String>,
++    pub inject_request_headers: Vec<InjectedHeaderConfig>,
++}
++
++#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
++#[serde(default)]
++pub struct InjectedHeaderConfig {
++    pub name: String,
++    pub secret_env_var: Option<String>,
++    pub secret_file: Option<String>,
++    pub prefix: Option<String>,
++}
++
++#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
++#[serde(transparent)]
++pub struct MitmHookBodyConfig(pub serde_json::Value);
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct MitmHook;
++
++pub type MitmHooksByHost = BTreeMap<String, Vec<MitmHook>>;
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub enum HookEvaluation {
++    NoHooksForHost,
++    Matched,
++    HookedHostNoMatch,
++}
++
++pub(crate) fn validate_mitm_hook_config(config: &NetworkProxyConfig) -> anyhow::Result<()> {
++    if config.network.mitm_hooks.is_empty() {
++        Ok(())
++    } else {
++        anyhow::bail!("network.mitm_hooks is disabled in FreeBSD exec builds")
++    }
++}
++
++pub(crate) fn compile_mitm_hooks(config: &NetworkProxyConfig) -> anyhow::Result<MitmHooksByHost> {
++    validate_mitm_hook_config(config)?;
++    Ok(MitmHooksByHost::new())
++}
++
++pub(crate) fn evaluate_mitm_hooks<T>(
++    _hooks_by_host: &MitmHooksByHost,
++    _host: &str,
++    _req: &T,
++) -> HookEvaluation {
++    HookEvaluation::NoHooksForHost
++}
+--- /dev/null
++++ b/network-proxy/src/proxy_freebsd.rs
+@@ -0,0 +1,388 @@
++use crate::config;
++use crate::network_policy::NetworkPolicyDecider;
++use crate::runtime::BlockedRequestObserver;
++use crate::runtime::ConfigState;
++use crate::state::NetworkProxyState;
++use anyhow::Result;
++use codex_utils_absolute_path::AbsolutePathBuf;
++use std::collections::HashMap;
++use std::net::SocketAddr;
++use std::sync::Arc;
++use std::sync::RwLock;
++use tracing::warn;
++
++const DISABLED_MESSAGE: &str = "managed network proxy is disabled in FreeBSD exec builds";
++
++#[derive(Debug, Clone, Default)]
++pub struct Args {}
++
++#[derive(Clone)]
++pub struct NetworkProxyBuilder {
++    state: Option<Arc<NetworkProxyState>>,
++    http_addr: Option<SocketAddr>,
++    socks_addr: Option<SocketAddr>,
++    managed_by_codex: bool,
++    policy_decider: Option<Arc<dyn NetworkPolicyDecider>>,
++    blocked_request_observer: Option<Arc<dyn BlockedRequestObserver>>,
++}
++
++impl Default for NetworkProxyBuilder {
++    fn default() -> Self {
++        Self {
++            state: None,
++            http_addr: None,
++            socks_addr: None,
++            managed_by_codex: true,
++            policy_decider: None,
++            blocked_request_observer: None,
++        }
++    }
++}
++
++impl NetworkProxyBuilder {
++    pub fn state(mut self, state: Arc<NetworkProxyState>) -> Self {
++        self.state = Some(state);
++        self
++    }
++
++    pub fn http_addr(mut self, addr: SocketAddr) -> Self {
++        self.http_addr = Some(addr);
++        self
++    }
++
++    pub fn socks_addr(mut self, addr: SocketAddr) -> Self {
++        self.socks_addr = Some(addr);
++        self
++    }
++
++    pub fn managed_by_codex(mut self, managed_by_codex: bool) -> Self {
++        self.managed_by_codex = managed_by_codex;
++        self
++    }
++
++    pub fn policy_decider<D>(mut self, decider: D) -> Self
++    where
++        D: NetworkPolicyDecider,
++    {
++        self.policy_decider = Some(Arc::new(decider));
++        self
++    }
++
++    pub fn policy_decider_arc(mut self, decider: Arc<dyn NetworkPolicyDecider>) -> Self {
++        self.policy_decider = Some(decider);
++        self
++    }
++
++    pub fn blocked_request_observer<O>(mut self, observer: O) -> Self
++    where
++        O: BlockedRequestObserver,
++    {
++        self.blocked_request_observer = Some(Arc::new(observer));
++        self
++    }
++
++    pub fn blocked_request_observer_arc(
++        mut self,
++        observer: Arc<dyn BlockedRequestObserver>,
++    ) -> Self {
++        self.blocked_request_observer = Some(observer);
++        self
++    }
++
++    pub async fn build(self) -> Result<NetworkProxy> {
++        let state = self.state.ok_or_else(|| {
++            anyhow::anyhow!(
++                "NetworkProxyBuilder requires a state; supply one via builder.state(...)"
++            )
++        })?;
++        state
++            .set_blocked_request_observer(self.blocked_request_observer.clone())
++            .await;
++        let current_cfg = state.current_cfg().await?;
++        let runtime_settings = RuntimeSettings::from_config_and_overrides(
++            &current_cfg,
++            self.http_addr,
++            self.socks_addr,
++            self.managed_by_codex,
++        )?;
++        Ok(NetworkProxy {
++            state,
++            runtime_settings: Arc::new(RwLock::new(runtime_settings)),
++        })
++    }
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++struct RuntimeSettings {
++    http_addr: SocketAddr,
++    socks_addr: SocketAddr,
++    allow_local_binding: bool,
++    allow_unix_sockets: Arc<[String]>,
++    dangerously_allow_all_unix_sockets: bool,
++}
++
++impl RuntimeSettings {
++    fn from_config_and_overrides(
++        cfg: &config::NetworkProxyConfig,
++        http_addr: Option<SocketAddr>,
++        socks_addr: Option<SocketAddr>,
++        managed_by_codex: bool,
++    ) -> Result<Self> {
++        let runtime = config::resolve_runtime(cfg)?;
++        let (http_addr, socks_addr) = if managed_by_codex {
++            (runtime.http_addr, runtime.socks_addr)
++        } else {
++            let requested_http_addr = http_addr.unwrap_or(runtime.http_addr);
++            let requested_socks_addr = socks_addr.unwrap_or(runtime.socks_addr);
++            config::clamp_bind_addrs(requested_http_addr, requested_socks_addr, &cfg.network)
++        };
++        Ok(Self {
++            http_addr,
++            socks_addr,
++            allow_local_binding: cfg.network.allow_local_binding,
++            allow_unix_sockets: cfg.network.allow_unix_sockets().into(),
++            dangerously_allow_all_unix_sockets: cfg.network.dangerously_allow_all_unix_sockets,
++        })
++    }
++}
++
++#[derive(Clone)]
++pub struct NetworkProxy {
++    state: Arc<NetworkProxyState>,
++    runtime_settings: Arc<RwLock<RuntimeSettings>>,
++}
++
++impl std::fmt::Debug for NetworkProxy {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        let runtime_settings = self.runtime_settings();
++        f.debug_struct("NetworkProxy")
++            .field("http_addr", &runtime_settings.http_addr)
++            .field("socks_addr", &runtime_settings.socks_addr)
++            .finish_non_exhaustive()
++    }
++}
++
++impl PartialEq for NetworkProxy {
++    fn eq(&self, other: &Self) -> bool {
++        self.runtime_settings() == other.runtime_settings()
++    }
++}
++
++impl Eq for NetworkProxy {}
++
++pub const PROXY_URL_ENV_KEYS: &[&str] = &[
++    "HTTP_PROXY",
++    "HTTPS_PROXY",
++    "WS_PROXY",
++    "WSS_PROXY",
++    "ALL_PROXY",
++    "FTP_PROXY",
++    "YARN_HTTP_PROXY",
++    "YARN_HTTPS_PROXY",
++    "NPM_CONFIG_HTTP_PROXY",
++    "NPM_CONFIG_HTTPS_PROXY",
++    "NPM_CONFIG_PROXY",
++    "BUNDLE_HTTP_PROXY",
++    "BUNDLE_HTTPS_PROXY",
++    "PIP_PROXY",
++    "DOCKER_HTTP_PROXY",
++    "DOCKER_HTTPS_PROXY",
++];
++
++pub const ALL_PROXY_ENV_KEYS: &[&str] = &["ALL_PROXY", "all_proxy"];
++pub const PROXY_ACTIVE_ENV_KEY: &str = "CODEX_NETWORK_PROXY_ACTIVE";
++pub const ALLOW_LOCAL_BINDING_ENV_KEY: &str = "CODEX_NETWORK_ALLOW_LOCAL_BINDING";
++pub const PROXY_ENV_KEYS: &[&str] = &[
++    PROXY_ACTIVE_ENV_KEY,
++    ALLOW_LOCAL_BINDING_ENV_KEY,
++    "HTTP_PROXY",
++    "HTTPS_PROXY",
++    "http_proxy",
++    "https_proxy",
++    "YARN_HTTP_PROXY",
++    "YARN_HTTPS_PROXY",
++    "npm_config_http_proxy",
++    "npm_config_https_proxy",
++    "npm_config_proxy",
++    "NPM_CONFIG_HTTP_PROXY",
++    "NPM_CONFIG_HTTPS_PROXY",
++    "NPM_CONFIG_PROXY",
++    "BUNDLE_HTTP_PROXY",
++    "BUNDLE_HTTPS_PROXY",
++    "PIP_PROXY",
++    "DOCKER_HTTP_PROXY",
++    "DOCKER_HTTPS_PROXY",
++    "WS_PROXY",
++    "WSS_PROXY",
++    "ws_proxy",
++    "wss_proxy",
++    "NO_PROXY",
++    "no_proxy",
++    "npm_config_noproxy",
++    "NPM_CONFIG_NOPROXY",
++    "YARN_NO_PROXY",
++    "BUNDLE_NO_PROXY",
++    "ALL_PROXY",
++    "all_proxy",
++    "FTP_PROXY",
++    "ftp_proxy",
++];
++
++pub const NO_PROXY_ENV_KEYS: &[&str] = &[
++    "NO_PROXY",
++    "no_proxy",
++    "npm_config_noproxy",
++    "NPM_CONFIG_NOPROXY",
++    "YARN_NO_PROXY",
++    "BUNDLE_NO_PROXY",
++];
++
++pub const DEFAULT_NO_PROXY_VALUE: &str = concat!(
++    "localhost,127.0.0.1,::1,",
++    "10.0.0.0/8,",
++    "172.16.0.0/12,",
++    "192.168.0.0/16"
++);
++
++pub fn proxy_url_env_value<'a>(
++    env: &'a HashMap<String, String>,
++    canonical_key: &str,
++) -> Option<&'a str> {
++    if let Some(value) = env.get(canonical_key) {
++        return Some(value.as_str());
++    }
++    let lower_key = canonical_key.to_ascii_lowercase();
++    env.get(lower_key.as_str()).map(String::as_str)
++}
++
++pub fn has_proxy_url_env_vars(env: &HashMap<String, String>) -> bool {
++    PROXY_URL_ENV_KEYS
++        .iter()
++        .any(|key| proxy_url_env_value(env, key).is_some_and(|value| !value.trim().is_empty()))
++}
++
++impl NetworkProxy {
++    pub fn builder() -> NetworkProxyBuilder {
++        NetworkProxyBuilder::default()
++    }
++
++    pub fn http_addr(&self) -> SocketAddr {
++        self.runtime_settings().http_addr
++    }
++
++    pub fn socks_addr(&self) -> SocketAddr {
++        self.runtime_settings().socks_addr
++    }
++
++    pub async fn current_cfg(&self) -> Result<config::NetworkProxyConfig> {
++        self.state.current_cfg().await
++    }
++
++    pub async fn add_allowed_domain(&self, host: &str) -> Result<()> {
++        self.state.add_allowed_domain(host).await
++    }
++
++    pub async fn add_denied_domain(&self, host: &str) -> Result<()> {
++        self.state.add_denied_domain(host).await
++    }
++
++    pub fn allow_local_binding(&self) -> bool {
++        self.runtime_settings().allow_local_binding
++    }
++
++    pub fn allow_unix_sockets(&self) -> Arc<[String]> {
++        self.runtime_settings().allow_unix_sockets
++    }
++
++    pub fn dangerously_allow_all_unix_sockets(&self) -> bool {
++        self.runtime_settings().dangerously_allow_all_unix_sockets
++    }
++
++    pub fn managed_mitm_ca_trust_bundle_path(&self) -> Option<AbsolutePathBuf> {
++        None
++    }
++
++    pub fn apply_to_env(&self, _env: &mut HashMap<String, String>) {}
++
++    pub fn apply_to_env_for_environment(
++        &self,
++        _env: &mut HashMap<String, String>,
++        _environment_id: &str,
++    ) -> Result<()> {
++        Ok(())
++    }
++
++    pub fn apply_to_env_for_optional_environment(
++        &self,
++        env: &mut HashMap<String, String>,
++        environment_id: Option<&str>,
++    ) -> Result<()> {
++        match environment_id {
++            Some(environment_id) => self.apply_to_env_for_environment(env, environment_id),
++            None => {
++                self.apply_to_env(env);
++                Ok(())
++            }
++        }
++    }
++
++    pub async fn replace_config_state(&self, new_state: ConfigState) -> Result<()> {
++        let runtime_settings = RuntimeSettings::from_config_and_overrides(
++            &new_state.config,
++            None,
++            None,
++            /*managed_by_codex*/ true,
++        )?;
++        self.state.replace_config_state(new_state).await?;
++        let mut guard = self
++            .runtime_settings
++            .write()
++            .unwrap_or_else(std::sync::PoisonError::into_inner);
++        *guard = runtime_settings;
++        Ok(())
++    }
++
++    pub async fn run(&self) -> Result<NetworkProxyHandle> {
++        let current_cfg = self.state.current_cfg().await?;
++        if current_cfg.network.enabled {
++            anyhow::bail!("{DISABLED_MESSAGE}")
++        }
++        warn!("network.enabled is false; skipping proxy listeners");
++        Ok(NetworkProxyHandle::noop())
++    }
++
++    fn runtime_settings(&self) -> RuntimeSettings {
++        self.runtime_settings
++            .read()
++            .unwrap_or_else(std::sync::PoisonError::into_inner)
++            .clone()
++    }
++}
++
++pub struct NetworkProxyHandle {
++    completed: bool,
++}
++
++impl NetworkProxyHandle {
++    fn noop() -> Self {
++        Self { completed: true }
++    }
++
++    pub async fn wait(mut self) -> Result<()> {
++        self.completed = true;
++        Ok(())
++    }
++
++    pub async fn shutdown(mut self) -> Result<()> {
++        self.completed = true;
++        Ok(())
++    }
++}
++
++impl Drop for NetworkProxyHandle {
++    fn drop(&mut self) {
++        if !self.completed {
++            warn!("dropping disabled FreeBSD network proxy handle");
++        }
++    }
++}
+--- /dev/null
++++ b/otel/src/metrics/client_full.rs
+@@ -0,0 +1,531 @@
++use crate::config::OtelExporter;
++use crate::config::OtelHttpProtocol;
++use crate::metrics::MetricsError;
++use crate::metrics::Result;
++use crate::metrics::config::MetricsConfig;
++use crate::metrics::config::MetricsExporter;
++use crate::metrics::timer::Timer;
++use crate::metrics::validation::validate_metric_name;
++use crate::metrics::validation::validate_tag_key;
++use crate::metrics::validation::validate_tag_value;
++use crate::metrics::validation::validate_tags;
++use codex_utils_string::sanitize_metric_tag_value;
++use opentelemetry::KeyValue;
++use opentelemetry::metrics::Counter;
++use opentelemetry::metrics::Gauge;
++use opentelemetry::metrics::Histogram;
++use opentelemetry::metrics::Meter;
++use opentelemetry::metrics::MeterProvider as _;
++use opentelemetry_otlp::OTEL_EXPORTER_OTLP_METRICS_TIMEOUT;
++use opentelemetry_otlp::Protocol;
++use opentelemetry_otlp::WithExportConfig;
++use opentelemetry_otlp::WithHttpConfig;
++use opentelemetry_otlp::WithTonicConfig;
++use opentelemetry_otlp::tonic_types::metadata::MetadataMap;
++use opentelemetry_otlp::tonic_types::transport::ClientTlsConfig;
++use opentelemetry_sdk::Resource;
++use opentelemetry_sdk::metrics::InstrumentKind;
++use opentelemetry_sdk::metrics::ManualReader;
++use opentelemetry_sdk::metrics::PeriodicReader;
++use opentelemetry_sdk::metrics::Pipeline;
++use opentelemetry_sdk::metrics::SdkMeterProvider;
++use opentelemetry_sdk::metrics::Temporality;
++use opentelemetry_sdk::metrics::data::ResourceMetrics;
++use opentelemetry_sdk::metrics::reader::MetricReader;
++use opentelemetry_semantic_conventions as semconv;
++use std::collections::BTreeMap;
++use std::collections::HashMap;
++use std::sync::Arc;
++use std::sync::Mutex;
++use std::sync::Weak;
++use std::time::Duration;
++use tracing::debug;
++
++const ENV_ATTRIBUTE: &str = "env";
++const METER_NAME: &str = "codex";
++const MILLISECOND_DURATION_UNIT: &str = "ms";
++const MILLISECOND_DURATION_DESCRIPTION: &str = "Duration in milliseconds.";
++const MILLISECOND_DURATION_BOUNDARIES: &[f64] = &[
++    0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, 2500.0, 5000.0, 7500.0,
++    10000.0,
++];
++const SECOND_DURATION_UNIT: &str = "s";
++const SECOND_DURATION_BOUNDARIES: &[f64] = &[
++    0.0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0,
++];
++
++#[derive(Debug, Eq, Hash, PartialEq)]
++struct InstrumentKey {
++    name: String,
++    unit: Option<&'static str>,
++    description: Option<String>,
++}
++
++#[derive(Clone, Debug)]
++struct SharedManualReader {
++    inner: Arc<ManualReader>,
++}
++
++impl SharedManualReader {
++    fn new(inner: Arc<ManualReader>) -> Self {
++        Self { inner }
++    }
++}
++
++impl MetricReader for SharedManualReader {
++    fn register_pipeline(&self, pipeline: Weak<Pipeline>) {
++        self.inner.register_pipeline(pipeline);
++    }
++
++    fn collect(&self, rm: &mut ResourceMetrics) -> opentelemetry_sdk::error::OTelSdkResult {
++        self.inner.collect(rm)
++    }
++
++    fn force_flush(&self) -> opentelemetry_sdk::error::OTelSdkResult {
++        self.inner.force_flush()
++    }
++
++    fn shutdown_with_timeout(&self, timeout: Duration) -> opentelemetry_sdk::error::OTelSdkResult {
++        self.inner.shutdown_with_timeout(timeout)
++    }
++
++    fn temporality(&self, kind: InstrumentKind) -> Temporality {
++        self.inner.temporality(kind)
++    }
++}
++
++#[derive(Debug)]
++struct MetricsClientInner {
++    meter_provider: SdkMeterProvider,
++    meter: Meter,
++    counters: Mutex<HashMap<InstrumentKey, Counter<u64>>>,
++    gauges: Mutex<HashMap<InstrumentKey, Gauge<i64>>>,
++    histograms: Mutex<HashMap<String, Histogram<f64>>>,
++    duration_histograms: Mutex<HashMap<InstrumentKey, Histogram<f64>>>,
++    runtime_reader: Option<Arc<ManualReader>>,
++    default_tags: BTreeMap<String, String>,
++}
++
++impl MetricsClientInner {
++    fn counter(
++        &self,
++        name: &str,
++        description: Option<&str>,
++        inc: i64,
++        tags: &[(&str, &str)],
++    ) -> Result<()> {
++        validate_metric_name(name)?;
++        if inc < 0 {
++            return Err(MetricsError::NegativeCounterIncrement {
++                name: name.to_string(),
++                inc,
++            });
++        }
++        let attributes = self.attributes(tags)?;
++
++        let mut counters = self
++            .counters
++            .lock()
++            .unwrap_or_else(std::sync::PoisonError::into_inner);
++        let key = InstrumentKey {
++            name: name.to_string(),
++            unit: None,
++            description: description.map(str::to_string),
++        };
++        let counter = counters.entry(key).or_insert_with(|| {
++            let builder = self.meter.u64_counter(name.to_string());
++            match description {
++                Some(description) => builder.with_description(description.to_string()).build(),
++                None => builder.build(),
++            }
++        });
++        counter.add(inc as u64, &attributes);
++        Ok(())
++    }
++
++    fn histogram(&self, name: &str, value: i64, tags: &[(&str, &str)]) -> Result<()> {
++        validate_metric_name(name)?;
++        let attributes = self.attributes(tags)?;
++
++        let mut histograms = self
++            .histograms
++            .lock()
++            .unwrap_or_else(std::sync::PoisonError::into_inner);
++        let histogram = histograms
++            .entry(name.to_string())
++            .or_insert_with(|| self.meter.f64_histogram(name.to_string()).build());
++        histogram.record(value as f64, &attributes);
++        Ok(())
++    }
++
++    fn gauge(
++        &self,
++        name: &str,
++        description: Option<&str>,
++        value: i64,
++        tags: &[(&str, &str)],
++    ) -> Result<()> {
++        validate_metric_name(name)?;
++        let attributes = self.attributes(tags)?;
++
++        let mut gauges = self
++            .gauges
++            .lock()
++            .unwrap_or_else(std::sync::PoisonError::into_inner);
++        let key = InstrumentKey {
++            name: name.to_string(),
++            unit: None,
++            description: description.map(str::to_string),
++        };
++        let gauge = gauges.entry(key).or_insert_with(|| {
++            let builder = self.meter.i64_gauge(name.to_string());
++            match description {
++                Some(description) => builder.with_description(description.to_string()).build(),
++                None => builder.build(),
++            }
++        });
++        gauge.record(value, &attributes);
++        Ok(())
++    }
++
++    fn duration_histogram(
++        &self,
++        name: &str,
++        value: f64,
++        unit: &'static str,
++        description: &str,
++        boundaries: &'static [f64],
++        tags: &[(&str, &str)],
++    ) -> Result<()> {
++        validate_metric_name(name)?;
++        let attributes = self.attributes(tags)?;
++
++        let mut histograms = self
++            .duration_histograms
++            .lock()
++            .unwrap_or_else(std::sync::PoisonError::into_inner);
++        let key = InstrumentKey {
++            name: name.to_string(),
++            unit: Some(unit),
++            description: Some(description.to_string()),
++        };
++        let histogram = histograms.entry(key).or_insert_with(|| {
++            self.meter
++                .f64_histogram(name.to_string())
++                .with_unit(unit)
++                .with_description(description.to_string())
++                .with_boundaries(boundaries.to_vec())
++                .build()
++        });
++        histogram.record(value, &attributes);
++        Ok(())
++    }
++
++    fn attributes(&self, tags: &[(&str, &str)]) -> Result<Vec<KeyValue>> {
++        if tags.is_empty() {
++            return Ok(self
++                .default_tags
++                .iter()
++                .map(|(key, value)| KeyValue::new(key.clone(), value.clone()))
++                .collect());
++        }
++
++        let mut merged = self.default_tags.clone();
++        for (key, value) in tags {
++            validate_tag_key(key)?;
++            validate_tag_value(value)?;
++            merged.insert((*key).to_string(), (*value).to_string());
++        }
++
++        Ok(merged
++            .into_iter()
++            .map(|(key, value)| KeyValue::new(key, value))
++            .collect())
++    }
++
++    fn shutdown(&self) -> Result<()> {
++        debug!("flushing OTEL metrics");
++        self.meter_provider
++            .force_flush()
++            .map_err(|source| MetricsError::ProviderShutdown { source })?;
++        self.meter_provider
++            .shutdown()
++            .map_err(|source| MetricsError::ProviderShutdown { source })?;
++        Ok(())
++    }
++}
++
++/// OpenTelemetry metrics client used by Codex.
++#[derive(Clone, Debug)]
++pub struct MetricsClient(std::sync::Arc<MetricsClientInner>);
++
++impl MetricsClient {
++    /// Build a metrics client from configuration and validate defaults.
++    pub fn new(config: MetricsConfig) -> Result<Self> {
++        let MetricsConfig {
++            environment,
++            service_name,
++            service_version,
++            exporter,
++            export_interval,
++            runtime_reader,
++            default_tags,
++        } = config;
++
++        validate_tags(&default_tags)?;
++
++        let mut resource_attributes = Vec::with_capacity(4);
++        resource_attributes.push(KeyValue::new(
++            semconv::attribute::SERVICE_VERSION,
++            service_version,
++        ));
++        resource_attributes.push(KeyValue::new(ENV_ATTRIBUTE, environment));
++        resource_attributes.extend(os_resource_attributes());
++
++        let resource = Resource::builder()
++            .with_service_name(service_name)
++            .with_attributes(resource_attributes)
++            .build();
++
++        let runtime_reader = runtime_reader.then(|| {
++            Arc::new(
++                ManualReader::builder()
++                    .with_temporality(Temporality::Delta)
++                    .build(),
++            )
++        });
++
++        let (meter_provider, meter) = match exporter {
++            MetricsExporter::InMemory(exporter) => {
++                build_provider(resource, exporter, export_interval, runtime_reader.clone())
++            }
++            MetricsExporter::Otlp(exporter) => {
++                let exporter = build_otlp_metric_exporter(exporter, Temporality::Delta)?;
++                build_provider(resource, exporter, export_interval, runtime_reader.clone())
++            }
++        };
++
++        Ok(Self(std::sync::Arc::new(MetricsClientInner {
++            meter_provider,
++            meter,
++            counters: Mutex::new(HashMap::new()),
++            gauges: Mutex::new(HashMap::new()),
++            histograms: Mutex::new(HashMap::new()),
++            duration_histograms: Mutex::new(HashMap::new()),
++            runtime_reader,
++            default_tags,
++        })))
++    }
++
++    /// Send a single counter increment.
++    pub fn counter(&self, name: &str, inc: i64, tags: &[(&str, &str)]) -> Result<()> {
++        self.0.counter(name, /*description*/ None, inc, tags)
++    }
++
++    /// Send a single counter increment with an instrument description.
++    pub fn counter_with_description(
++        &self,
++        name: &str,
++        description: &str,
++        inc: i64,
++        tags: &[(&str, &str)],
++    ) -> Result<()> {
++        self.0.counter(name, Some(description), inc, tags)
++    }
++
++    /// Send a single histogram sample.
++    pub fn histogram(&self, name: &str, value: i64, tags: &[(&str, &str)]) -> Result<()> {
++        self.0.histogram(name, value, tags)
++    }
++
++    /// Send a single gauge measurement.
++    pub fn gauge(&self, name: &str, value: i64, tags: &[(&str, &str)]) -> Result<()> {
++        self.0.gauge(name, /*description*/ None, value, tags)
++    }
++
++    /// Send a single gauge measurement with an instrument description.
++    pub fn gauge_with_description(
++        &self,
++        name: &str,
++        description: &str,
++        value: i64,
++        tags: &[(&str, &str)],
++    ) -> Result<()> {
++        self.0.gauge(name, Some(description), value, tags)
++    }
++
++    /// Record a duration in milliseconds using a histogram.
++    pub fn record_duration(
++        &self,
++        name: &str,
++        duration: Duration,
++        tags: &[(&str, &str)],
++    ) -> Result<()> {
++        self.0.duration_histogram(
++            name,
++            duration.as_millis().min(i64::MAX as u128) as f64,
++            MILLISECOND_DURATION_UNIT,
++            MILLISECOND_DURATION_DESCRIPTION,
++            MILLISECOND_DURATION_BOUNDARIES,
++            tags,
++        )
++    }
++
++    /// Record a duration in seconds using a histogram with an instrument description.
++    pub fn record_duration_seconds_with_description(
++        &self,
++        name: &str,
++        description: &str,
++        duration: Duration,
++        tags: &[(&str, &str)],
++    ) -> Result<()> {
++        self.0.duration_histogram(
++            name,
++            duration.as_secs_f64(),
++            SECOND_DURATION_UNIT,
++            description,
++            SECOND_DURATION_BOUNDARIES,
++            tags,
++        )
++    }
++
++    pub fn start_timer(
++        &self,
++        name: &str,
++        tags: &[(&str, &str)],
++    ) -> std::result::Result<Timer, MetricsError> {
++        Ok(Timer::new(name, tags, self))
++    }
++
++    /// Collect a runtime metrics snapshot without shutting down the provider.
++    pub fn snapshot(&self) -> Result<ResourceMetrics> {
++        let Some(reader) = &self.0.runtime_reader else {
++            return Err(MetricsError::RuntimeSnapshotUnavailable);
++        };
++        let mut snapshot = ResourceMetrics::default();
++        reader
++            .collect(&mut snapshot)
++            .map_err(|source| MetricsError::RuntimeSnapshotCollect { source })?;
++        Ok(snapshot)
++    }
++
++    /// Flush metrics and stop the underlying OTEL meter provider.
++    pub fn shutdown(&self) -> Result<()> {
++        self.0.shutdown()
++    }
++}
++
++fn os_resource_attributes() -> Vec<KeyValue> {
++    let os_info = os_info::get();
++    let os_type_raw = os_info.os_type().to_string();
++    let os_type = sanitize_metric_tag_value(os_type_raw.as_str());
++    let os_version_raw = os_info.version().to_string();
++    let os_version = sanitize_metric_tag_value(os_version_raw.as_str());
++    let mut attributes = Vec::new();
++    if os_type != "unspecified" {
++        attributes.push(KeyValue::new("os", os_type));
++    }
++    if os_version != "unspecified" {
++        attributes.push(KeyValue::new("os_version", os_version));
++    }
++    attributes
++}
++
++fn build_provider<E>(
++    resource: Resource,
++    exporter: E,
++    interval: Option<Duration>,
++    runtime_reader: Option<Arc<ManualReader>>,
++) -> (SdkMeterProvider, Meter)
++where
++    E: opentelemetry_sdk::metrics::exporter::PushMetricExporter + 'static,
++{
++    let mut reader_builder = PeriodicReader::builder(exporter);
++    if let Some(interval) = interval {
++        reader_builder = reader_builder.with_interval(interval);
++    }
++    let reader = reader_builder.build();
++    let mut provider_builder = SdkMeterProvider::builder().with_resource(resource);
++    if let Some(reader) = runtime_reader {
++        provider_builder = provider_builder.with_reader(SharedManualReader::new(reader));
++    }
++    let provider = provider_builder.with_reader(reader).build();
++    let meter = provider.meter(METER_NAME);
++    (provider, meter)
++}
++
++fn build_otlp_metric_exporter(
++    exporter: OtelExporter,
++    temporality: Temporality,
++) -> Result<opentelemetry_otlp::MetricExporter> {
++    match exporter {
++        OtelExporter::None => Err(MetricsError::ExporterDisabled),
++        OtelExporter::Statsig => build_otlp_metric_exporter(
++            crate::config::resolve_exporter(&OtelExporter::Statsig),
++            temporality,
++        ),
++        OtelExporter::OtlpGrpc {
++            endpoint,
++            headers,
++            tls,
++        } => {
++            debug!("Using OTLP Grpc exporter for metrics: {endpoint}");
++
++            let header_map = crate::otlp::build_header_map(&headers);
++
++            let base_tls_config = ClientTlsConfig::new()
++                .with_enabled_roots()
++                .assume_http2(true);
++
++            let tls_config = match tls.as_ref() {
++                Some(tls) => crate::otlp::build_grpc_tls_config(&endpoint, base_tls_config, tls)
++                    .map_err(|err| MetricsError::InvalidConfig {
++                        message: err.to_string(),
++                    })?,
++                None => base_tls_config,
++            };
++
++            opentelemetry_otlp::MetricExporter::builder()
++                .with_tonic()
++                .with_endpoint(endpoint)
++                .with_temporality(temporality)
++                .with_metadata(MetadataMap::from_headers(header_map))
++                .with_tls_config(tls_config)
++                .build()
++                .map_err(|source| MetricsError::ExporterBuild { source })
++        }
++        OtelExporter::OtlpHttp {
++            endpoint,
++            headers,
++            protocol,
++            tls,
++        } => {
++            debug!("Using OTLP Http exporter for metrics: {endpoint}");
++
++            let protocol = match protocol {
++                OtelHttpProtocol::Binary => Protocol::HttpBinary,
++                OtelHttpProtocol::Json => Protocol::HttpJson,
++            };
++
++            let mut exporter_builder = opentelemetry_otlp::MetricExporter::builder()
++                .with_http()
++                .with_endpoint(endpoint)
++                .with_temporality(temporality)
++                .with_protocol(protocol)
++                .with_headers(headers);
++
++            if let Some(tls) = tls.as_ref() {
++                let client =
++                    crate::otlp::build_http_client(tls, OTEL_EXPORTER_OTLP_METRICS_TIMEOUT)
++                        .map_err(|err| MetricsError::InvalidConfig {
++                            message: err.to_string(),
++                        })?;
++                exporter_builder = exporter_builder.with_http_client(client);
++            }
++
++            exporter_builder
++                .build()
++                .map_err(|source| MetricsError::ExporterBuild { source })
++        }
++    }
++}
+--- /dev/null
++++ b/otel/src/provider_full.rs
+@@ -0,0 +1,542 @@
++use crate::config::OtelExporter;
++use crate::config::OtelHttpProtocol;
++use crate::config::OtelSettings;
++use crate::config::StatsigMetricsSettings;
++use crate::metrics::MetricsClient;
++use crate::metrics::MetricsConfig;
++use crate::targets::is_log_export_target;
++use crate::targets::is_trace_safe_target;
++use gethostname::gethostname;
++use opentelemetry::Context;
++use opentelemetry::KeyValue;
++use opentelemetry::global;
++use opentelemetry::trace::Span as _;
++use opentelemetry::trace::TracerProvider as _;
++use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
++use opentelemetry_otlp::LogExporter;
++use opentelemetry_otlp::OTEL_EXPORTER_OTLP_LOGS_TIMEOUT;
++use opentelemetry_otlp::OTEL_EXPORTER_OTLP_TRACES_TIMEOUT;
++use opentelemetry_otlp::Protocol;
++use opentelemetry_otlp::SpanExporter;
++use opentelemetry_otlp::WithExportConfig;
++use opentelemetry_otlp::WithHttpConfig;
++use opentelemetry_otlp::WithTonicConfig;
++use opentelemetry_otlp::tonic_types::metadata::MetadataMap;
++use opentelemetry_otlp::tonic_types::transport::ClientTlsConfig;
++use opentelemetry_sdk::Resource;
++use opentelemetry_sdk::error::OTelSdkResult;
++use opentelemetry_sdk::logs::SdkLoggerProvider;
++use opentelemetry_sdk::propagation::TraceContextPropagator;
++use opentelemetry_sdk::runtime;
++use opentelemetry_sdk::trace::BatchSpanProcessor;
++use opentelemetry_sdk::trace::SdkTracerProvider;
++use opentelemetry_sdk::trace::Span;
++use opentelemetry_sdk::trace::SpanData;
++use opentelemetry_sdk::trace::SpanProcessor;
++use opentelemetry_sdk::trace::Tracer;
++use opentelemetry_sdk::trace::TracerProviderBuilder;
++use opentelemetry_sdk::trace::span_processor_with_async_runtime::BatchSpanProcessor as TokioBatchSpanProcessor;
++use opentelemetry_semantic_conventions as semconv;
++use std::collections::BTreeMap;
++use std::error::Error;
++use std::time::Duration;
++use tracing::debug;
++use tracing_subscriber::Layer;
++use tracing_subscriber::registry::LookupSpan;
++
++const ENV_ATTRIBUTE: &str = "env";
++const HOST_NAME_ATTRIBUTE: &str = "host.name";
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum ResourceKind {
++    Logs,
++    Traces,
++}
++
++pub struct OtelProvider {
++    pub logger: Option<SdkLoggerProvider>,
++    pub tracer_provider: Option<SdkTracerProvider>,
++    pub tracer: Option<Tracer>,
++    pub metrics: Option<MetricsClient>,
++}
++
++impl OtelProvider {
++    pub fn shutdown(&self) {
++        if let Some(tracer_provider) = &self.tracer_provider {
++            let _ = tracer_provider.force_flush();
++            let _ = tracer_provider.shutdown();
++        }
++        if let Some(metrics) = &self.metrics {
++            let _ = metrics.shutdown();
++        }
++        if let Some(logger) = &self.logger {
++            let _ = logger.shutdown();
++        }
++    }
++
++    pub fn from(settings: &OtelSettings) -> Result<Option<Self>, Box<dyn Error>> {
++        let log_enabled = !matches!(settings.exporter, OtelExporter::None);
++        let trace_enabled = !matches!(settings.trace_exporter, OtelExporter::None);
++        let metric_exporter = crate::config::resolve_exporter(&settings.metrics_exporter);
++        let metrics_enabled = !matches!(metric_exporter, OtelExporter::None);
++
++        if !log_enabled && !trace_enabled && !metrics_enabled {
++            // Tracestate propagation is process-global; clear it when these
++            // settings do not install an active provider.
++            crate::trace_context::set_tracestate_entries(BTreeMap::new())?;
++            debug!("No OTEL exporter enabled in settings.");
++            return Ok(None);
++        }
++
++        // Provider setup installs process-global OTEL state that cannot be
++        // rolled back. Validate trace metadata before any setup path can
++        // mutate those globals, and keep span attribute checks aligned with
++        // config loading when traces are exported.
++        if trace_enabled {
++            crate::config::validate_span_attributes(&settings.span_attributes)?;
++        }
++        crate::trace_context::validate_tracestate_entries(&settings.tracestate)?;
++
++        let metrics = if matches!(metric_exporter, OtelExporter::None) {
++            None
++        } else {
++            let mut config = MetricsConfig::otlp(
++                settings.environment.clone(),
++                settings.service_name.clone(),
++                settings.service_version.clone(),
++                metric_exporter,
++            );
++            if settings.runtime_metrics {
++                config = config.with_runtime_reader();
++            }
++            Some(MetricsClient::new(config)?)
++        };
++
++        let log_resource = make_resource(settings, ResourceKind::Logs);
++        let trace_resource = make_resource(settings, ResourceKind::Traces);
++        let logger = log_enabled
++            .then(|| build_logger(&log_resource, &settings.exporter))
++            .transpose()?;
++
++        let tracer_provider = trace_enabled
++            .then(|| {
++                build_tracer_provider(
++                    &trace_resource,
++                    &settings.trace_exporter,
++                    settings.span_attributes.clone(),
++                )
++            })
++            .transpose()?;
++
++        let tracer = tracer_provider
++            .as_ref()
++            .map(|provider| provider.tracer(settings.service_name.clone()));
++
++        crate::trace_context::set_tracestate_entries(settings.tracestate.clone())?;
++        if let Some(provider) = tracer_provider.clone() {
++            global::set_tracer_provider(provider);
++            global::set_text_map_propagator(TraceContextPropagator::new());
++        }
++        if let Some(metrics) = metrics.as_ref() {
++            crate::metrics::install_global(metrics.clone());
++            if matches!(settings.metrics_exporter, OtelExporter::Statsig) {
++                crate::metrics::install_global_statsig_settings(StatsigMetricsSettings {
++                    environment: settings.environment.clone(),
++                });
++            }
++        }
++        Ok(Some(Self {
++            logger,
++            tracer_provider,
++            tracer,
++            metrics,
++        }))
++    }
++
++    pub fn logger_layer<S>(&self) -> Option<impl Layer<S> + Send + Sync>
++    where
++        S: tracing::Subscriber + for<'span> LookupSpan<'span> + Send + Sync,
++    {
++        self.logger.as_ref().map(|logger| {
++            OpenTelemetryTracingBridge::new(logger).with_filter(
++                tracing_subscriber::filter::filter_fn(OtelProvider::log_export_filter),
++            )
++        })
++    }
++
++    pub fn tracing_layer<S>(&self) -> Option<impl Layer<S> + Send + Sync>
++    where
++        S: tracing::Subscriber + for<'span> LookupSpan<'span> + Send + Sync,
++    {
++        self.tracer.as_ref().map(|tracer| {
++            tracing_opentelemetry::layer()
++                .with_tracer(tracer.clone())
++                .with_filter(tracing_subscriber::filter::filter_fn(
++                    OtelProvider::trace_export_filter,
++                ))
++        })
++    }
++
++    pub fn codex_export_filter(meta: &tracing::Metadata<'_>) -> bool {
++        Self::log_export_filter(meta)
++    }
++
++    pub fn log_export_filter(meta: &tracing::Metadata<'_>) -> bool {
++        is_log_export_target(meta.target())
++    }
++
++    pub fn trace_export_filter(meta: &tracing::Metadata<'_>) -> bool {
++        meta.is_span() || is_trace_safe_target(meta.target())
++    }
++
++    pub fn metrics(&self) -> Option<&MetricsClient> {
++        self.metrics.as_ref()
++    }
++}
++
++impl Drop for OtelProvider {
++    fn drop(&mut self) {
++        if let Some(tracer_provider) = &self.tracer_provider {
++            let _ = tracer_provider.force_flush();
++            let _ = tracer_provider.shutdown();
++        }
++        if let Some(metrics) = &self.metrics {
++            let _ = metrics.shutdown();
++        }
++        if let Some(logger) = &self.logger {
++            let _ = logger.shutdown();
++        }
++    }
++}
++
++fn make_resource(settings: &OtelSettings, kind: ResourceKind) -> Resource {
++    Resource::builder()
++        .with_service_name(settings.service_name.clone())
++        .with_attributes(resource_attributes(
++            settings,
++            detected_host_name().as_deref(),
++            kind,
++        ))
++        .build()
++}
++
++fn resource_attributes(
++    settings: &OtelSettings,
++    host_name: Option<&str>,
++    kind: ResourceKind,
++) -> Vec<KeyValue> {
++    let mut attributes = vec![
++        KeyValue::new(
++            semconv::attribute::SERVICE_VERSION,
++            settings.service_version.clone(),
++        ),
++        KeyValue::new(ENV_ATTRIBUTE, settings.environment.clone()),
++    ];
++    if kind == ResourceKind::Logs
++        && let Some(host_name) = host_name.and_then(normalize_host_name)
++    {
++        attributes.push(KeyValue::new(HOST_NAME_ATTRIBUTE, host_name));
++    }
++    attributes
++}
++
++fn detected_host_name() -> Option<String> {
++    let host_name = gethostname();
++    normalize_host_name(host_name.to_string_lossy().as_ref())
++}
++
++fn normalize_host_name(host_name: &str) -> Option<String> {
++    let host_name = host_name.trim();
++    (!host_name.is_empty()).then(|| host_name.to_owned())
++}
++
++fn tracer_provider_builder(
++    resource: &Resource,
++    span_attributes: BTreeMap<String, String>,
++) -> TracerProviderBuilder {
++    let builder = SdkTracerProvider::builder().with_resource(resource.clone());
++    if span_attributes.is_empty() {
++        builder
++    } else {
++        builder.with_span_processor(SpanAttributesProcessor {
++            attributes: span_attributes,
++        })
++    }
++}
++
++/// Applies configured attributes when spans start.
++///
++/// Resource attributes describe the provider process. These attributes are
++/// per-span metadata, so they need to be attached before each span is exported.
++#[derive(Debug)]
++struct SpanAttributesProcessor {
++    attributes: BTreeMap<String, String>,
++}
++
++impl SpanProcessor for SpanAttributesProcessor {
++    fn on_start(&self, span: &mut Span, _cx: &Context) {
++        for (key, value) in self.attributes.iter() {
++            span.set_attribute(KeyValue::new(key.clone(), value.clone()));
++        }
++    }
++
++    fn on_end(&self, _span: SpanData) {}
++
++    fn force_flush(&self) -> OTelSdkResult {
++        Ok(())
++    }
++
++    fn shutdown_with_timeout(&self, _timeout: Duration) -> OTelSdkResult {
++        Ok(())
++    }
++}
++
++fn build_logger(
++    resource: &Resource,
++    exporter: &OtelExporter,
++) -> Result<SdkLoggerProvider, Box<dyn Error>> {
++    let mut builder = SdkLoggerProvider::builder().with_resource(resource.clone());
++
++    match crate::config::resolve_exporter(exporter) {
++        OtelExporter::None => return Ok(builder.build()),
++        OtelExporter::Statsig => unreachable!("statsig exporter should be resolved"),
++        OtelExporter::OtlpGrpc {
++            endpoint,
++            headers,
++            tls,
++        } => {
++            debug!("Using OTLP Grpc exporter: {endpoint}");
++
++            let header_map = crate::otlp::build_header_map(&headers);
++
++            let base_tls_config = ClientTlsConfig::new()
++                .with_enabled_roots()
++                .assume_http2(true);
++
++            let tls_config = match tls.as_ref() {
++                Some(tls) => crate::otlp::build_grpc_tls_config(&endpoint, base_tls_config, tls)?,
++                None => base_tls_config,
++            };
++
++            let exporter = LogExporter::builder()
++                .with_tonic()
++                .with_endpoint(endpoint)
++                .with_metadata(MetadataMap::from_headers(header_map))
++                .with_tls_config(tls_config)
++                .build()?;
++
++            builder = builder.with_batch_exporter(exporter);
++        }
++        OtelExporter::OtlpHttp {
++            endpoint,
++            headers,
++            protocol,
++            tls,
++        } => {
++            debug!("Using OTLP Http exporter: {endpoint}");
++
++            let protocol = match protocol {
++                OtelHttpProtocol::Binary => Protocol::HttpBinary,
++                OtelHttpProtocol::Json => Protocol::HttpJson,
++            };
++
++            let mut exporter_builder = LogExporter::builder()
++                .with_http()
++                .with_endpoint(endpoint)
++                .with_protocol(protocol)
++                .with_headers(headers);
++
++            if let Some(tls) = tls.as_ref() {
++                let client = crate::otlp::build_http_client(tls, OTEL_EXPORTER_OTLP_LOGS_TIMEOUT)?;
++                exporter_builder = exporter_builder.with_http_client(client);
++            }
++
++            let exporter = exporter_builder.build()?;
++
++            builder = builder.with_batch_exporter(exporter);
++        }
++    }
++
++    Ok(builder.build())
++}
++
++fn build_tracer_provider(
++    resource: &Resource,
++    exporter: &OtelExporter,
++    span_attributes: BTreeMap<String, String>,
++) -> Result<SdkTracerProvider, Box<dyn Error>> {
++    let span_exporter = match crate::config::resolve_exporter(exporter) {
++        OtelExporter::None => return Ok(tracer_provider_builder(resource, span_attributes).build()),
++        OtelExporter::Statsig => unreachable!("statsig exporter should be resolved"),
++        OtelExporter::OtlpGrpc {
++            endpoint,
++            headers,
++            tls,
++        } => {
++            debug!("Using OTLP Grpc exporter for traces: {endpoint}");
++
++            let header_map = crate::otlp::build_header_map(&headers);
++
++            let base_tls_config = ClientTlsConfig::new()
++                .with_enabled_roots()
++                .assume_http2(true);
++
++            let tls_config = match tls.as_ref() {
++                Some(tls) => crate::otlp::build_grpc_tls_config(&endpoint, base_tls_config, tls)?,
++                None => base_tls_config,
++            };
++
++            SpanExporter::builder()
++                .with_tonic()
++                .with_endpoint(endpoint)
++                .with_metadata(MetadataMap::from_headers(header_map))
++                .with_tls_config(tls_config)
++                .build()?
++        }
++        OtelExporter::OtlpHttp {
++            endpoint,
++            headers,
++            protocol,
++            tls,
++        } => {
++            debug!("Using OTLP Http exporter for traces: {endpoint}");
++
++            if crate::otlp::current_tokio_runtime_is_multi_thread() {
++                let protocol = match protocol {
++                    OtelHttpProtocol::Binary => Protocol::HttpBinary,
++                    OtelHttpProtocol::Json => Protocol::HttpJson,
++                };
++
++                let mut exporter_builder = SpanExporter::builder()
++                    .with_http()
++                    .with_endpoint(endpoint)
++                    .with_protocol(protocol)
++                    .with_headers(headers);
++
++                let client = crate::otlp::build_async_http_client(
++                    tls.as_ref(),
++                    OTEL_EXPORTER_OTLP_TRACES_TIMEOUT,
++                )?;
++                exporter_builder = exporter_builder.with_http_client(client);
++
++                let processor =
++                    TokioBatchSpanProcessor::builder(exporter_builder.build()?, runtime::Tokio)
++                        .build();
++
++                return Ok(tracer_provider_builder(resource, span_attributes)
++                    .with_span_processor(processor)
++                    .build());
++            }
++
++            let protocol = match protocol {
++                OtelHttpProtocol::Binary => Protocol::HttpBinary,
++                OtelHttpProtocol::Json => Protocol::HttpJson,
++            };
++
++            let mut exporter_builder = SpanExporter::builder()
++                .with_http()
++                .with_endpoint(endpoint)
++                .with_protocol(protocol)
++                .with_headers(headers);
++
++            if let Some(tls) = tls.as_ref() {
++                let client =
++                    crate::otlp::build_http_client(tls, OTEL_EXPORTER_OTLP_TRACES_TIMEOUT)?;
++                exporter_builder = exporter_builder.with_http_client(client);
++            }
++
++            exporter_builder.build()?
++        }
++    };
++
++    let processor = BatchSpanProcessor::builder(span_exporter).build();
++
++    Ok(tracer_provider_builder(resource, span_attributes)
++        .with_span_processor(processor)
++        .build())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use pretty_assertions::assert_eq;
++    use std::path::PathBuf;
++
++    #[test]
++    fn resource_attributes_include_host_name_when_present() {
++        let attrs = resource_attributes(
++            &test_otel_settings(),
++            Some("opentelemetry-test"),
++            ResourceKind::Logs,
++        );
++
++        let host_name = attrs
++            .iter()
++            .find(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
++            .map(|kv| kv.value.as_str().to_string());
++
++        assert_eq!(host_name, Some("opentelemetry-test".to_string()));
++    }
++
++    #[test]
++    fn resource_attributes_omit_host_name_when_missing_or_empty() {
++        let missing = resource_attributes(
++            &test_otel_settings(),
++            /*host_name*/ None,
++            ResourceKind::Logs,
++        );
++        let empty = resource_attributes(&test_otel_settings(), Some("   "), ResourceKind::Logs);
++        let trace_attrs = resource_attributes(
++            &test_otel_settings(),
++            Some("opentelemetry-test"),
++            ResourceKind::Traces,
++        );
++
++        assert!(
++            !missing
++                .iter()
++                .any(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
++        );
++        assert!(
++            !empty
++                .iter()
++                .any(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
++        );
++        assert!(
++            !trace_attrs
++                .iter()
++                .any(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
++        );
++    }
++
++    #[test]
++    fn log_export_target_excludes_trace_safe_events() {
++        assert!(is_log_export_target("codex_otel.log_only"));
++        assert!(is_log_export_target("codex_otel.network_proxy"));
++        assert!(!is_log_export_target("codex_otel.trace_safe"));
++        assert!(!is_log_export_target("codex_otel.trace_safe.debug"));
++    }
++
++    #[test]
++    fn trace_export_target_only_includes_trace_safe_prefix() {
++        assert!(is_trace_safe_target("codex_otel.trace_safe"));
++        assert!(is_trace_safe_target("codex_otel.trace_safe.summary"));
++        assert!(!is_trace_safe_target("codex_otel.log_only"));
++        assert!(!is_trace_safe_target("codex_otel.network_proxy"));
++    }
++
++    fn test_otel_settings() -> OtelSettings {
++        OtelSettings {
++            environment: "test".to_string(),
++            service_name: "codex-test".to_string(),
++            service_version: "0.0.0".to_string(),
++            codex_home: PathBuf::from("."),
++            exporter: OtelExporter::None,
++            trace_exporter: OtelExporter::None,
++            metrics_exporter: OtelExporter::None,
++            runtime_metrics: false,
++            span_attributes: BTreeMap::new(),
++            tracestate: BTreeMap::new(),
++        }
++    }
++}
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -367,7 +367,10 @@
+ ] }
+ regex = "1.12.3"
+ regex-lite = "0.1.8"
+-reqwest = { version = "0.12", features = ["cookies"] }
++reqwest = { version = "0.12", default-features = false, features = [
++    "cookies",
++    "rustls-tls",
++] }
+ rmcp = { version = "1.7.0", default-features = false }
+ runfiles = { git = "https://github.com/dzbarsky/rules_rust", rev = "b56cbaa8465e74127f1ea216f813cd377295ad81" }
+ rustls = { version = "0.23", default-features = false, features = [
+--- a/app-server/Cargo.toml
++++ b/app-server/Cargo.toml
+@@ -56,7 +56,6 @@
+ codex-file-search = { workspace = true }
+ codex-chatgpt = { workspace = true }
+ codex-login = { workspace = true }
+-codex-image-generation-extension = { workspace = true }
+ codex-memories-extension = { workspace = true }
+ codex-web-search-extension = { workspace = true }
+ codex-memories-write = { workspace = true }
+@@ -98,6 +97,9 @@
+ tracing = { workspace = true, features = ["log"] }
+ tracing-subscriber = { workspace = true, features = ["env-filter", "fmt", "json"] }
+ uuid = { workspace = true, features = ["serde", "v7"] }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++codex-image-generation-extension = { workspace = true }
+ 
+ [target.'cfg(windows)'.dependencies]
+ codex-windows-sandbox = { workspace = true }
+--- a/app-server/src/extensions.rs
++++ b/app-server/src/extensions.rs
+@@ -76,7 +76,10 @@
+     codex_mcp_extension::install(&mut builder);
+     codex_mcp_extension::install_executor_plugins(&mut builder, environment_manager);
+     codex_web_search_extension::install(&mut builder, auth_manager.clone());
++    #[cfg(not(target_os = "freebsd"))]
+     codex_image_generation_extension::install(&mut builder, auth_manager);
++    #[cfg(target_os = "freebsd")]
++    let _ = auth_manager;
+     let skill_providers = codex_skills_extension::SkillProviders::new()
+         .with_executor_provider(executor_skill_provider)
+         .with_orchestrator_provider(Arc::new(
+--- a/code-mode/Cargo.toml
++++ b/code-mode/Cargo.toml
+@@ -9,21 +9,10 @@
+ name = "codex_code_mode"
+ path = "src/lib.rs"
+ 
+-[features]
+-sandbox = ["v8/v8_enable_sandbox"]
+-
+ [lints]
+ workspace = true
+ 
+ [dependencies]
+ codex-code-mode-protocol = { workspace = true }
+-codex-protocol = { workspace = true }
+-deno_core_icudata = { workspace = true }
+-serde_json = { workspace = true }
+-tokio = { workspace = true, features = ["macros", "rt", "sync", "time"] }
++tokio = { workspace = true, features = ["sync"] }
+ tokio-util = { workspace = true, features = ["rt"] }
+-tracing = { workspace = true }
+-v8 = { workspace = true }
+-
+-[dev-dependencies]
+-pretty_assertions = { workspace = true }
+--- a/code-mode/src/lib.rs
++++ b/code-mode/src/lib.rs
+@@ -1,9 +1,145 @@
+-mod cell_actor;
+-mod runtime;
+-mod service;
+-mod session_runtime;
++use std::sync::Arc;
+ 
+ pub use codex_code_mode_protocol::*;
+-pub use service::CodeModeService;
+-pub use service::InProcessCodeModeSessionProvider;
+-pub use service::NoopCodeModeSessionDelegate;
++use tokio::sync::oneshot;
++use tokio_util::sync::CancellationToken;
++
++const UNAVAILABLE: &str =
++    "code mode is unavailable on FreeBSD because rusty_v8 does not publish x86_64-unknown-freebsd binaries";
++
++pub struct NoopCodeModeSessionDelegate;
++
++impl CodeModeSessionDelegate for NoopCodeModeSessionDelegate {
++    fn invoke_tool<'a>(
++        &'a self,
++        _invocation: CodeModeNestedToolCall,
++        _cancellation_token: CancellationToken,
++    ) -> ToolInvocationFuture<'a> {
++        Box::pin(async { Err(UNAVAILABLE.to_string()) })
++    }
++
++    fn notify<'a>(
++        &'a self,
++        _call_id: String,
++        _cell_id: CellId,
++        _text: String,
++        _cancellation_token: CancellationToken,
++    ) -> NotificationFuture<'a> {
++        Box::pin(async { Ok(()) })
++    }
++
++    fn cell_closed(&self, _cell_id: &CellId) {}
++}
++
++#[derive(Default)]
++pub struct InProcessCodeModeSessionProvider;
++
++impl CodeModeSessionProvider for InProcessCodeModeSessionProvider {
++    fn create_session<'a>(
++        &'a self,
++        delegate: Arc<dyn CodeModeSessionDelegate>,
++    ) -> CodeModeSessionProviderFuture<'a> {
++        Box::pin(async move {
++            let session: Arc<dyn CodeModeSession> =
++                Arc::new(CodeModeService::with_delegate(delegate));
++            Ok(session)
++        })
++    }
++}
++
++pub struct CodeModeService {
++    _delegate: Arc<dyn CodeModeSessionDelegate>,
++}
++
++impl CodeModeService {
++    pub fn new() -> Self {
++        Self::with_delegate(Arc::new(NoopCodeModeSessionDelegate))
++    }
++
++    pub fn with_delegate(delegate: Arc<dyn CodeModeSessionDelegate>) -> Self {
++        Self { _delegate: delegate }
++    }
++
++    pub async fn execute(&self, request: ExecuteRequest) -> Result<StartedCell, String> {
++        let cell_id = CellId::new(request.tool_call_id);
++        let (response_tx, response_rx) = oneshot::channel();
++        let _ = response_tx.send(Ok(unavailable_response(cell_id.clone())));
++        Ok(StartedCell::from_result_receiver(cell_id, response_rx))
++    }
++
++    pub async fn execute_to_pending(
++        &self,
++        request: ExecuteRequest,
++    ) -> Result<ExecuteToPendingOutcome, String> {
++        Ok(ExecuteToPendingOutcome::Completed(unavailable_response(
++            CellId::new(request.tool_call_id),
++        )))
++    }
++
++    pub async fn wait(&self, request: WaitRequest) -> Result<WaitOutcome, String> {
++        Ok(WaitOutcome::MissingCell(unavailable_response(request.cell_id)))
++    }
++
++    pub async fn terminate(&self, cell_id: CellId) -> Result<WaitOutcome, String> {
++        Ok(WaitOutcome::MissingCell(unavailable_response(cell_id)))
++    }
++
++    pub async fn wait_to_pending(
++        &self,
++        request: WaitToPendingRequest,
++    ) -> Result<WaitToPendingOutcome, String> {
++        Ok(WaitToPendingOutcome::MissingCell(unavailable_response(
++
++            request.cell_id,
++        )))
++    }
++
++    pub async fn shutdown(&self) -> Result<(), String> {
++        Ok(())
++    }
++}
++
++impl Default for CodeModeService {
++    fn default() -> Self {
++        Self::new()
++    }
++}
++
++impl CodeModeSession for CodeModeService {
++    fn is_alive(&self) -> bool {
++        true
++    }
++
++    fn execute<'a>(
++        &'a self,
++        request: ExecuteRequest,
++    ) -> CodeModeSessionResultFuture<'a, StartedCell> {
++        Box::pin(CodeModeService::execute(self, request))
++    }
++
++    fn wait<'a>(
++        &'a self,
++        request: WaitRequest,
++    ) -> CodeModeSessionResultFuture<'a, WaitOutcome> {
++        Box::pin(CodeModeService::wait(self, request))
++    }
++
++    fn terminate<'a>(
++        &'a self,
++        cell_id: CellId,
++    ) -> CodeModeSessionResultFuture<'a, WaitOutcome> {
++        Box::pin(CodeModeService::terminate(self, cell_id))
++    }
++
++    fn shutdown<'a>(&'a self) -> CodeModeSessionResultFuture<'a, ()> {
++        Box::pin(CodeModeService::shutdown(self))
++    }
++}
++
++fn unavailable_response(cell_id: CellId) -> RuntimeResponse {
++    RuntimeResponse::Result {
++        cell_id,
++        content_items: Vec::new(),
++        error_text: Some(UNAVAILABLE.to_string()),
++    }
++}
+--- a/config/Cargo.toml
++++ b/config/Cargo.toml
+@@ -30,7 +30,6 @@
+ gethostname = { workspace = true }
+ indexmap = { workspace = true, features = ["serde"] }
+ multimap = { workspace = true }
+-prost = "0.14.3"
+ schemars = { workspace = true }
+ serde = { workspace = true, features = ["derive"] }
+ serde_ignored = { workspace = true }
+@@ -41,10 +40,13 @@
+ tokio = { workspace = true, features = ["fs"] }
+ toml = { workspace = true, features = ["preserve_order"] }
+ toml_edit = { workspace = true }
+-tonic = { workspace = true }
+-tonic-prost = { workspace = true }
+ tracing = { workspace = true }
+ wildmatch = { workspace = true }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++prost = "0.14.3"
++tonic = { workspace = true }
++tonic-prost = { workspace = true }
+ 
+ [target.'cfg(unix)'.dependencies]
+ dns-lookup = { workspace = true }
+--- a/config/src/thread_config.rs
++++ b/config/src/thread_config.rs
+@@ -11,7 +11,50 @@
+ 
+ use crate::ConfigLayerEntry;
+ 
++#[cfg(not(target_os = "freebsd"))]
+ mod remote;
++
++#[cfg(target_os = "freebsd")]
++mod remote {
++    use super::ThreadConfigContext;
++    use super::ThreadConfigLoadError;
++    use super::ThreadConfigLoadErrorCode;
++    use super::ThreadConfigLoader;
++    use super::ThreadConfigLoaderFuture;
++    use super::ThreadConfigSource;
++
++    /// Stubbed out in the FreeBSD exec build to avoid the gRPC/protobuf stack.
++    #[derive(Clone, Debug)]
++    pub struct RemoteThreadConfigLoader {
++        endpoint: String,
++    }
++
++    impl RemoteThreadConfigLoader {
++        pub fn new(endpoint: impl Into<String>) -> Self {
++            Self {
++                endpoint: endpoint.into(),
++            }
++        }
++    }
++
++    impl ThreadConfigLoader for RemoteThreadConfigLoader {
++        fn load(
++            &self,
++            _context: ThreadConfigContext,
++        ) -> ThreadConfigLoaderFuture<'_, Vec<ThreadConfigSource>> {
++            let endpoint = self.endpoint.clone();
++            Box::pin(async move {
++                Err(ThreadConfigLoadError::new(
++                    ThreadConfigLoadErrorCode::RequestFailed,
++                    /*status_code*/ None,
++                    format!(
++                        "remote thread config loader is disabled in FreeBSD exec builds: {endpoint}"
++                    ),
++                ))
++            })
++        }
++    }
++}
+ 
+ pub use remote::RemoteThreadConfigLoader;
+ 
+--- a/core/Cargo.toml
++++ b/core/Cargo.toml
+@@ -83,7 +83,6 @@
+ futures = { workspace = true }
+ http = { workspace = true }
+ iana-time-zone = { workspace = true }
+-image = { workspace = true, features = ["jpeg", "png", "webp"] }
+ indexmap = { workspace = true }
+ libc = { workspace = true }
+ once_cell = { workspace = true }
+@@ -127,6 +126,9 @@
+ # Build OpenSSL from source for musl builds.
+ [target.aarch64-unknown-linux-musl.dependencies]
+ openssl-sys = { workspace = true, features = ["vendored"] }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++image = { workspace = true, features = ["jpeg", "png", "webp"] }
+ 
+ [target.'cfg(unix)'.dependencies]
+ codex-shell-escalation = { workspace = true }
+--- a/core/src/context_manager/history.rs
++++ b/core/src/context_manager/history.rs
+@@ -601,6 +601,12 @@
+     Some(payload)
+ }
+ 
++#[cfg(target_os = "freebsd")]
++fn estimate_original_image_bytes(_image_url: &str) -> Option<i64> {
++    None
++}
++
++#[cfg(not(target_os = "freebsd"))]
+ fn estimate_original_image_bytes(image_url: &str) -> Option<i64> {
+     let key = sha1_digest(image_url.as_bytes());
+     ORIGINAL_IMAGE_ESTIMATE_CACHE.get_or_insert_with(key, || {
+--- a/exec-server/Cargo.toml
++++ b/exec-server/Cargo.toml
+@@ -15,7 +15,6 @@
+ axum = { workspace = true, features = ["http1", "tokio", "ws"] }
+ base64 = { workspace = true }
+ bytes = { workspace = true }
+-clatter = { workspace = true }
+ codex-app-server-protocol = { workspace = true }
+ codex-api = { workspace = true }
+ codex-client = { workspace = true }
+@@ -30,7 +29,6 @@
+ futures = { workspace = true }
+ http = { workspace = true }
+ reqwest = { workspace = true, features = ["json", "rustls-tls", "stream"] }
+-prost = "0.14.3"
+ serde = { workspace = true, features = ["derive"] }
+ serde_json = { workspace = true }
+ thiserror = { workspace = true }
+@@ -53,6 +51,10 @@
+ 
+ [target.'cfg(unix)'.dependencies]
+ libc = { workspace = true }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++clatter = { workspace = true }
++prost = "0.14.3"
+ 
+ [target.'cfg(windows)'.dependencies]
+ windows-sys = { version = "0.52", features = [
+--- a/exec-server/src/client_transport.rs
++++ b/exec-server/src/client_transport.rs
+@@ -7,6 +7,7 @@
+ use tokio::process::Command;
+ use tokio::time::timeout;
+ use tokio_tungstenite::connect_async;
++#[cfg(not(target_os = "freebsd"))]
+ use tokio_tungstenite::connect_async_with_config;
+ use tracing::debug;
+ use tracing::warn;
+@@ -15,10 +16,13 @@
+ 
+ use crate::ExecServerClient;
+ use crate::ExecServerError;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::client_api::DEFAULT_REMOTE_EXEC_SERVER_CONNECT_TIMEOUT;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::client_api::DEFAULT_REMOTE_EXEC_SERVER_INITIALIZE_TIMEOUT;
+ use crate::client_api::ExecServerClientConnectOptions;
+ use crate::client_api::NoiseRendezvousConnectArgs;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::client_api::NoiseRendezvousConnectBundle;
+ use crate::client_api::NoiseRendezvousConnectProvider;
+ use crate::client_api::RemoteExecServerConnectArgs;
+@@ -26,9 +30,13 @@
+ use crate::client_api::StdioExecServerConnectArgs;
+ use crate::connection::JsonRpcConnection;
+ use crate::noise_channel::NoiseChannelIdentity;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::noise_relay::NoiseHarnessConnectionArgs;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::noise_relay::noise_harness_connection_from_websocket;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::noise_relay::noise_relay_websocket_config;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::relay::harness_connection_from_websocket;
+ 
+ const ENVIRONMENT_CLIENT_NAME: &str = "codex-environment";
+@@ -69,16 +77,30 @@
+                 connect_timeout,
+                 initialize_timeout,
+             } => {
+-                let bundle = provider.connect_bundle(identity.public_key()).await?;
+-                ExecServerClient::open_noise_rendezvous_connection(NoiseRendezvousConnectArgs {
+-                    bundle,
+-                    harness_identity: identity.clone(),
+-                    client_name: client_name.clone(),
+-                    connect_timeout: *connect_timeout,
+-                    initialize_timeout: *initialize_timeout,
+-                    resume_session_id: Some(session_id.to_string()),
+-                })
+-                .await
++                #[cfg(not(target_os = "freebsd"))]
++                {
++                    let bundle = provider.connect_bundle(identity.public_key()).await?;
++                    ExecServerClient::open_noise_rendezvous_connection(NoiseRendezvousConnectArgs {
++                        bundle,
++                        harness_identity: identity.clone(),
++                        client_name: client_name.clone(),
++                        connect_timeout: *connect_timeout,
++                        initialize_timeout: *initialize_timeout,
++                        resume_session_id: Some(session_id.to_string()),
++                    })
++                    .await
++                }
++                #[cfg(target_os = "freebsd")]
++                {
++                    let _ = (
++                        provider,
++                        identity,
++                        client_name,
++                        connect_timeout,
++                        initialize_timeout,
++                    );
++                    Err(remote_relay_disabled_error())
++                }
+             }
+         }
+     }
+@@ -110,16 +132,25 @@
+                 provider,
+                 identity,
+             } => {
+-                let reconnect_strategy = ExecServerReconnectStrategy::NoiseRendezvous {
+-                    provider: Arc::clone(&provider),
+-                    identity: identity.clone(),
+-                    client_name: ENVIRONMENT_CLIENT_NAME.to_string(),
+-                    connect_timeout: DEFAULT_REMOTE_EXEC_SERVER_CONNECT_TIMEOUT,
+-                    initialize_timeout: DEFAULT_REMOTE_EXEC_SERVER_INITIALIZE_TIMEOUT,
+-                };
+-                let (connection, options) =
+-                    Self::open_initial_noise_rendezvous_connection(&provider, &identity).await?;
+-                Self::connect_with_recovery(connection, options, Some(reconnect_strategy)).await
++                #[cfg(not(target_os = "freebsd"))]
++                {
++                    let reconnect_strategy = ExecServerReconnectStrategy::NoiseRendezvous {
++                        provider: Arc::clone(&provider),
++                        identity: identity.clone(),
++                        client_name: ENVIRONMENT_CLIENT_NAME.to_string(),
++                        connect_timeout: DEFAULT_REMOTE_EXEC_SERVER_CONNECT_TIMEOUT,
++                        initialize_timeout: DEFAULT_REMOTE_EXEC_SERVER_INITIALIZE_TIMEOUT,
++                    };
++                    let (connection, options) =
++                        Self::open_initial_noise_rendezvous_connection(&provider, &identity)
++                            .await?;
++                    Self::connect_with_recovery(connection, options, Some(reconnect_strategy)).await
++                }
++                #[cfg(target_os = "freebsd")]
++                {
++                    let _ = (provider, identity);
++                    Err(remote_relay_disabled_error())
++                }
+             }
+             crate::client_api::ExecServerTransportParams::StdioCommand {
+                 command,
+@@ -136,6 +167,7 @@
+         }
+     }
+ 
++    #[cfg(not(target_os = "freebsd"))]
+     async fn open_initial_noise_rendezvous_connection(
+         provider: &Arc<dyn NoiseRendezvousConnectProvider>,
+         identity: &NoiseChannelIdentity,
+@@ -202,7 +234,14 @@
+ 
+         let connection_label = format!("exec-server websocket {websocket_url}");
+         let connection = if is_rendezvous_harness_url(&websocket_url) {
+-            harness_connection_from_websocket(stream, connection_label)
++            #[cfg(not(target_os = "freebsd"))]
++            {
++                harness_connection_from_websocket(stream, connection_label)
++            }
++            #[cfg(target_os = "freebsd")]
++            {
++                return Err(remote_relay_disabled_error());
++            }
+         } else {
+             JsonRpcConnection::from_websocket(stream, connection_label)
+         };
+@@ -223,6 +262,7 @@
+         Self::connect(connection, options).await
+     }
+ 
++    #[cfg(not(target_os = "freebsd"))]
+     pub(crate) async fn open_noise_rendezvous_connection(
+         args: NoiseRendezvousConnectArgs,
+     ) -> Result<(JsonRpcConnection, ExecServerClientConnectOptions), ExecServerError> {
+@@ -289,6 +329,13 @@
+         ))
+     }
+ 
++    #[cfg(target_os = "freebsd")]
++    pub(crate) async fn open_noise_rendezvous_connection(
++        _args: NoiseRendezvousConnectArgs,
++    ) -> Result<(JsonRpcConnection, ExecServerClientConnectOptions), ExecServerError> {
++        Err(remote_relay_disabled_error())
++    }
++
+     pub(crate) async fn connect_stdio_command(
+         args: StdioExecServerConnectArgs,
+     ) -> Result<Self, ExecServerError> {
+@@ -340,6 +387,13 @@
+         .any(|(key, value)| key == "role" && value == "harness")
+ }
+ 
++#[cfg(target_os = "freebsd")]
++fn remote_relay_disabled_error() -> ExecServerError {
++    ExecServerError::Protocol(
++        "remote exec-server relay is disabled in FreeBSD exec builds".to_string(),
++    )
++}
++
+ fn stdio_command_process(stdio_command: &StdioExecServerCommand) -> Command {
+     let mut command = Command::new(&stdio_command.program);
+     command.args(&stdio_command.args);
+@@ -352,6 +406,6 @@
+     command
+ }
+ 
+-#[cfg(test)]
++#[cfg(all(test, not(target_os = "freebsd")))]
+ #[path = "client_transport_tests.rs"]
+ mod tests;
+--- a/exec-server/src/lib.rs
++++ b/exec-server/src/lib.rs
+@@ -12,14 +12,21 @@
+ mod fs_sandbox;
+ mod local_file_system;
+ mod local_process;
++#[cfg(not(target_os = "freebsd"))]
+ mod noise_channel;
++#[cfg(target_os = "freebsd")]
++#[path = "noise_channel_freebsd.rs"]
++mod noise_channel;
++#[cfg(not(target_os = "freebsd"))]
+ mod noise_relay;
+ mod process;
+ mod process_id;
+ mod process_sandbox;
+ mod protocol;
+ mod regular_file;
++#[cfg(not(target_os = "freebsd"))]
+ mod relay;
++#[cfg(not(target_os = "freebsd"))]
+ mod relay_proto;
+ mod remote;
+ mod remote_file_system;
+--- a/exec-server/src/remote.rs
++++ b/exec-server/src/remote.rs
+@@ -9,30 +9,41 @@
+ use http::HeaderValue;
+ use reqwest::StatusCode;
+ use serde::Deserialize;
++#[cfg(not(target_os = "freebsd"))]
+ use tokio::time::sleep;
++#[cfg(not(target_os = "freebsd"))]
+ use tokio_tungstenite::connect_async_with_config;
+ use tracing::debug;
+ use tracing::info;
++#[cfg(not(target_os = "freebsd"))]
+ use tracing::warn;
+ 
++#[cfg(not(target_os = "freebsd"))]
+ use codex_utils_rustls_provider::ensure_rustls_crypto_provider;
+ 
+ use crate::EnvironmentRegistryConnectRequest;
+ use crate::EnvironmentRegistryConnectResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::EnvironmentRegistryHarnessKeyValidationRequest;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::EnvironmentRegistryHarnessKeyValidationResponse;
+ use crate::EnvironmentRegistryRegistrationRequest;
+ use crate::EnvironmentRegistryRegistrationResponse;
+ use crate::ExecServerError;
+ use crate::ExecServerRuntimePaths;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::NoiseChannelIdentity;
+ use crate::NoiseChannelPublicKey;
+ use crate::NoiseRendezvousConnectBundle;
+ use crate::NoiseRendezvousConnectProvider;
+ use crate::client_api::DEFAULT_REMOTE_EXEC_SERVER_CONNECT_TIMEOUT;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::noise_relay::noise_relay_websocket_config;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::relay::HarnessKeyValidator;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::relay::run_multiplexed_environment;
++#[cfg(not(target_os = "freebsd"))]
+ use crate::server::ConnectionProcessor;
+ 
+ const ERROR_BODY_PREVIEW_BYTES: usize = 4096;
+@@ -183,6 +194,7 @@
+     }
+ }
+ 
++#[cfg(not(target_os = "freebsd"))]
+ #[derive(Clone)]
+ struct RegistryHarnessKeyValidator {
+     client: EnvironmentRegistryClient,
+@@ -190,6 +202,7 @@
+     executor_registration_id: String,
+ }
+ 
++#[cfg(not(target_os = "freebsd"))]
+ impl HarnessKeyValidator for RegistryHarnessKeyValidator {
+     /// Authorize the harness key recovered from the first IK message.
+     /// Noise proves key possession; the registry decides whether that key may use
+@@ -408,6 +421,7 @@
+ /// reconnects. The registration and rendezvous URL are also reused until
+ /// rendezvous rejects the URL, at which point the next attempt registers again.
+ /// The websocket carries cleartext routing metadata and encrypted payloads.
++#[cfg(not(target_os = "freebsd"))]
+ #[tracing::instrument(
+     name = "codex.exec_server",
+     skip_all,
+@@ -485,6 +499,21 @@
+     }
+ }
+ 
++#[cfg(target_os = "freebsd")]
++#[tracing::instrument(
++    name = "codex.exec_server",
++    skip_all,
++    fields(otel.kind = "internal")
++)]
++pub async fn run_remote_environment(
++    _config: RemoteEnvironmentConfig,
++    _runtime_paths: ExecServerRuntimePaths,
++) -> Result<(), ExecServerError> {
++    Err(ExecServerError::Protocol(
++        "remote exec-server relay is disabled in FreeBSD exec builds".to_string(),
++    ))
++}
++
+ fn normalize_environment_id(environment_id: String) -> Result<String, ExecServerError> {
+     let environment_id = environment_id.trim().to_string();
+     if environment_id.is_empty() {
+@@ -782,6 +811,6 @@
+     }
+ }
+ 
+-#[cfg(test)]
++#[cfg(all(test, not(target_os = "freebsd")))]
+ #[path = "remote/noise_tests.rs"]
+ mod noise_tests;
+--- a/exec/src/event_processor_with_human_output.rs
++++ b/exec/src/event_processor_with_human_output.rs
+@@ -294,6 +294,7 @@
+             }
+             ServerNotification::ModelVerification(_) => CodexStatus::Running,
+             ServerNotification::ThreadTokenUsageUpdated(notification) => {
++                eprintln!("{}", cache_hit_rate_line(notification.token_usage.last.input_tokens, notification.token_usage.last.cached_input_tokens));
+                 self.last_total_token_usage = Some(notification.token_usage);
+                 CodexStatus::Running
+             }
+@@ -374,6 +375,7 @@
+     }
+ 
+     fn print_final_output(&mut self) {
++        ring_terminal_bell();
+         if self.emit_final_message_on_shutdown
+             && let Some(path) = self.last_message_path.as_deref()
+         {
+@@ -524,3 +526,26 @@
+ #[cfg(test)]
+ #[path = "event_processor_with_human_output_tests.rs"]
+ mod tests;
++
++fn ring_terminal_bell() {
++    let mut stderr = std::io::stderr();
++    if std::io::IsTerminal::is_terminal(&stderr) {
++        let _ = std::io::Write::write_all(&mut stderr, b"\x07");
++        let _ = std::io::Write::flush(&mut stderr);
++    }
++}
++
++fn cache_hit_rate_line(input_tokens: i64, cached_input_tokens: i64) -> String {
++    let input = input_tokens.max(0);
++    let cached = cached_input_tokens.max(0).min(input);
++    if input == 0 {
++        return "cache hit: n/a (0 input tokens)".to_string();
++    }
++
++    let rate = cached as f64 * 100.0 / input as f64;
++    format!(
++        "cache hit: {rate:.1}% ({}/{})",
++        codex_protocol::num_format::format_with_separators(cached),
++        codex_protocol::num_format::format_with_separators(input)
++    )
++}
+--- a/execpolicy/Cargo.toml
++++ b/execpolicy/Cargo.toml
+@@ -25,8 +25,10 @@
+ serde = { workspace = true, features = ["derive"] }
+ serde_json = { workspace = true }
+ shlex = { workspace = true }
+-starlark = { workspace = true }
+ thiserror = { workspace = true }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++starlark = { workspace = true }
+ 
+ [dev-dependencies]
+ pretty_assertions = { workspace = true }
+--- a/execpolicy/src/error.rs
++++ b/execpolicy/src/error.rs
+@@ -1,3 +1,4 @@
++#[cfg(not(target_os = "freebsd"))]
+ use starlark::Error as StarlarkError;
+ use thiserror::Error;
+ 
+@@ -46,6 +47,7 @@
+         example: String,
+         location: Option<ErrorLocation>,
+     },
++    #[cfg(not(target_os = "freebsd"))]
+     #[error("starlark error: {0}")]
+     Starlark(StarlarkError),
+ }
+@@ -79,6 +81,7 @@
+         match self {
+             Error::ExampleDidNotMatch { location, .. }
+             | Error::ExampleDidMatch { location, .. } => location.clone(),
++            #[cfg(not(target_os = "freebsd"))]
+             Error::Starlark(err) => err.span().map(|span| {
+                 let resolved = span.resolve_span();
+                 ErrorLocation {
+--- a/execpolicy/src/lib.rs
++++ b/execpolicy/src/lib.rs
+@@ -3,6 +3,10 @@
+ pub(crate) mod error;
+ pub(crate) mod execpolicycheck;
+ mod executable_name;
++#[cfg(not(target_os = "freebsd"))]
++pub(crate) mod parser;
++#[cfg(target_os = "freebsd")]
++#[path = "parser_freebsd.rs"]
+ pub(crate) mod parser;
+ pub(crate) mod policy;
+ pub mod rule;
+--- a/feedback/Cargo.toml
++++ b/feedback/Cargo.toml
+@@ -11,9 +11,11 @@
+ anyhow = { workspace = true }
+ codex-login = { workspace = true }
+ codex-protocol = { workspace = true }
+-sentry = { version = "0.46" }
+ tracing = { workspace = true }
+ tracing-subscriber = { workspace = true }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++sentry = { version = "0.46" }
+ 
+ [dev-dependencies]
+ pretty_assertions = { workspace = true }
+--- a/feedback/src/lib.rs
++++ b/feedback/src/lib.rs
+@@ -1,5 +1,6 @@
+ use std::collections::BTreeMap;
+ use std::collections::VecDeque;
++#[cfg(not(target_os = "freebsd"))]
+ use std::collections::btree_map::Entry;
+ use std::fs;
+ use std::io::Write;
+@@ -7,9 +8,11 @@
+ use std::path::PathBuf;
+ use std::sync::Arc;
+ use std::sync::Mutex;
++#[cfg(not(target_os = "freebsd"))]
+ use std::time::Duration;
+ 
+ use anyhow::Result;
++#[cfg(not(target_os = "freebsd"))]
+ use anyhow::anyhow;
+ use codex_login::AuthEnvTelemetry;
+ use codex_protocol::ThreadId;
+@@ -32,8 +35,10 @@
+ /// Filename used for the Windows sandbox log feedback attachment.
+ pub const WINDOWS_SANDBOX_LOG_ATTACHMENT_FILENAME: &str = "windows-sandbox.log";
+ const DEFAULT_MAX_BYTES: usize = 4 * 1024 * 1024; // 4 MiB
++#[cfg(not(target_os = "freebsd"))]
+ const SENTRY_DSN: &str =
+     "https://ae32ed50620d7a7792c1ce5df38b3e3e@o33249.ingest.us.sentry.io/4510195390611458";
++#[cfg(not(target_os = "freebsd"))]
+ const UPLOAD_TIMEOUT_SECS: u64 = 10;
+ const FEEDBACK_TAGS_TARGET: &str = "feedback_tags";
+ const MAX_FEEDBACK_TAGS: usize = 64;
+@@ -415,6 +420,16 @@
+     }
+ 
+     /// Upload feedback to Sentry with optional attachments.
++    #[cfg(target_os = "freebsd")]
++    pub fn upload_feedback(&self, _options: FeedbackUploadOptions<'_>) -> Result<()> {
++        let _ = &self.tags;
++        Err(anyhow::anyhow!(
++            "feedback upload is unavailable in this FreeBSD codex-exec build"
++        ))
++    }
++
++    /// Upload feedback to Sentry with optional attachments.
++    #[cfg(not(target_os = "freebsd"))]
+     pub fn upload_feedback(&self, options: FeedbackUploadOptions<'_>) -> Result<()> {
+         use std::str::FromStr;
+         use std::sync::Arc;
+@@ -486,6 +501,7 @@
+         Ok(())
+     }
+ 
++    #[cfg(not(target_os = "freebsd"))]
+     fn upload_tags(
+         &self,
+         classification: &str,
+@@ -535,6 +551,7 @@
+         tags
+     }
+ 
++    #[cfg(not(target_os = "freebsd"))]
+     fn feedback_attachments(
+         &self,
+         include_logs: bool,
+@@ -605,6 +622,7 @@
+     }
+ }
+ 
++#[cfg(not(target_os = "freebsd"))]
+ fn display_classification(classification: &str) -> String {
+     match classification {
+         "bug" => "Bug".to_string(),
+--- a/keyring-store/Cargo.toml
++++ b/keyring-store/Cargo.toml
+@@ -20,7 +20,7 @@
+ [target.'cfg(target_os = "windows")'.dependencies]
+ keyring = { workspace = true, features = ["windows-native"] }
+ 
+-[target.'cfg(any(target_os = "freebsd", target_os = "openbsd"))'.dependencies]
++[target.'cfg(target_os = "openbsd")'.dependencies]
+ keyring = { workspace = true, features = ["sync-secret-service"] }
+ 
+ [lib]
+--- a/keyring-store/src/lib.rs
++++ b/keyring-store/src/lib.rs
+@@ -1,3 +1,4 @@
++#[cfg(not(target_os = "freebsd"))]
+ use keyring::Entry;
+ use keyring::Error as KeyringError;
+ use std::error::Error;
+@@ -48,6 +49,34 @@
+ #[derive(Debug, Clone, Copy)]
+ pub struct DefaultKeyringStore;
+ 
++#[cfg(target_os = "freebsd")]
++const FREEBSD_KEYRING_UNAVAILABLE: &str =
++    "keyring storage is unavailable in this FreeBSD codex-exec build";
++
++#[cfg(target_os = "freebsd")]
++impl KeyringStore for DefaultKeyringStore {
++    fn load(&self, service: &str, account: &str) -> Result<Option<String>, CredentialStoreError> {
++        trace!("keyring.load unavailable on FreeBSD, service={service}, account={account}");
++        Ok(None)
++    }
++
++    fn save(&self, service: &str, account: &str, value: &str) -> Result<(), CredentialStoreError> {
++        trace!(
++            "keyring.save unavailable on FreeBSD, service={service}, account={account}, value_len={}",
++            value.len()
++        );
++        Err(CredentialStoreError::new(keyring::Error::NoStorageAccess(
++            Box::new(std::io::Error::other(FREEBSD_KEYRING_UNAVAILABLE)),
++        )))
++    }
++
++    fn delete(&self, service: &str, account: &str) -> Result<bool, CredentialStoreError> {
++        trace!("keyring.delete unavailable on FreeBSD, service={service}, account={account}");
++        Ok(false)
++    }
++}
++
++#[cfg(not(target_os = "freebsd"))]
+ impl KeyringStore for DefaultKeyringStore {
+     fn load(&self, service: &str, account: &str) -> Result<Option<String>, CredentialStoreError> {
+         trace!("keyring.load start, service={service}, account={account}");
+--- a/model-provider/Cargo.toml
++++ b/model-provider/Cargo.toml
+@@ -15,7 +15,6 @@
+ [dependencies]
+ codex-api = { workspace = true }
+ codex-agent-identity = { workspace = true }
+-codex-aws-auth = { workspace = true }
+ codex-client = { workspace = true }
+ codex-feedback = { workspace = true }
+ codex-login = { workspace = true }
+@@ -27,6 +26,9 @@
+ http = { workspace = true }
+ tokio = { workspace = true, features = ["sync", "time"] }
+ tracing = { workspace = true, features = ["log"] }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++codex-aws-auth = { workspace = true }
+ 
+ [dev-dependencies]
+ pretty_assertions = { workspace = true }
+--- a/model-provider/src/lib.rs
++++ b/model-provider/src/lib.rs
+@@ -1,3 +1,4 @@
++#[cfg(not(target_os = "freebsd"))]
+ mod amazon_bedrock;
+ mod auth;
+ mod bearer_auth_provider;
+--- a/model-provider/src/provider.rs
++++ b/model-provider/src/provider.rs
+@@ -17,6 +17,7 @@
+ use codex_protocol::error::CodexErr;
+ use codex_protocol::openai_models::ModelsResponse;
+ 
++#[cfg(not(target_os = "freebsd"))]
+ use crate::amazon_bedrock::AmazonBedrockModelProvider;
+ use crate::auth::auth_manager_for_provider;
+ use crate::auth::resolve_provider_auth;
+@@ -193,10 +194,18 @@
+     provider_info: ModelProviderInfo,
+     auth_manager: Option<Arc<AuthManager>>,
+ ) -> SharedModelProvider {
+-    if provider_info.is_amazon_bedrock() {
+-        Arc::new(AmazonBedrockModelProvider::new(provider_info, auth_manager))
+-    } else {
++    #[cfg(target_os = "freebsd")]
++    {
+         Arc::new(ConfiguredModelProvider::new(provider_info, auth_manager))
++    }
++
++    #[cfg(not(target_os = "freebsd"))]
++    {
++        if provider_info.is_amazon_bedrock() {
++            Arc::new(AmazonBedrockModelProvider::new(provider_info, auth_manager))
++        } else {
++            Arc::new(ConfiguredModelProvider::new(provider_info, auth_manager))
++        }
+     }
+ }
+ 
+--- a/network-proxy/Cargo.toml
++++ b/network-proxy/Cargo.toml
+@@ -14,20 +14,22 @@
+ 
+ [dependencies]
+ anyhow = { workspace = true }
+-base64 = { workspace = true }
+-clap = { workspace = true, features = ["derive"] }
+ chrono = { workspace = true }
+ codex-utils-absolute-path = { workspace = true }
+-codex-utils-home-dir = { workspace = true }
+-codex-utils-rustls-provider = { workspace = true }
+ globset = { workspace = true }
+ serde = { workspace = true, features = ["derive"] }
+ serde_json = { workspace = true }
+ thiserror = { workspace = true }
+ time = { workspace = true }
+-tokio = { workspace = true, features = ["full"] }
++tokio = { workspace = true, features = ["net", "sync", "time"] }
+ tracing = { workspace = true }
+ url = { workspace = true }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
++base64 = { workspace = true }
++clap = { workspace = true, features = ["derive"] }
++codex-utils-home-dir = { workspace = true }
++codex-utils-rustls-provider = { workspace = true }
+ rama-core = { version = "=0.3.0-alpha.4" }
+ rama-http = { version = "=0.3.0-alpha.4" }
+ rama-http-backend = { version = "=0.3.0-alpha.4", features = ["tls"] }
+@@ -37,12 +39,13 @@
+ rama-tls-rustls = { version = "=0.3.0-alpha.4", features = ["http"] }
+ rustls-native-certs = { workspace = true }
+ sha2 = { workspace = true }
++tokio = { workspace = true, features = ["full"] }
+ 
+ [dev-dependencies]
+ pretty_assertions = { workspace = true }
+ tempfile = { workspace = true }
+ 
+-[target.'cfg(target_family = "unix")'.dependencies]
++[target.'cfg(all(target_family = "unix", not(target_os = "freebsd")))'.dependencies]
+ rama-unix = { version = "=0.3.0-alpha.4" }
+ 
+ [target.'cfg(target_os = "macos")'.dependencies]
+--- a/network-proxy/src/lib.rs
++++ b/network-proxy/src/lib.rs
+@@ -1,20 +1,42 @@
+ #![deny(clippy::print_stdout, clippy::print_stderr)]
+ 
++#[cfg(not(target_os = "freebsd"))]
+ mod certs;
++#[cfg(target_os = "freebsd")]
++#[path = "certs_freebsd.rs"]
++mod certs;
+ mod config;
++#[cfg(not(target_os = "freebsd"))]
+ mod connect_policy;
++#[cfg(not(target_os = "freebsd"))]
+ mod http_proxy;
++#[cfg(not(target_os = "freebsd"))]
+ mod mitm;
++#[cfg(target_os = "freebsd")]
++#[path = "mitm_freebsd.rs"]
++mod mitm;
++#[cfg(not(target_os = "freebsd"))]
+ mod mitm_hook;
++#[cfg(target_os = "freebsd")]
++#[path = "mitm_hook_freebsd.rs"]
++mod mitm_hook;
++#[cfg(not(target_os = "freebsd"))]
+ mod native_certs;
+ mod network_policy;
+ mod policy;
++#[cfg(not(target_os = "freebsd"))]
+ mod proxy;
++#[cfg(target_os = "freebsd")]
++#[path = "proxy_freebsd.rs"]
++mod proxy;
+ mod reasons;
++#[cfg(not(target_os = "freebsd"))]
+ mod responses;
+ mod runtime;
++#[cfg(not(target_os = "freebsd"))]
+ mod socks5;
+ mod state;
++#[cfg(not(target_os = "freebsd"))]
+ mod upstream;
+ 
+ pub use certs::CUSTOM_CA_ENV_KEYS;
+--- a/network-proxy/src/runtime.rs
++++ b/network-proxy/src/runtime.rs
+@@ -589,6 +589,7 @@
+         Ok(guard.mitm.clone())
+     }
+ 
++    #[cfg(not(target_os = "freebsd"))]
+     pub(crate) async fn evaluate_mitm_hook_request(
+         &self,
+         host: &str,
+--- a/otel/Cargo.toml
++++ b/otel/Cargo.toml
+@@ -20,7 +20,27 @@
+ codex-app-server-protocol = { workspace = true }
+ codex-protocol = { workspace = true }
+ eventsource-stream = { workspace = true }
++opentelemetry = { workspace = true, features = ["trace"] }
++opentelemetry_sdk = { workspace = true, features = [
++    "experimental_metrics_custom_reader",
++    "metrics",
++    "testing",
++    "trace",
++] }
++reqwest = { workspace = true }
++serde = { workspace = true, features = ["derive"] }
++serde_json = { workspace = true }
++strum_macros = { workspace = true }
++thiserror = { workspace = true }
++tokio = { workspace = true }
++tokio-tungstenite = { workspace = true }
++tracing = { workspace = true }
++tracing-opentelemetry = { workspace = true }
++tracing-subscriber = { workspace = true }
++
++[target.'cfg(not(target_os = "freebsd"))'.dependencies]
+ gethostname = { workspace = true }
++http = { workspace = true }
+ opentelemetry = { workspace = true, features = ["logs", "metrics", "trace"] }
+ opentelemetry-appender-tracing = { workspace = true }
+ opentelemetry-otlp = { workspace = true, features = [
+@@ -45,18 +65,8 @@
+     "testing",
+     "trace",
+ ] }
+-http = { workspace = true }
+ os_info = { workspace = true }
+ reqwest = { workspace = true, features = ["blocking", "rustls-tls"] }
+-serde = { workspace = true, features = ["derive"] }
+-serde_json = { workspace = true }
+-strum_macros = { workspace = true }
+-thiserror = { workspace = true }
+-tokio = { workspace = true }
+-tokio-tungstenite = { workspace = true }
+-tracing = { workspace = true }
+-tracing-opentelemetry = { workspace = true }
+-tracing-subscriber = { workspace = true }
+ 
+ [dev-dependencies]
+ opentelemetry_sdk = { workspace = true, features = [
+--- a/otel/src/lib.rs
++++ b/otel/src/lib.rs
+@@ -4,6 +4,7 @@
+ pub(crate) mod provider;
+ pub(crate) mod trace_context;
+ 
++#[cfg(not(target_os = "freebsd"))]
+ mod otlp;
+ mod targets;
+ 
+--- a/otel/src/metrics/client.rs
++++ b/otel/src/metrics/client.rs
+@@ -1,531 +1,94 @@
+-use crate::config::OtelExporter;
+-use crate::config::OtelHttpProtocol;
+-use crate::metrics::MetricsError;
+-use crate::metrics::Result;
+-use crate::metrics::config::MetricsConfig;
+-use crate::metrics::config::MetricsExporter;
+-use crate::metrics::timer::Timer;
+-use crate::metrics::validation::validate_metric_name;
+-use crate::metrics::validation::validate_tag_key;
+-use crate::metrics::validation::validate_tag_value;
+-use crate::metrics::validation::validate_tags;
+-use codex_utils_string::sanitize_metric_tag_value;
+-use opentelemetry::KeyValue;
+-use opentelemetry::metrics::Counter;
+-use opentelemetry::metrics::Gauge;
+-use opentelemetry::metrics::Histogram;
+-use opentelemetry::metrics::Meter;
+-use opentelemetry::metrics::MeterProvider as _;
+-use opentelemetry_otlp::OTEL_EXPORTER_OTLP_METRICS_TIMEOUT;
+-use opentelemetry_otlp::Protocol;
+-use opentelemetry_otlp::WithExportConfig;
+-use opentelemetry_otlp::WithHttpConfig;
+-use opentelemetry_otlp::WithTonicConfig;
+-use opentelemetry_otlp::tonic_types::metadata::MetadataMap;
+-use opentelemetry_otlp::tonic_types::transport::ClientTlsConfig;
+-use opentelemetry_sdk::Resource;
+-use opentelemetry_sdk::metrics::InstrumentKind;
+-use opentelemetry_sdk::metrics::ManualReader;
+-use opentelemetry_sdk::metrics::PeriodicReader;
+-use opentelemetry_sdk::metrics::Pipeline;
+-use opentelemetry_sdk::metrics::SdkMeterProvider;
+-use opentelemetry_sdk::metrics::Temporality;
+-use opentelemetry_sdk::metrics::data::ResourceMetrics;
+-use opentelemetry_sdk::metrics::reader::MetricReader;
+-use opentelemetry_semantic_conventions as semconv;
+-use std::collections::BTreeMap;
+-use std::collections::HashMap;
+-use std::sync::Arc;
+-use std::sync::Mutex;
+-use std::sync::Weak;
+-use std::time::Duration;
+-use tracing::debug;
+-
+-const ENV_ATTRIBUTE: &str = "env";
+-const METER_NAME: &str = "codex";
+-const MILLISECOND_DURATION_UNIT: &str = "ms";
+-const MILLISECOND_DURATION_DESCRIPTION: &str = "Duration in milliseconds.";
+-const MILLISECOND_DURATION_BOUNDARIES: &[f64] = &[
+-    0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, 2500.0, 5000.0, 7500.0,
+-    10000.0,
+-];
+-const SECOND_DURATION_UNIT: &str = "s";
+-const SECOND_DURATION_BOUNDARIES: &[f64] = &[
+-    0.0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0,
+-];
+-
+-#[derive(Debug, Eq, Hash, PartialEq)]
+-struct InstrumentKey {
+-    name: String,
+-    unit: Option<&'static str>,
+-    description: Option<String>,
++#[cfg(not(target_os = "freebsd"))]
++mod imp {
++    include!("client_full.rs");
+ }
+ 
+-#[derive(Clone, Debug)]
+-struct SharedManualReader {
+-    inner: Arc<ManualReader>,
+-}
++#[cfg(target_os = "freebsd")]
++mod imp {
++    use crate::metrics::MetricsConfig;
++    use crate::metrics::MetricsError;
++    use crate::metrics::Result;
++    use crate::metrics::runtime_metrics::RuntimeMetricsSummary;
++    use crate::metrics::timer::Timer;
++    use opentelemetry_sdk::metrics::data::ResourceMetrics;
++    use std::time::Duration;
+ 
+-impl SharedManualReader {
+-    fn new(inner: Arc<ManualReader>) -> Self {
+-        Self { inner }
+-    }
+-}
++    /// No-op metrics client for the FreeBSD codex-exec build.
++    #[derive(Clone, Debug, Default)]
++    pub struct MetricsClient;
+ 
+-impl MetricReader for SharedManualReader {
+-    fn register_pipeline(&self, pipeline: Weak<Pipeline>) {
+-        self.inner.register_pipeline(pipeline);
+-    }
++    impl MetricsClient {
++        pub fn new(_config: MetricsConfig) -> Result<Self> {
++            Ok(Self)
++        }
+ 
+-    fn collect(&self, rm: &mut ResourceMetrics) -> opentelemetry_sdk::error::OTelSdkResult {
+-        self.inner.collect(rm)
+-    }
++        pub fn counter(&self, _name: &str, _inc: i64, _tags: &[(&str, &str)]) -> Result<()> {
++            Ok(())
++        }
+ 
+-    fn force_flush(&self) -> opentelemetry_sdk::error::OTelSdkResult {
+-        self.inner.force_flush()
+-    }
++        pub fn counter_with_description(
++            &self,
++            _name: &str,
++            _description: &str,
++            _inc: i64,
++            _tags: &[(&str, &str)],
++        ) -> Result<()> {
++            Ok(())
++        }
+ 
+-    fn shutdown_with_timeout(&self, timeout: Duration) -> opentelemetry_sdk::error::OTelSdkResult {
+-        self.inner.shutdown_with_timeout(timeout)
+-    }
++        pub fn histogram(&self, _name: &str, _value: i64, _tags: &[(&str, &str)]) -> Result<()> {
++            Ok(())
++        }
+ 
+-    fn temporality(&self, kind: InstrumentKind) -> Temporality {
+-        self.inner.temporality(kind)
+-    }
+-}
++        pub fn gauge(&self, _name: &str, _value: i64, _tags: &[(&str, &str)]) -> Result<()> {
++            Ok(())
++        }
+ 
+-#[derive(Debug)]
+-struct MetricsClientInner {
+-    meter_provider: SdkMeterProvider,
+-    meter: Meter,
+-    counters: Mutex<HashMap<InstrumentKey, Counter<u64>>>,
+-    gauges: Mutex<HashMap<InstrumentKey, Gauge<i64>>>,
+-    histograms: Mutex<HashMap<String, Histogram<f64>>>,
+-    duration_histograms: Mutex<HashMap<InstrumentKey, Histogram<f64>>>,
+-    runtime_reader: Option<Arc<ManualReader>>,
+-    default_tags: BTreeMap<String, String>,
+-}
++        pub fn gauge_with_description(
++            &self,
++            _name: &str,
++            _description: &str,
++            _value: i64,
++            _tags: &[(&str, &str)],
++        ) -> Result<()> {
++            Ok(())
++        }
+ 
+-impl MetricsClientInner {
+-    fn counter(
+-        &self,
+-        name: &str,
+-        description: Option<&str>,
+-        inc: i64,
+-        tags: &[(&str, &str)],
+-    ) -> Result<()> {
+-        validate_metric_name(name)?;
+-        if inc < 0 {
+-            return Err(MetricsError::NegativeCounterIncrement {
+-                name: name.to_string(),
+-                inc,
+-            });
++        pub fn record_duration(
++            &self,
++            _name: &str,
++            _duration: Duration,
++            _tags: &[(&str, &str)],
++        ) -> Result<()> {
++            Ok(())
+         }
+-        let attributes = self.attributes(tags)?;
+ 
+-        let mut counters = self
+-            .counters
+-            .lock()
+-            .unwrap_or_else(std::sync::PoisonError::into_inner);
+-        let key = InstrumentKey {
+-            name: name.to_string(),
+-            unit: None,
+-            description: description.map(str::to_string),
+-        };
+-        let counter = counters.entry(key).or_insert_with(|| {
+-            let builder = self.meter.u64_counter(name.to_string());
+-            match description {
+-                Some(description) => builder.with_description(description.to_string()).build(),
+-                None => builder.build(),
+-            }
+-        });
+-        counter.add(inc as u64, &attributes);
+-        Ok(())
+-    }
++        pub fn record_duration_seconds_with_description(
++            &self,
++            _name: &str,
++            _description: &str,
++            _duration: Duration,
++            _tags: &[(&str, &str)],
++        ) -> Result<()> {
++            Ok(())
++        }
+ 
+-    fn histogram(&self, name: &str, value: i64, tags: &[(&str, &str)]) -> Result<()> {
+-        validate_metric_name(name)?;
+-        let attributes = self.attributes(tags)?;
+-
+-        let mut histograms = self
+-            .histograms
+-            .lock()
+-            .unwrap_or_else(std::sync::PoisonError::into_inner);
+-        let histogram = histograms
+-            .entry(name.to_string())
+-            .or_insert_with(|| self.meter.f64_histogram(name.to_string()).build());
+-        histogram.record(value as f64, &attributes);
+-        Ok(())
+-    }
+-
+-    fn gauge(
+-        &self,
+-        name: &str,
+-        description: Option<&str>,
+-        value: i64,
+-        tags: &[(&str, &str)],
+-    ) -> Result<()> {
+-        validate_metric_name(name)?;
+-        let attributes = self.attributes(tags)?;
+-
+-        let mut gauges = self
+-            .gauges
+-            .lock()
+-            .unwrap_or_else(std::sync::PoisonError::into_inner);
+-        let key = InstrumentKey {
+-            name: name.to_string(),
+-            unit: None,
+-            description: description.map(str::to_string),
+-        };
+-        let gauge = gauges.entry(key).or_insert_with(|| {
+-            let builder = self.meter.i64_gauge(name.to_string());
+-            match description {
+-                Some(description) => builder.with_description(description.to_string()).build(),
+-                None => builder.build(),
+-            }
+-        });
+-        gauge.record(value, &attributes);
+-        Ok(())
+-    }
+-
+-    fn duration_histogram(
+-        &self,
+-        name: &str,
+-        value: f64,
+-        unit: &'static str,
+-        description: &str,
+-        boundaries: &'static [f64],
+-        tags: &[(&str, &str)],
+-    ) -> Result<()> {
+-        validate_metric_name(name)?;
+-        let attributes = self.attributes(tags)?;
+-
+-        let mut histograms = self
+-            .duration_histograms
+-            .lock()
+-            .unwrap_or_else(std::sync::PoisonError::into_inner);
+-        let key = InstrumentKey {
+-            name: name.to_string(),
+-            unit: Some(unit),
+-            description: Some(description.to_string()),
+-        };
+-        let histogram = histograms.entry(key).or_insert_with(|| {
+-            self.meter
+-                .f64_histogram(name.to_string())
+-                .with_unit(unit)
+-                .with_description(description.to_string())
+-                .with_boundaries(boundaries.to_vec())
+-                .build()
+-        });
+-        histogram.record(value, &attributes);
+-        Ok(())
+-    }
+-
+-    fn attributes(&self, tags: &[(&str, &str)]) -> Result<Vec<KeyValue>> {
+-        if tags.is_empty() {
+-            return Ok(self
+-                .default_tags
+-                .iter()
+-                .map(|(key, value)| KeyValue::new(key.clone(), value.clone()))
+-                .collect());
++        pub fn start_timer(&self, name: &str, tags: &[(&str, &str)]) -> Result<Timer> {
++            Ok(Timer::new(name, tags, self))
+         }
+ 
+-        let mut merged = self.default_tags.clone();
+-        for (key, value) in tags {
+-            validate_tag_key(key)?;
+-            validate_tag_value(value)?;
+-            merged.insert((*key).to_string(), (*value).to_string());
++        pub fn snapshot(&self) -> Result<ResourceMetrics> {
++            Err(MetricsError::RuntimeSnapshotUnavailable)
+         }
+ 
+-        Ok(merged
+-            .into_iter()
+-            .map(|(key, value)| KeyValue::new(key, value))
+-            .collect())
+-    }
+-
+-    fn shutdown(&self) -> Result<()> {
+-        debug!("flushing OTEL metrics");
+-        self.meter_provider
+-            .force_flush()
+-            .map_err(|source| MetricsError::ProviderShutdown { source })?;
+-        self.meter_provider
+-            .shutdown()
+-            .map_err(|source| MetricsError::ProviderShutdown { source })?;
+-        Ok(())
+-    }
+-}
+-
+-/// OpenTelemetry metrics client used by Codex.
+-#[derive(Clone, Debug)]
+-pub struct MetricsClient(std::sync::Arc<MetricsClientInner>);
+-
+-impl MetricsClient {
+-    /// Build a metrics client from configuration and validate defaults.
+-    pub fn new(config: MetricsConfig) -> Result<Self> {
+-        let MetricsConfig {
+-            environment,
+-            service_name,
+-            service_version,
+-            exporter,
+-            export_interval,
+-            runtime_reader,
+-            default_tags,
+-        } = config;
+-
+-        validate_tags(&default_tags)?;
+-
+-        let mut resource_attributes = Vec::with_capacity(4);
+-        resource_attributes.push(KeyValue::new(
+-            semconv::attribute::SERVICE_VERSION,
+-            service_version,
+-        ));
+-        resource_attributes.push(KeyValue::new(ENV_ATTRIBUTE, environment));
+-        resource_attributes.extend(os_resource_attributes());
+-
+-        let resource = Resource::builder()
+-            .with_service_name(service_name)
+-            .with_attributes(resource_attributes)
+-            .build();
+-
+-        let runtime_reader = runtime_reader.then(|| {
+-            Arc::new(
+-                ManualReader::builder()
+-                    .with_temporality(Temporality::Delta)
+-                    .build(),
+-            )
+-        });
+-
+-        let (meter_provider, meter) = match exporter {
+-            MetricsExporter::InMemory(exporter) => {
+-                build_provider(resource, exporter, export_interval, runtime_reader.clone())
+-            }
+-            MetricsExporter::Otlp(exporter) => {
+-                let exporter = build_otlp_metric_exporter(exporter, Temporality::Delta)?;
+-                build_provider(resource, exporter, export_interval, runtime_reader.clone())
+-            }
+-        };
+-
+-        Ok(Self(std::sync::Arc::new(MetricsClientInner {
+-            meter_provider,
+-            meter,
+-            counters: Mutex::new(HashMap::new()),
+-            gauges: Mutex::new(HashMap::new()),
+-            histograms: Mutex::new(HashMap::new()),
+-            duration_histograms: Mutex::new(HashMap::new()),
+-            runtime_reader,
+-            default_tags,
+-        })))
+-    }
+-
+-    /// Send a single counter increment.
+-    pub fn counter(&self, name: &str, inc: i64, tags: &[(&str, &str)]) -> Result<()> {
+-        self.0.counter(name, /*description*/ None, inc, tags)
+-    }
+-
+-    /// Send a single counter increment with an instrument description.
+-    pub fn counter_with_description(
+-        &self,
+-        name: &str,
+-        description: &str,
+-        inc: i64,
+-        tags: &[(&str, &str)],
+-    ) -> Result<()> {
+-        self.0.counter(name, Some(description), inc, tags)
+-    }
+-
+-    /// Send a single histogram sample.
+-    pub fn histogram(&self, name: &str, value: i64, tags: &[(&str, &str)]) -> Result<()> {
+-        self.0.histogram(name, value, tags)
+-    }
+-
+-    /// Send a single gauge measurement.
+-    pub fn gauge(&self, name: &str, value: i64, tags: &[(&str, &str)]) -> Result<()> {
+-        self.0.gauge(name, /*description*/ None, value, tags)
+-    }
+-
+-    /// Send a single gauge measurement with an instrument description.
+-    pub fn gauge_with_description(
+-        &self,
+-        name: &str,
+-        description: &str,
+-        value: i64,
+-        tags: &[(&str, &str)],
+-    ) -> Result<()> {
+-        self.0.gauge(name, Some(description), value, tags)
+-    }
+-
+-    /// Record a duration in milliseconds using a histogram.
+-    pub fn record_duration(
+-        &self,
+-        name: &str,
+-        duration: Duration,
+-        tags: &[(&str, &str)],
+-    ) -> Result<()> {
+-        self.0.duration_histogram(
+-            name,
+-            duration.as_millis().min(i64::MAX as u128) as f64,
+-            MILLISECOND_DURATION_UNIT,
+-            MILLISECOND_DURATION_DESCRIPTION,
+-            MILLISECOND_DURATION_BOUNDARIES,
+-            tags,
+-        )
+-    }
+-
+-    /// Record a duration in seconds using a histogram with an instrument description.
+-    pub fn record_duration_seconds_with_description(
+-        &self,
+-        name: &str,
+-        description: &str,
+-        duration: Duration,
+-        tags: &[(&str, &str)],
+-    ) -> Result<()> {
+-        self.0.duration_histogram(
+-            name,
+-            duration.as_secs_f64(),
+-            SECOND_DURATION_UNIT,
+-            description,
+-            SECOND_DURATION_BOUNDARIES,
+-            tags,
+-        )
+-    }
+-
+-    pub fn start_timer(
+-        &self,
+-        name: &str,
+-        tags: &[(&str, &str)],
+-    ) -> std::result::Result<Timer, MetricsError> {
+-        Ok(Timer::new(name, tags, self))
+-    }
+-
+-    /// Collect a runtime metrics snapshot without shutting down the provider.
+-    pub fn snapshot(&self) -> Result<ResourceMetrics> {
+-        let Some(reader) = &self.0.runtime_reader else {
+-            return Err(MetricsError::RuntimeSnapshotUnavailable);
+-        };
+-        let mut snapshot = ResourceMetrics::default();
+-        reader
+-            .collect(&mut snapshot)
+-            .map_err(|source| MetricsError::RuntimeSnapshotCollect { source })?;
+-        Ok(snapshot)
+-    }
+-
+-    /// Flush metrics and stop the underlying OTEL meter provider.
+-    pub fn shutdown(&self) -> Result<()> {
+-        self.0.shutdown()
+-    }
+-}
+-
+-fn os_resource_attributes() -> Vec<KeyValue> {
+-    let os_info = os_info::get();
+-    let os_type_raw = os_info.os_type().to_string();
+-    let os_type = sanitize_metric_tag_value(os_type_raw.as_str());
+-    let os_version_raw = os_info.version().to_string();
+-    let os_version = sanitize_metric_tag_value(os_version_raw.as_str());
+-    let mut attributes = Vec::new();
+-    if os_type != "unspecified" {
+-        attributes.push(KeyValue::new("os", os_type));
+-    }
+-    if os_version != "unspecified" {
+-        attributes.push(KeyValue::new("os_version", os_version));
+-    }
+-    attributes
+-}
+-
+-fn build_provider<E>(
+-    resource: Resource,
+-    exporter: E,
+-    interval: Option<Duration>,
+-    runtime_reader: Option<Arc<ManualReader>>,
+-) -> (SdkMeterProvider, Meter)
+-where
+-    E: opentelemetry_sdk::metrics::exporter::PushMetricExporter + 'static,
+-{
+-    let mut reader_builder = PeriodicReader::builder(exporter);
+-    if let Some(interval) = interval {
+-        reader_builder = reader_builder.with_interval(interval);
+-    }
+-    let reader = reader_builder.build();
+-    let mut provider_builder = SdkMeterProvider::builder().with_resource(resource);
+-    if let Some(reader) = runtime_reader {
+-        provider_builder = provider_builder.with_reader(SharedManualReader::new(reader));
+-    }
+-    let provider = provider_builder.with_reader(reader).build();
+-    let meter = provider.meter(METER_NAME);
+-    (provider, meter)
+-}
+-
+-fn build_otlp_metric_exporter(
+-    exporter: OtelExporter,
+-    temporality: Temporality,
+-) -> Result<opentelemetry_otlp::MetricExporter> {
+-    match exporter {
+-        OtelExporter::None => Err(MetricsError::ExporterDisabled),
+-        OtelExporter::Statsig => build_otlp_metric_exporter(
+-            crate::config::resolve_exporter(&OtelExporter::Statsig),
+-            temporality,
+-        ),
+-        OtelExporter::OtlpGrpc {
+-            endpoint,
+-            headers,
+-            tls,
+-        } => {
+-            debug!("Using OTLP Grpc exporter for metrics: {endpoint}");
+-
+-            let header_map = crate::otlp::build_header_map(&headers);
+-
+-            let base_tls_config = ClientTlsConfig::new()
+-                .with_enabled_roots()
+-                .assume_http2(true);
+-
+-            let tls_config = match tls.as_ref() {
+-                Some(tls) => crate::otlp::build_grpc_tls_config(&endpoint, base_tls_config, tls)
+-                    .map_err(|err| MetricsError::InvalidConfig {
+-                        message: err.to_string(),
+-                    })?,
+-                None => base_tls_config,
+-            };
+-
+-            opentelemetry_otlp::MetricExporter::builder()
+-                .with_tonic()
+-                .with_endpoint(endpoint)
+-                .with_temporality(temporality)
+-                .with_metadata(MetadataMap::from_headers(header_map))
+-                .with_tls_config(tls_config)
+-                .build()
+-                .map_err(|source| MetricsError::ExporterBuild { source })
++        pub fn runtime_metrics_summary(&self) -> Option<RuntimeMetricsSummary> {
++            None
+         }
+-        OtelExporter::OtlpHttp {
+-            endpoint,
+-            headers,
+-            protocol,
+-            tls,
+-        } => {
+-            debug!("Using OTLP Http exporter for metrics: {endpoint}");
+ 
+-            let protocol = match protocol {
+-                OtelHttpProtocol::Binary => Protocol::HttpBinary,
+-                OtelHttpProtocol::Json => Protocol::HttpJson,
+-            };
+-
+-            let mut exporter_builder = opentelemetry_otlp::MetricExporter::builder()
+-                .with_http()
+-                .with_endpoint(endpoint)
+-                .with_temporality(temporality)
+-                .with_protocol(protocol)
+-                .with_headers(headers);
+-
+-            if let Some(tls) = tls.as_ref() {
+-                let client =
+-                    crate::otlp::build_http_client(tls, OTEL_EXPORTER_OTLP_METRICS_TIMEOUT)
+-                        .map_err(|err| MetricsError::InvalidConfig {
+-                            message: err.to_string(),
+-                        })?;
+-                exporter_builder = exporter_builder.with_http_client(client);
+-            }
+-
+-            exporter_builder
+-                .build()
+-                .map_err(|source| MetricsError::ExporterBuild { source })
++        pub fn shutdown(&self) -> Result<()> {
++            Ok(())
+         }
+     }
+ }
++
++pub use imp::*;
+--- a/otel/src/metrics/error.rs
++++ b/otel/src/metrics/error.rs
+@@ -20,6 +20,7 @@
+     #[error("counter increment must be non-negative for {name}: {inc}")]
+     NegativeCounterIncrement { name: String, inc: i64 },
+ 
++    #[cfg(not(target_os = "freebsd"))]
+     #[error("failed to build OTLP metrics exporter")]
+     ExporterBuild {
+         #[source]
+--- a/otel/src/provider.rs
++++ b/otel/src/provider.rs
+@@ -1,542 +1,55 @@
+-use crate::config::OtelExporter;
+-use crate::config::OtelHttpProtocol;
+-use crate::config::OtelSettings;
+-use crate::config::StatsigMetricsSettings;
+-use crate::metrics::MetricsClient;
+-use crate::metrics::MetricsConfig;
+-use crate::targets::is_log_export_target;
+-use crate::targets::is_trace_safe_target;
+-use gethostname::gethostname;
+-use opentelemetry::Context;
+-use opentelemetry::KeyValue;
+-use opentelemetry::global;
+-use opentelemetry::trace::Span as _;
+-use opentelemetry::trace::TracerProvider as _;
+-use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
+-use opentelemetry_otlp::LogExporter;
+-use opentelemetry_otlp::OTEL_EXPORTER_OTLP_LOGS_TIMEOUT;
+-use opentelemetry_otlp::OTEL_EXPORTER_OTLP_TRACES_TIMEOUT;
+-use opentelemetry_otlp::Protocol;
+-use opentelemetry_otlp::SpanExporter;
+-use opentelemetry_otlp::WithExportConfig;
+-use opentelemetry_otlp::WithHttpConfig;
+-use opentelemetry_otlp::WithTonicConfig;
+-use opentelemetry_otlp::tonic_types::metadata::MetadataMap;
+-use opentelemetry_otlp::tonic_types::transport::ClientTlsConfig;
+-use opentelemetry_sdk::Resource;
+-use opentelemetry_sdk::error::OTelSdkResult;
+-use opentelemetry_sdk::logs::SdkLoggerProvider;
+-use opentelemetry_sdk::propagation::TraceContextPropagator;
+-use opentelemetry_sdk::runtime;
+-use opentelemetry_sdk::trace::BatchSpanProcessor;
+-use opentelemetry_sdk::trace::SdkTracerProvider;
+-use opentelemetry_sdk::trace::Span;
+-use opentelemetry_sdk::trace::SpanData;
+-use opentelemetry_sdk::trace::SpanProcessor;
+-use opentelemetry_sdk::trace::Tracer;
+-use opentelemetry_sdk::trace::TracerProviderBuilder;
+-use opentelemetry_sdk::trace::span_processor_with_async_runtime::BatchSpanProcessor as TokioBatchSpanProcessor;
+-use opentelemetry_semantic_conventions as semconv;
+-use std::collections::BTreeMap;
+-use std::error::Error;
+-use std::time::Duration;
+-use tracing::debug;
+-use tracing_subscriber::Layer;
+-use tracing_subscriber::registry::LookupSpan;
+-
+-const ENV_ATTRIBUTE: &str = "env";
+-const HOST_NAME_ATTRIBUTE: &str = "host.name";
+-
+-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+-enum ResourceKind {
+-    Logs,
+-    Traces,
++#[cfg(not(target_os = "freebsd"))]
++mod imp {
++    include!("provider_full.rs");
+ }
+ 
+-pub struct OtelProvider {
+-    pub logger: Option<SdkLoggerProvider>,
+-    pub tracer_provider: Option<SdkTracerProvider>,
+-    pub tracer: Option<Tracer>,
+-    pub metrics: Option<MetricsClient>,
+-}
++#[cfg(target_os = "freebsd")]
++mod imp {
++    use crate::config::OtelSettings;
++    use crate::metrics::MetricsClient;
++    use std::error::Error;
++    use tracing_subscriber::Layer;
++    use tracing_subscriber::registry::LookupSpan;
+ 
+-impl OtelProvider {
+-    pub fn shutdown(&self) {
+-        if let Some(tracer_provider) = &self.tracer_provider {
+-            let _ = tracer_provider.force_flush();
+-            let _ = tracer_provider.shutdown();
+-        }
+-        if let Some(metrics) = &self.metrics {
+-            let _ = metrics.shutdown();
+-        }
+-        if let Some(logger) = &self.logger {
+-            let _ = logger.shutdown();
+-        }
+-    }
++    pub struct OtelProvider;
+ 
+-    pub fn from(settings: &OtelSettings) -> Result<Option<Self>, Box<dyn Error>> {
+-        let log_enabled = !matches!(settings.exporter, OtelExporter::None);
+-        let trace_enabled = !matches!(settings.trace_exporter, OtelExporter::None);
+-        let metric_exporter = crate::config::resolve_exporter(&settings.metrics_exporter);
+-        let metrics_enabled = !matches!(metric_exporter, OtelExporter::None);
++    impl OtelProvider {
++        pub fn shutdown(&self) {}
+ 
+-        if !log_enabled && !trace_enabled && !metrics_enabled {
+-            // Tracestate propagation is process-global; clear it when these
+-            // settings do not install an active provider.
+-            crate::trace_context::set_tracestate_entries(BTreeMap::new())?;
+-            debug!("No OTEL exporter enabled in settings.");
+-            return Ok(None);
++        pub fn from(_settings: &OtelSettings) -> Result<Option<Self>, Box<dyn Error>> {
++            Ok(None)
+         }
+ 
+-        // Provider setup installs process-global OTEL state that cannot be
+-        // rolled back. Validate trace metadata before any setup path can
+-        // mutate those globals, and keep span attribute checks aligned with
+-        // config loading when traces are exported.
+-        if trace_enabled {
+-            crate::config::validate_span_attributes(&settings.span_attributes)?;
++        pub fn logger_layer<S>(&self) -> Option<impl Layer<S> + Send + Sync>
++        where
++            S: tracing::Subscriber + for<'span> LookupSpan<'span> + Send + Sync,
++        {
++            None::<tracing_subscriber::fmt::Layer<S>>
+         }
+-        crate::trace_context::validate_tracestate_entries(&settings.tracestate)?;
+ 
+-        let metrics = if matches!(metric_exporter, OtelExporter::None) {
+-            None
+-        } else {
+-            let mut config = MetricsConfig::otlp(
+-                settings.environment.clone(),
+-                settings.service_name.clone(),
+-                settings.service_version.clone(),
+-                metric_exporter,
+-            );
+-            if settings.runtime_metrics {
+-                config = config.with_runtime_reader();
+-            }
+-            Some(MetricsClient::new(config)?)
+-        };
+-
+-        let log_resource = make_resource(settings, ResourceKind::Logs);
+-        let trace_resource = make_resource(settings, ResourceKind::Traces);
+-        let logger = log_enabled
+-            .then(|| build_logger(&log_resource, &settings.exporter))
+-            .transpose()?;
+-
+-        let tracer_provider = trace_enabled
+-            .then(|| {
+-                build_tracer_provider(
+-                    &trace_resource,
+-                    &settings.trace_exporter,
+-                    settings.span_attributes.clone(),
+-                )
+-            })
+-            .transpose()?;
+-
+-        let tracer = tracer_provider
+-            .as_ref()
+-            .map(|provider| provider.tracer(settings.service_name.clone()));
+-
+-        crate::trace_context::set_tracestate_entries(settings.tracestate.clone())?;
+-        if let Some(provider) = tracer_provider.clone() {
+-            global::set_tracer_provider(provider);
+-            global::set_text_map_propagator(TraceContextPropagator::new());
++        pub fn tracing_layer<S>(&self) -> Option<impl Layer<S> + Send + Sync>
++        where
++            S: tracing::Subscriber + for<'span> LookupSpan<'span> + Send + Sync,
++        {
++            None::<tracing_subscriber::fmt::Layer<S>>
+         }
+-        if let Some(metrics) = metrics.as_ref() {
+-            crate::metrics::install_global(metrics.clone());
+-            if matches!(settings.metrics_exporter, OtelExporter::Statsig) {
+-                crate::metrics::install_global_statsig_settings(StatsigMetricsSettings {
+-                    environment: settings.environment.clone(),
+-                });
+-            }
+-        }
+-        Ok(Some(Self {
+-            logger,
+-            tracer_provider,
+-            tracer,
+-            metrics,
+-        }))
+-    }
+ 
+-    pub fn logger_layer<S>(&self) -> Option<impl Layer<S> + Send + Sync>
+-    where
+-        S: tracing::Subscriber + for<'span> LookupSpan<'span> + Send + Sync,
+-    {
+-        self.logger.as_ref().map(|logger| {
+-            OpenTelemetryTracingBridge::new(logger).with_filter(
+-                tracing_subscriber::filter::filter_fn(OtelProvider::log_export_filter),
+-            )
+-        })
+-    }
+-
+-    pub fn tracing_layer<S>(&self) -> Option<impl Layer<S> + Send + Sync>
+-    where
+-        S: tracing::Subscriber + for<'span> LookupSpan<'span> + Send + Sync,
+-    {
+-        self.tracer.as_ref().map(|tracer| {
+-            tracing_opentelemetry::layer()
+-                .with_tracer(tracer.clone())
+-                .with_filter(tracing_subscriber::filter::filter_fn(
+-                    OtelProvider::trace_export_filter,
+-                ))
+-        })
+-    }
+-
+-    pub fn codex_export_filter(meta: &tracing::Metadata<'_>) -> bool {
+-        Self::log_export_filter(meta)
+-    }
+-
+-    pub fn log_export_filter(meta: &tracing::Metadata<'_>) -> bool {
+-        is_log_export_target(meta.target())
+-    }
+-
+-    pub fn trace_export_filter(meta: &tracing::Metadata<'_>) -> bool {
+-        meta.is_span() || is_trace_safe_target(meta.target())
+-    }
+-
+-    pub fn metrics(&self) -> Option<&MetricsClient> {
+-        self.metrics.as_ref()
+-    }
+-}
+-
+-impl Drop for OtelProvider {
+-    fn drop(&mut self) {
+-        if let Some(tracer_provider) = &self.tracer_provider {
+-            let _ = tracer_provider.force_flush();
+-            let _ = tracer_provider.shutdown();
++        pub fn codex_export_filter(meta: &tracing::Metadata<'_>) -> bool {
++            Self::log_export_filter(meta)
+         }
+-        if let Some(metrics) = &self.metrics {
+-            let _ = metrics.shutdown();
+-        }
+-        if let Some(logger) = &self.logger {
+-            let _ = logger.shutdown();
+-        }
+-    }
+-}
+ 
+-fn make_resource(settings: &OtelSettings, kind: ResourceKind) -> Resource {
+-    Resource::builder()
+-        .with_service_name(settings.service_name.clone())
+-        .with_attributes(resource_attributes(
+-            settings,
+-            detected_host_name().as_deref(),
+-            kind,
+-        ))
+-        .build()
+-}
+-
+-fn resource_attributes(
+-    settings: &OtelSettings,
+-    host_name: Option<&str>,
+-    kind: ResourceKind,
+-) -> Vec<KeyValue> {
+-    let mut attributes = vec![
+-        KeyValue::new(
+-            semconv::attribute::SERVICE_VERSION,
+-            settings.service_version.clone(),
+-        ),
+-        KeyValue::new(ENV_ATTRIBUTE, settings.environment.clone()),
+-    ];
+-    if kind == ResourceKind::Logs
+-        && let Some(host_name) = host_name.and_then(normalize_host_name)
+-    {
+-        attributes.push(KeyValue::new(HOST_NAME_ATTRIBUTE, host_name));
+-    }
+-    attributes
+-}
+-
+-fn detected_host_name() -> Option<String> {
+-    let host_name = gethostname();
+-    normalize_host_name(host_name.to_string_lossy().as_ref())
+-}
+-
+-fn normalize_host_name(host_name: &str) -> Option<String> {
+-    let host_name = host_name.trim();
+-    (!host_name.is_empty()).then(|| host_name.to_owned())
+-}
+-
+-fn tracer_provider_builder(
+-    resource: &Resource,
+-    span_attributes: BTreeMap<String, String>,
+-) -> TracerProviderBuilder {
+-    let builder = SdkTracerProvider::builder().with_resource(resource.clone());
+-    if span_attributes.is_empty() {
+-        builder
+-    } else {
+-        builder.with_span_processor(SpanAttributesProcessor {
+-            attributes: span_attributes,
+-        })
+-    }
+-}
+-
+-/// Applies configured attributes when spans start.
+-///
+-/// Resource attributes describe the provider process. These attributes are
+-/// per-span metadata, so they need to be attached before each span is exported.
+-#[derive(Debug)]
+-struct SpanAttributesProcessor {
+-    attributes: BTreeMap<String, String>,
+-}
+-
+-impl SpanProcessor for SpanAttributesProcessor {
+-    fn on_start(&self, span: &mut Span, _cx: &Context) {
+-        for (key, value) in self.attributes.iter() {
+-            span.set_attribute(KeyValue::new(key.clone(), value.clone()));
++        pub fn log_export_filter(_meta: &tracing::Metadata<'_>) -> bool {
++            false
+         }
+-    }
+ 
+-    fn on_end(&self, _span: SpanData) {}
+-
+-    fn force_flush(&self) -> OTelSdkResult {
+-        Ok(())
+-    }
+-
+-    fn shutdown_with_timeout(&self, _timeout: Duration) -> OTelSdkResult {
+-        Ok(())
+-    }
+-}
+-
+-fn build_logger(
+-    resource: &Resource,
+-    exporter: &OtelExporter,
+-) -> Result<SdkLoggerProvider, Box<dyn Error>> {
+-    let mut builder = SdkLoggerProvider::builder().with_resource(resource.clone());
+-
+-    match crate::config::resolve_exporter(exporter) {
+-        OtelExporter::None => return Ok(builder.build()),
+-        OtelExporter::Statsig => unreachable!("statsig exporter should be resolved"),
+-        OtelExporter::OtlpGrpc {
+-            endpoint,
+-            headers,
+-            tls,
+-        } => {
+-            debug!("Using OTLP Grpc exporter: {endpoint}");
+-
+-            let header_map = crate::otlp::build_header_map(&headers);
+-
+-            let base_tls_config = ClientTlsConfig::new()
+-                .with_enabled_roots()
+-                .assume_http2(true);
+-
+-            let tls_config = match tls.as_ref() {
+-                Some(tls) => crate::otlp::build_grpc_tls_config(&endpoint, base_tls_config, tls)?,
+-                None => base_tls_config,
+-            };
+-
+-            let exporter = LogExporter::builder()
+-                .with_tonic()
+-                .with_endpoint(endpoint)
+-                .with_metadata(MetadataMap::from_headers(header_map))
+-                .with_tls_config(tls_config)
+-                .build()?;
+-
+-            builder = builder.with_batch_exporter(exporter);
++        pub fn trace_export_filter(_meta: &tracing::Metadata<'_>) -> bool {
++            false
+         }
+-        OtelExporter::OtlpHttp {
+-            endpoint,
+-            headers,
+-            protocol,
+-            tls,
+-        } => {
+-            debug!("Using OTLP Http exporter: {endpoint}");
+ 
+-            let protocol = match protocol {
+-                OtelHttpProtocol::Binary => Protocol::HttpBinary,
+-                OtelHttpProtocol::Json => Protocol::HttpJson,
+-            };
+-
+-            let mut exporter_builder = LogExporter::builder()
+-                .with_http()
+-                .with_endpoint(endpoint)
+-                .with_protocol(protocol)
+-                .with_headers(headers);
+-
+-            if let Some(tls) = tls.as_ref() {
+-                let client = crate::otlp::build_http_client(tls, OTEL_EXPORTER_OTLP_LOGS_TIMEOUT)?;
+-                exporter_builder = exporter_builder.with_http_client(client);
+-            }
+-
+-            let exporter = exporter_builder.build()?;
+-
+-            builder = builder.with_batch_exporter(exporter);
++        pub fn metrics(&self) -> Option<&MetricsClient> {
++            None
+         }
+     }
+-
+-    Ok(builder.build())
+ }
+ 
+-fn build_tracer_provider(
+-    resource: &Resource,
+-    exporter: &OtelExporter,
+-    span_attributes: BTreeMap<String, String>,
+-) -> Result<SdkTracerProvider, Box<dyn Error>> {
+-    let span_exporter = match crate::config::resolve_exporter(exporter) {
+-        OtelExporter::None => return Ok(tracer_provider_builder(resource, span_attributes).build()),
+-        OtelExporter::Statsig => unreachable!("statsig exporter should be resolved"),
+-        OtelExporter::OtlpGrpc {
+-            endpoint,
+-            headers,
+-            tls,
+-        } => {
+-            debug!("Using OTLP Grpc exporter for traces: {endpoint}");
+-
+-            let header_map = crate::otlp::build_header_map(&headers);
+-
+-            let base_tls_config = ClientTlsConfig::new()
+-                .with_enabled_roots()
+-                .assume_http2(true);
+-
+-            let tls_config = match tls.as_ref() {
+-                Some(tls) => crate::otlp::build_grpc_tls_config(&endpoint, base_tls_config, tls)?,
+-                None => base_tls_config,
+-            };
+-
+-            SpanExporter::builder()
+-                .with_tonic()
+-                .with_endpoint(endpoint)
+-                .with_metadata(MetadataMap::from_headers(header_map))
+-                .with_tls_config(tls_config)
+-                .build()?
+-        }
+-        OtelExporter::OtlpHttp {
+-            endpoint,
+-            headers,
+-            protocol,
+-            tls,
+-        } => {
+-            debug!("Using OTLP Http exporter for traces: {endpoint}");
+-
+-            if crate::otlp::current_tokio_runtime_is_multi_thread() {
+-                let protocol = match protocol {
+-                    OtelHttpProtocol::Binary => Protocol::HttpBinary,
+-                    OtelHttpProtocol::Json => Protocol::HttpJson,
+-                };
+-
+-                let mut exporter_builder = SpanExporter::builder()
+-                    .with_http()
+-                    .with_endpoint(endpoint)
+-                    .with_protocol(protocol)
+-                    .with_headers(headers);
+-
+-                let client = crate::otlp::build_async_http_client(
+-                    tls.as_ref(),
+-                    OTEL_EXPORTER_OTLP_TRACES_TIMEOUT,
+-                )?;
+-                exporter_builder = exporter_builder.with_http_client(client);
+-
+-                let processor =
+-                    TokioBatchSpanProcessor::builder(exporter_builder.build()?, runtime::Tokio)
+-                        .build();
+-
+-                return Ok(tracer_provider_builder(resource, span_attributes)
+-                    .with_span_processor(processor)
+-                    .build());
+-            }
+-
+-            let protocol = match protocol {
+-                OtelHttpProtocol::Binary => Protocol::HttpBinary,
+-                OtelHttpProtocol::Json => Protocol::HttpJson,
+-            };
+-
+-            let mut exporter_builder = SpanExporter::builder()
+-                .with_http()
+-                .with_endpoint(endpoint)
+-                .with_protocol(protocol)
+-                .with_headers(headers);
+-
+-            if let Some(tls) = tls.as_ref() {
+-                let client =
+-                    crate::otlp::build_http_client(tls, OTEL_EXPORTER_OTLP_TRACES_TIMEOUT)?;
+-                exporter_builder = exporter_builder.with_http_client(client);
+-            }
+-
+-            exporter_builder.build()?
+-        }
+-    };
+-
+-    let processor = BatchSpanProcessor::builder(span_exporter).build();
+-
+-    Ok(tracer_provider_builder(resource, span_attributes)
+-        .with_span_processor(processor)
+-        .build())
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-    use super::*;
+-    use pretty_assertions::assert_eq;
+-    use std::path::PathBuf;
+-
+-    #[test]
+-    fn resource_attributes_include_host_name_when_present() {
+-        let attrs = resource_attributes(
+-            &test_otel_settings(),
+-            Some("opentelemetry-test"),
+-            ResourceKind::Logs,
+-        );
+-
+-        let host_name = attrs
+-            .iter()
+-            .find(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
+-            .map(|kv| kv.value.as_str().to_string());
+-
+-        assert_eq!(host_name, Some("opentelemetry-test".to_string()));
+-    }
+-
+-    #[test]
+-    fn resource_attributes_omit_host_name_when_missing_or_empty() {
+-        let missing = resource_attributes(
+-            &test_otel_settings(),
+-            /*host_name*/ None,
+-            ResourceKind::Logs,
+-        );
+-        let empty = resource_attributes(&test_otel_settings(), Some("   "), ResourceKind::Logs);
+-        let trace_attrs = resource_attributes(
+-            &test_otel_settings(),
+-            Some("opentelemetry-test"),
+-            ResourceKind::Traces,
+-        );
+-
+-        assert!(
+-            !missing
+-                .iter()
+-                .any(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
+-        );
+-        assert!(
+-            !empty
+-                .iter()
+-                .any(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
+-        );
+-        assert!(
+-            !trace_attrs
+-                .iter()
+-                .any(|kv| kv.key.as_str() == HOST_NAME_ATTRIBUTE)
+-        );
+-    }
+-
+-    #[test]
+-    fn log_export_target_excludes_trace_safe_events() {
+-        assert!(is_log_export_target("codex_otel.log_only"));
+-        assert!(is_log_export_target("codex_otel.network_proxy"));
+-        assert!(!is_log_export_target("codex_otel.trace_safe"));
+-        assert!(!is_log_export_target("codex_otel.trace_safe.debug"));
+-    }
+-
+-    #[test]
+-    fn trace_export_target_only_includes_trace_safe_prefix() {
+-        assert!(is_trace_safe_target("codex_otel.trace_safe"));
+-        assert!(is_trace_safe_target("codex_otel.trace_safe.summary"));
+-        assert!(!is_trace_safe_target("codex_otel.log_only"));
+-        assert!(!is_trace_safe_target("codex_otel.network_proxy"));
+-    }
+-
+-    fn test_otel_settings() -> OtelSettings {
+-        OtelSettings {
+-            environment: "test".to_string(),
+-            service_name: "codex-test".to_string(),
+-            service_version: "0.0.0".to_string(),
+-            codex_home: PathBuf::from("."),
+-            exporter: OtelExporter::None,
+-            trace_exporter: OtelExporter::None,
+-            metrics_exporter: OtelExporter::None,
+-            runtime_metrics: false,
+-            span_attributes: BTreeMap::new(),
+-            tracestate: BTreeMap::new(),
+-        }
+-    }
+-}
++pub use imp::*;
+--- a/rmcp-client/Cargo.toml
++++ b/rmcp-client/Cargo.toml
+@@ -82,7 +82,7 @@
+ [target.'cfg(target_os = "windows")'.dependencies]
+ keyring = { workspace = true, features = ["windows-native"] }
+ 
+-[target.'cfg(any(target_os = "freebsd", target_os = "openbsd"))'.dependencies]
++[target.'cfg(target_os = "openbsd")'.dependencies]
+ keyring = { workspace = true, features = ["sync-secret-service"] }
+ 
+ [lib]
+--- a/utils/image/Cargo.toml
++++ b/utils/image/Cargo.toml
+@@ -9,19 +9,7 @@
+ 
+ [dependencies]
+ base64 = { workspace = true }
+-image = { workspace = true, features = ["jpeg", "png", "gif", "webp"] }
+-codex-utils-cache = { workspace = true }
+-mime_guess = { workspace = true }
+ thiserror = { workspace = true }
+-tokio = { workspace = true, features = ["fs", "rt", "rt-multi-thread", "macros"] }
+ 
+-[dev-dependencies]
+-divan = { workspace = true }
+-image = { workspace = true, features = ["jpeg", "png", "gif", "webp"] }
+-
+ [lib]
+ doctest = false
+-
+-[[bench]]
+-name = "prompt_images"
+-harness = false
+--- a/utils/image/src/lib.rs
++++ b/utils/image/src/lib.rs
+@@ -1,40 +1,58 @@
+-use std::io::Cursor;
+-use std::num::NonZeroUsize;
+ use std::path::Path;
+ use std::sync::Arc;
+-use std::sync::LazyLock;
+ 
+ use base64::Engine;
+ use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+-use codex_utils_cache::BlockingLruCache;
+-use codex_utils_cache::sha1_digest;
+-use image::ColorType;
+-use image::DynamicImage;
+-use image::GenericImageView;
+-use image::ImageDecoder;
+-use image::ImageEncoder;
+-use image::ImageFormat;
+-use image::ImageReader;
+-use image::codecs::jpeg::JpegEncoder;
+-use image::codecs::png::PngEncoder;
+-use image::codecs::webp::WebPEncoder;
+-use image::imageops::FilterType;
++use thiserror::Error;
+ 
+-const DATA_URL_PREFIX: &str = "data:";
+ pub const PROMPT_IMAGE_PATCH_SIZE: u32 = 32;
+-/// Maximum width or height used when resizing images before uploading.
+ pub const MAX_DIMENSION: u32 = 2048;
+-/// Maximum accepted byte length for prompt image input representations.
+-///
+-/// This is a high sanity guard against pathological inputs, not a protocol
+-/// requirement or target upload size.
+ pub const MAX_PROMPT_IMAGE_INPUT_BYTES: usize = 1024 * 1024 * 1024;
+-const MAX_IMAGE_CACHE_BYTES: usize = 64 * 1024 * 1024;
+ 
+-pub mod error;
++#[derive(Debug, Error)]
++pub enum ImageProcessingError {
++    #[error("failed to read image at {path}: {source}")]
++    Read {
++        path: std::path::PathBuf,
++        #[source]
++        source: std::io::Error,
++    },
++    #[error("failed to decode image at {path}: {reason}")]
++    Decode {
++        path: std::path::PathBuf,
++        reason: String,
++    },
++    #[error("failed to encode image as {format}: {reason}")]
++    Encode { format: String, reason: String },
++    #[error("unsupported image `{mime}`")]
++    UnsupportedImageFormat { mime: String },
++    #[error("invalid image data URL: {reason}")]
++    InvalidDataUrl { reason: String },
++    #[error("image {representation} is too large ({size} bytes; max {max} bytes)")]
++    ImageTooLarge {
++        representation: &'static str,
++        size: usize,
++        max: usize,
++    },
++}
+ 
+-pub use crate::error::ImageProcessingError;
++impl ImageProcessingError {
++    pub fn decode_error(path: &Path, source: impl std::fmt::Display) -> Self {
++        ImageProcessingError::Decode {
++            path: path.to_path_buf(),
++            reason: source.to_string(),
++        }
++    }
+ 
++    pub fn is_invalid_image(&self) -> bool {
++        false
++    }
++}
++
++pub mod error {
++    pub use crate::ImageProcessingError;
++}
++
+ #[derive(Debug, Clone)]
+ pub struct EncodedImage {
+     pub bytes: Arc<[u8]>,
+@@ -49,7 +67,6 @@
+     }
+ }
+ 
+-/// Wraps image bytes in a data URL without decoding or validating them.
+ pub fn data_url_from_bytes(mime: &str, bytes: &[u8]) -> String {
+     let encoded = BASE64_STANDARD.encode(bytes);
+     format!("data:{mime};base64,{encoded}")
+@@ -68,351 +85,21 @@
+     pub max_patches: usize,
+ }
+ 
+-struct ImageMetadata {
+-    icc_profile: Option<Vec<u8>>,
+-    exif: Option<Vec<u8>>,
+-}
+-
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+-struct ImageCacheKey {
+-    digest: [u8; 20],
+-    mode: PromptImageMode,
+-}
+-
+-type ImageCache = BlockingLruCache<ImageCacheKey, EncodedImage>;
+-
+-static IMAGE_CACHE: LazyLock<ImageCache> =
+-    LazyLock::new(|| BlockingLruCache::new(NonZeroUsize::new(32).unwrap_or(NonZeroUsize::MIN)));
+-
+ pub fn load_for_prompt_bytes(
+-    path: &Path,
+-    file_bytes: Vec<u8>,
+-    mode: PromptImageMode,
++    _path: &Path,
++    _file_bytes: Vec<u8>,
++    _mode: PromptImageMode,
+ ) -> Result<EncodedImage, ImageProcessingError> {
+-    let path_buf = path.to_path_buf();
+-
+-    let key = ImageCacheKey {
+-        digest: sha1_digest(&file_bytes),
+-        mode,
+-    };
+-
+-    if let Some(image) = IMAGE_CACHE.get(&key) {
+-        return Ok(image);
+-    }
+-
+-    let image = (move || {
+-        let guessed_format = image::guess_format(&file_bytes)
+-            .map_err(|source| ImageProcessingError::decode_error(&path_buf, source))?;
+-        let format = match guessed_format {
+-            ImageFormat::Png => Some(ImageFormat::Png),
+-            ImageFormat::Jpeg => Some(ImageFormat::Jpeg),
+-            ImageFormat::Gif => Some(ImageFormat::Gif),
+-            ImageFormat::WebP => Some(ImageFormat::WebP),
+-            _ => None,
+-        };
+-
+-        let mut decoder = ImageReader::with_format(Cursor::new(&file_bytes), guessed_format)
+-            .into_decoder()
+-            .map_err(|source| ImageProcessingError::decode_error(&path_buf, source))?;
+-        // Preserve the metadata most important for rendering prompt images faithfully: the color
+-        // profile and EXIF data, including orientation. Other format-specific metadata is
+-        // intentionally not copied.
+-        let metadata = ImageMetadata {
+-            // Only RGB profiles are safe across every re-encoding path. For example, JPEG decoding
+-            // can convert CMYK/YCCK pixels to RGB while retaining the source profile; copying it
+-            // would mislabel the output. Bytes 16..20 are the ICC data color space signature.
+-            icc_profile: decoder
+-                .icc_profile()
+-                .ok()
+-                .flatten()
+-                .filter(|profile| profile.get(16..20) == Some(b"RGB ")),
+-            exif: decoder.exif_metadata().ok().flatten(),
+-        };
+-        let dynamic = DynamicImage::from_decoder(decoder)
+-            .map_err(|source| ImageProcessingError::decode_error(&path_buf, source))?;
+-
+-        let (width, height) = dynamic.dimensions();
+-
+-        let target_dimensions = match mode {
+-            PromptImageMode::ResizeToFit if width > MAX_DIMENSION || height > MAX_DIMENSION => {
+-                let resized = dynamic.resize(MAX_DIMENSION, MAX_DIMENSION, FilterType::Triangle);
+-                Some((resized.width(), resized.height(), resized))
+-            }
+-            PromptImageMode::ResizeWithLimits(limits) => {
+-                let (target_width, target_height) =
+-                    prompt_image_output_dimensions_for_limits(width, height, limits);
+-                if (target_width, target_height) == (width, height) {
+-                    None
+-                } else {
+-                    let resized =
+-                        dynamic.resize_exact(target_width, target_height, FilterType::Triangle);
+-                    Some((target_width, target_height, resized))
+-                }
+-            }
+-            PromptImageMode::ResizeToFit | PromptImageMode::Original => None,
+-        };
+-
+-        let encoded = if let Some((width, height, resized)) = target_dimensions {
+-            let target_format = format
+-                .filter(|format| can_preserve_source_bytes(*format))
+-                .unwrap_or(ImageFormat::Png);
+-            let (bytes, output_format) = encode_image(&resized, target_format, metadata)?;
+-            let mime = format_to_mime(output_format);
+-            EncodedImage {
+-                bytes: bytes.into(),
+-                mime,
+-                width,
+-                height,
+-            }
+-        } else {
+-            if let Some(format) = format.filter(|format| can_preserve_source_bytes(*format)) {
+-                let mime = format_to_mime(format);
+-                EncodedImage {
+-                    bytes: file_bytes.into(),
+-                    mime,
+-                    width,
+-                    height,
+-                }
+-            } else {
+-                let (bytes, output_format) = encode_image(&dynamic, ImageFormat::Png, metadata)?;
+-                let mime = format_to_mime(output_format);
+-                EncodedImage {
+-                    bytes: bytes.into(),
+-                    mime,
+-                    width,
+-                    height,
+-                }
+-            }
+-        };
+-
+-        Ok(encoded)
+-    })()?;
+-
+-    cache_image(&IMAGE_CACHE, key, image.clone(), MAX_IMAGE_CACHE_BYTES);
+-    Ok(image)
++    Err(ImageProcessingError::UnsupportedImageFormat {
++        mime: "image processing disabled in this FreeBSD codex-exec build".to_string(),
++    })
+ }
+ 
+-fn cache_image(cache: &ImageCache, key: ImageCacheKey, image: EncodedImage, byte_capacity: usize) {
+-    if image.bytes.len() > byte_capacity {
+-        return;
+-    }
+-
+-    cache.with_mut(|cache| {
+-        cache.put(key, image);
+-        let mut cached_bytes = cache
+-            .iter()
+-            .map(|(_, image)| image.bytes.len())
+-            .sum::<usize>();
+-        while cached_bytes > byte_capacity {
+-            let Some((_, evicted)) = cache.pop_lru() else {
+-                break;
+-            };
+-            cached_bytes -= evicted.bytes.len();
+-        }
+-    });
+-}
+-
+ pub fn load_data_url_for_prompt(
+-    image_url: &str,
+-    mode: PromptImageMode,
++    _image_url: &str,
++    _mode: PromptImageMode,
+ ) -> Result<EncodedImage, ImageProcessingError> {
+-    let rest = image_url
+-        .get(..DATA_URL_PREFIX.len())
+-        .filter(|prefix| prefix.eq_ignore_ascii_case(DATA_URL_PREFIX))
+-        .and_then(|_| image_url.get(DATA_URL_PREFIX.len()..))
+-        .ok_or_else(|| ImageProcessingError::InvalidDataUrl {
+-            reason: "missing data: prefix".to_string(),
+-        })?;
+-    let (metadata, encoded) =
+-        rest.split_once(',')
+-            .ok_or_else(|| ImageProcessingError::InvalidDataUrl {
+-                reason: "missing comma separator".to_string(),
+-            })?;
+-    if !metadata
+-        .split(';')
+-        .any(|part| part.eq_ignore_ascii_case("base64"))
+-    {
+-        return Err(ImageProcessingError::InvalidDataUrl {
+-            reason: "only base64 data URLs are supported".to_string(),
+-        });
+-    }
+-
+-    if encoded.len() > MAX_PROMPT_IMAGE_INPUT_BYTES {
+-        return Err(ImageProcessingError::ImageTooLarge {
+-            representation: "base64 payload",
+-            size: encoded.len(),
+-            max: MAX_PROMPT_IMAGE_INPUT_BYTES,
+-        });
+-    }
+-    let file_bytes =
+-        BASE64_STANDARD
+-            .decode(encoded)
+-            .map_err(|source| ImageProcessingError::InvalidDataUrl {
+-                reason: format!("invalid base64 payload: {source}"),
+-            })?;
+-    if file_bytes.len() > MAX_PROMPT_IMAGE_INPUT_BYTES {
+-        return Err(ImageProcessingError::ImageTooLarge {
+-            representation: "decoded input",
+-            size: file_bytes.len(),
+-            max: MAX_PROMPT_IMAGE_INPUT_BYTES,
+-        });
+-    }
+-
+-    load_for_prompt_bytes(Path::new("<data-url-image>"), file_bytes, mode)
++    Err(ImageProcessingError::UnsupportedImageFormat {
++        mime: "image processing disabled in this FreeBSD codex-exec build".to_string(),
++    })
+ }
+-
+-fn prompt_image_output_dimensions_for_limits(
+-    width: u32,
+-    height: u32,
+-    limits: PromptImageResizeLimits,
+-) -> (u32, u32) {
+-    let width = width.max(1);
+-    let height = height.max(1);
+-    if prompt_image_dimensions_fit(width, height, limits) {
+-        return (width, height);
+-    }
+-
+-    let max_dimension_scale =
+-        (f64::from(limits.max_dimension) / f64::from(width.max(height))).min(1.0);
+-    let width = ((f64::from(width) * max_dimension_scale).round() as u32).max(1);
+-    let height = ((f64::from(height) * max_dimension_scale).round() as u32).max(1);
+-    if prompt_image_dimensions_fit(width, height, limits) {
+-        return (width, height);
+-    }
+-
+-    let width_f64 = f64::from(width);
+-    let height_f64 = f64::from(height);
+-    let patch_size = f64::from(PROMPT_IMAGE_PATCH_SIZE);
+-    let mut scale =
+-        (patch_size * patch_size * limits.max_patches as f64 / width_f64 / height_f64).sqrt();
+-    // Match Responses patch-budget math: shrink by area, then round the scaled
+-    // patch grid down so integer output dimensions remain within the budget.
+-    let scaled_patches_wide = width_f64 * scale / patch_size;
+-    let scaled_patches_high = height_f64 * scale / patch_size;
+-    scale *= (scaled_patches_wide.floor() / scaled_patches_wide)
+-        .min(scaled_patches_high.floor() / scaled_patches_high);
+-
+-    (
+-        ((width_f64 * scale).floor() as u32).max(1),
+-        ((height_f64 * scale).floor() as u32).max(1),
+-    )
+-}
+-
+-fn prompt_image_dimensions_fit(width: u32, height: u32, limits: PromptImageResizeLimits) -> bool {
+-    let patches_wide = width.div_ceil(PROMPT_IMAGE_PATCH_SIZE);
+-    let patches_high = height.div_ceil(PROMPT_IMAGE_PATCH_SIZE);
+-    let patch_count = u64::from(patches_wide) * u64::from(patches_high);
+-    width <= limits.max_dimension
+-        && height <= limits.max_dimension
+-        && patch_count <= limits.max_patches as u64
+-}
+-
+-fn can_preserve_source_bytes(format: ImageFormat) -> bool {
+-    // Public API docs explicitly call out non-animated GIF support only.
+-    // Preserve byte-for-byte only for formats we can safely pass through.
+-    matches!(
+-        format,
+-        ImageFormat::Png | ImageFormat::Jpeg | ImageFormat::WebP
+-    )
+-}
+-
+-fn encode_image(
+-    image: &DynamicImage,
+-    preferred_format: ImageFormat,
+-    metadata: ImageMetadata,
+-) -> Result<(Vec<u8>, ImageFormat), ImageProcessingError> {
+-    let target_format = match preferred_format {
+-        ImageFormat::Jpeg => ImageFormat::Jpeg,
+-        ImageFormat::WebP => ImageFormat::WebP,
+-        _ => ImageFormat::Png,
+-    };
+-
+-    let mut buffer = Vec::new();
+-    let ImageMetadata { icc_profile, exif } = metadata;
+-
+-    match target_format {
+-        ImageFormat::Png => {
+-            let rgba = image.to_rgba8();
+-            let mut encoder = PngEncoder::new(&mut buffer);
+-            apply_image_metadata(&mut encoder, icc_profile, exif, target_format)?;
+-            encoder
+-                .write_image(
+-                    rgba.as_raw(),
+-                    image.width(),
+-                    image.height(),
+-                    ColorType::Rgba8.into(),
+-                )
+-                .map_err(|source| ImageProcessingError::Encode {
+-                    format: target_format,
+-                    source,
+-                })?;
+-        }
+-        ImageFormat::Jpeg => {
+-            let mut encoder = JpegEncoder::new_with_quality(&mut buffer, 85);
+-            apply_image_metadata(&mut encoder, icc_profile, exif, target_format)?;
+-            encoder
+-                .encode_image(image)
+-                .map_err(|source| ImageProcessingError::Encode {
+-                    format: target_format,
+-                    source,
+-                })?;
+-        }
+-        ImageFormat::WebP => {
+-            let rgba = image.to_rgba8();
+-            let mut encoder = WebPEncoder::new_lossless(&mut buffer);
+-            apply_image_metadata(&mut encoder, icc_profile, exif, target_format)?;
+-            encoder
+-                .write_image(
+-                    rgba.as_raw(),
+-                    image.width(),
+-                    image.height(),
+-                    ColorType::Rgba8.into(),
+-                )
+-                .map_err(|source| ImageProcessingError::Encode {
+-                    format: target_format,
+-                    source,
+-                })?;
+-        }
+-        _ => unreachable!("unsupported target_format should have been handled earlier"),
+-    }
+-
+-    Ok((buffer, target_format))
+-}
+-
+-fn apply_image_metadata(
+-    encoder: &mut impl ImageEncoder,
+-    icc_profile: Option<Vec<u8>>,
+-    exif: Option<Vec<u8>>,
+-    format: ImageFormat,
+-) -> Result<(), ImageProcessingError> {
+-    if let Some(icc_profile) = icc_profile {
+-        encoder
+-            .set_icc_profile(icc_profile)
+-            .map_err(|source| ImageProcessingError::Encode {
+-                format,
+-                source: image::ImageError::Unsupported(source),
+-            })?;
+-    }
+-    if let Some(exif) = exif {
+-        encoder
+-            .set_exif_metadata(exif)
+-            .map_err(|source| ImageProcessingError::Encode {
+-                format,
+-                source: image::ImageError::Unsupported(source),
+-            })?;
+-    }
+-    Ok(())
+-}
+-
+-fn format_to_mime(format: ImageFormat) -> String {
+-    match format {
+-        ImageFormat::Jpeg => "image/jpeg".to_string(),
+-        ImageFormat::Gif => "image/gif".to_string(),
+-        ImageFormat::WebP => "image/webp".to_string(),
+-        _ => "image/png".to_string(),
+-    }
+-}
+-
+-#[cfg(test)]
+-#[path = "image_tests.rs"]
+-mod tests;
+--- a/utils/oss/Cargo.toml
++++ b/utils/oss/Cargo.toml
+@@ -9,9 +9,6 @@
+ 
+ [dependencies]
+ codex-core = { workspace = true }
+-codex-lmstudio = { workspace = true }
+-codex-model-provider-info = { workspace = true }
+-codex-ollama = { workspace = true }
+ 
+ [lib]
+ doctest = false
+--- a/utils/oss/src/lib.rs
++++ b/utils/oss/src/lib.rs
+@@ -1,61 +1,16 @@
+-//! OSS provider utilities shared between TUI and exec.
++//! OSS provider utilities are disabled in this FreeBSD codex-exec build.
+ 
+ use codex_core::config::Config;
+-use codex_model_provider_info::LMSTUDIO_OSS_PROVIDER_ID;
+-use codex_model_provider_info::OLLAMA_OSS_PROVIDER_ID;
+ 
+-/// Returns the default model for a given OSS provider.
+-pub fn get_default_model_for_oss_provider(provider_id: &str) -> Option<&'static str> {
+-    match provider_id {
+-        LMSTUDIO_OSS_PROVIDER_ID => Some(codex_lmstudio::DEFAULT_OSS_MODEL),
+-        OLLAMA_OSS_PROVIDER_ID => Some(codex_ollama::DEFAULT_OSS_MODEL),
+-        _ => None,
+-    }
++pub fn get_default_model_for_oss_provider(_provider_id: &str) -> Option<&'static str> {
++    None
+ }
+ 
+-/// Ensures the specified OSS provider is ready (models downloaded, service reachable).
+ pub async fn ensure_oss_provider_ready(
+     provider_id: &str,
+-    config: &Config,
++    _config: &Config,
+ ) -> Result<(), std::io::Error> {
+-    match provider_id {
+-        LMSTUDIO_OSS_PROVIDER_ID => {
+-            codex_lmstudio::ensure_oss_ready(config)
+-                .await
+-                .map_err(|e| std::io::Error::other(format!("OSS setup failed: {e}")))?;
+-        }
+-        OLLAMA_OSS_PROVIDER_ID => {
+-            codex_ollama::ensure_responses_supported(&config.model_provider).await?;
+-            codex_ollama::ensure_oss_ready(config)
+-                .await
+-                .map_err(|e| std::io::Error::other(format!("OSS setup failed: {e}")))?;
+-        }
+-        _ => {
+-            // Unknown provider, skip setup
+-        }
+-    }
+-    Ok(())
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-    use super::*;
+-
+-    #[test]
+-    fn test_get_default_model_for_provider_lmstudio() {
+-        let result = get_default_model_for_oss_provider(LMSTUDIO_OSS_PROVIDER_ID);
+-        assert_eq!(result, Some(codex_lmstudio::DEFAULT_OSS_MODEL));
+-    }
+-
+-    #[test]
+-    fn test_get_default_model_for_provider_ollama() {
+-        let result = get_default_model_for_oss_provider(OLLAMA_OSS_PROVIDER_ID);
+-        assert_eq!(result, Some(codex_ollama::DEFAULT_OSS_MODEL));
+-    }
+-
+-    #[test]
+-    fn test_get_default_model_for_provider_unknown() {
+-        let result = get_default_model_for_oss_provider("unknown-provider");
+-        assert_eq!(result, None);
+-    }
++    Err(std::io::Error::other(format!(
++        "OSS provider `{provider_id}` is unavailable in this FreeBSD codex-exec build"
++    )))
+ }
