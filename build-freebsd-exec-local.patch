@@ -1,6 +1,15 @@
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/Cargo.toml b/Cargo.toml
---- a/Cargo.toml	2026-06-30 20:02:12.938127000 +0200
-+++ b/Cargo.toml	2026-06-30 03:03:37.074020000 +0200
+--- a/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/Cargo.toml	2026-07-01 12:39:44.387240000 +0200
+@@ -190,7 +190,7 @@
+ codex-keyring-store = { path = "keyring-store" }
+ codex-linux-sandbox = { path = "linux-sandbox" }
+ codex-lmstudio = { path = "lmstudio" }
+-codex-login = { path = "login" }
++codex-login = { path = "login", default-features = false }
+ codex-message-history = { path = "message-history" }
+ codex-memories-extension = { path = "ext/memories" }
+ codex-web-search-extension = { path = "ext/web-search" }
 @@ -367,7 +367,10 @@
  ] }
  regex = "1.12.3"
@@ -14,9 +23,51 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  runfiles = { git = "https://github.com/dzbarsky/rules_rust", rev = "b56cbaa8465e74127f1ea216f813cd377295ad81" }
  rustls = { version = "0.23", default-features = false, features = [
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/Cargo.toml b/app-server/Cargo.toml
---- a/app-server/Cargo.toml	2026-06-30 20:02:12.968130000 +0200
-+++ b/app-server/Cargo.toml	2026-06-30 19:00:35.192175000 +0200
-@@ -42,26 +42,18 @@
+--- a/app-server/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server/Cargo.toml	2026-07-01 18:26:36.571483000 +0200
+@@ -20,6 +20,23 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["chatgpt-login", "server-transport", "websocket"]
++api-only = ["codex-login/api-only"]
++chatgpt-apps = ["dep:codex-chatgpt"]
++chatgpt-login = ["chatgpt-apps", "codex-login/chatgpt-login"]
++server-transport = ["codex-app-server-transport/server-transport"]
++websocket = [
++    "codex-backend-client/websocket",
++    "codex-cloud-config/websocket",
++    "codex-core/websocket",
++    "codex-exec-server/remote-websocket",
++    "codex-mcp/websocket",
++    "codex-model-provider/websocket",
++    "codex-otel/websocket",
++    "codex-rmcp-client/websocket",
++]
++
+ [dependencies]
+ anyhow = { workspace = true }
+ base64 = { workspace = true }
+@@ -27,48 +44,39 @@
+     "http1",
+     "json",
+     "tokio",
+-    "ws",
+ ] }
+ codex-analytics = { workspace = true }
+ codex-arg0 = { workspace = true }
+-codex-cloud-config = { workspace = true }
++codex-cloud-config = { path = "../cloud-config", default-features = false }
+ codex-config = { workspace = true }
+-codex-core = { workspace = true }
++codex-core = { path = "../core", default-features = false }
+ codex-core-plugins = { workspace = true }
+ codex-home = { workspace = true }
+-codex-exec-server = { workspace = true }
++codex-exec-server = { path = "../exec-server", default-features = false }
+ codex-extension-api = { workspace = true }
+ codex-external-agent-migration = { workspace = true }
  codex-external-agent-sessions = { workspace = true }
  codex-features = { workspace = true }
  codex-goal-extension = { workspace = true }
@@ -24,26 +75,41 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-git-utils = { workspace = true }
 -codex-file-watcher = { workspace = true }
  codex-hooks = { workspace = true }
- codex-otel = { workspace = true }
+-codex-otel = { workspace = true }
++codex-otel = { path = "../otel", default-features = false }
  codex-plugin = { workspace = true }
  codex-shell-command = { workspace = true }
 -codex-skills-extension = { workspace = true }
  codex-utils-cli = { workspace = true }
  codex-utils-pty = { workspace = true }
- codex-backend-client = { workspace = true }
+-codex-backend-client = { workspace = true }
++codex-backend-client = { path = "../backend-client", default-features = false }
  codex-file-search = { workspace = true }
- codex-chatgpt = { workspace = true }
- codex-login = { workspace = true }
+-codex-chatgpt = { workspace = true }
+-codex-login = { workspace = true }
 -codex-image-generation-extension = { workspace = true }
 -codex-memories-extension = { workspace = true }
 -codex-web-search-extension = { workspace = true }
 -codex-memories-write = { workspace = true }
- codex-mcp = { workspace = true }
+-codex-mcp = { workspace = true }
 -codex-mcp-extension = { workspace = true }
- codex-model-provider = { workspace = true }
+-codex-model-provider = { workspace = true }
++codex-chatgpt = { workspace = true, optional = true }
++codex-login = { path = "../login", default-features = false }
++codex-mcp = { path = "../codex-mcp", default-features = false }
++codex-model-provider = { path = "../model-provider", default-features = false }
  codex-models-manager = { workspace = true }
  codex-protocol = { workspace = true }
-@@ -98,6 +90,16 @@
+ codex-app-server-protocol = { workspace = true }
+-codex-app-server-transport = { workspace = true }
++codex-app-server-transport = { path = "../app-server-transport", default-features = false }
+ codex-feedback = { workspace = true }
+-codex-rmcp-client = { workspace = true }
++codex-rmcp-client = { path = "../rmcp-client", default-features = false }
+ codex-rollout = { workspace = true }
+ codex-sandboxing = { workspace = true }
+ codex-state = { workspace = true }
+@@ -98,6 +106,16 @@
  tracing = { workspace = true, features = ["log"] }
  tracing-subscriber = { workspace = true, features = ["env-filter", "fmt", "json"] }
  uuid = { workspace = true, features = ["serde", "v7"] }
@@ -60,8 +126,143 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [target.'cfg(windows)'.dependencies]
  codex-windows-sandbox = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/chatgpt_apps.rs b/app-server/src/chatgpt_apps.rs
+--- a/app-server/src/chatgpt_apps.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/app-server/src/chatgpt_apps.rs	2026-07-01 12:51:15.178151000 +0200
+@@ -0,0 +1,131 @@
++#[cfg(feature = "chatgpt-apps")]
++pub(crate) use codex_chatgpt::connectors;
++#[cfg(feature = "chatgpt-apps")]
++pub(crate) use codex_chatgpt::workspace_settings;
++
++#[cfg(not(feature = "chatgpt-apps"))]
++pub(crate) mod workspace_settings {
++    use codex_core::config::Config;
++    use codex_login::CodexAuth;
++
++    #[derive(Debug, Default)]
++    pub(crate) struct WorkspaceSettingsCache;
++
++    pub(crate) async fn codex_plugins_enabled_for_workspace(
++        _config: &Config,
++        _auth: Option<&CodexAuth>,
++        _cache: Option<&WorkspaceSettingsCache>,
++    ) -> anyhow::Result<bool> {
++        Ok(false)
++    }
++}
++
++#[cfg(not(feature = "chatgpt-apps"))]
++pub(crate) mod connectors {
++    use std::collections::HashMap;
++    use std::collections::HashSet;
++    use std::sync::Arc;
++
++    use codex_app_server_protocol::AppInfo;
++    use codex_core::McpManager;
++    use codex_core::config::Config;
++    use codex_core::connectors::AccessibleConnectorsStatus;
++    use codex_exec_server::EnvironmentManager;
++    use codex_plugin::AppConnectorId;
++
++    pub(crate) async fn list_cached_accessible_connectors_from_mcp_tools(
++        _config: &Config,
++    ) -> Option<Vec<AppInfo>> {
++        Some(Vec::new())
++    }
++
++    pub(crate) async fn list_cached_all_connectors(
++        _config: &Config,
++        _plugin_apps: &[AppConnectorId],
++    ) -> Option<Vec<AppInfo>> {
++        Some(Vec::new())
++    }
++
++    pub(crate) async fn list_accessible_connectors_from_mcp_tools_with_mcp_manager(
++        _config: &Config,
++        _force_refetch: bool,
++        _environment_manager: Arc<EnvironmentManager>,
++        _mcp_manager: Arc<McpManager>,
++    ) -> anyhow::Result<AccessibleConnectorsStatus> {
++        Ok(AccessibleConnectorsStatus {
++            connectors: Vec::new(),
++            codex_apps_ready: true,
++        })
++    }
++
++    pub(crate) async fn list_all_connectors_with_options(
++        _config: &Config,
++        _force_refetch: bool,
++        _plugin_apps: &[AppConnectorId],
++    ) -> anyhow::Result<Vec<AppInfo>> {
++        Ok(Vec::new())
++    }
++
++    pub(crate) fn with_app_enabled_state(
++        connectors: Vec<AppInfo>,
++        _config: &Config,
++    ) -> Vec<AppInfo> {
++        connectors
++    }
++
++    pub(crate) fn connectors_for_plugin_apps(
++        connectors: Vec<AppInfo>,
++        plugin_apps: &[AppConnectorId],
++    ) -> Vec<AppInfo> {
++        if plugin_apps.is_empty() {
++            return Vec::new();
++        }
++        connectors
++            .into_iter()
++            .filter(|connector| {
++                plugin_apps
++                    .iter()
++                    .any(|plugin_app| plugin_app.0 == connector.id)
++            })
++            .collect()
++    }
++
++    pub(crate) fn merge_connectors_with_accessible(
++        all_connectors: Vec<AppInfo>,
++        accessible_connectors: Vec<AppInfo>,
++        all_connectors_loaded: bool,
++    ) -> Vec<AppInfo> {
++        let accessible_connectors = if all_connectors_loaded {
++            let connector_ids = all_connectors
++                .iter()
++                .map(|connector| connector.id.as_str())
++                .collect::<HashSet<_>>();
++            accessible_connectors
++                .into_iter()
++                .filter(|connector| connector_ids.contains(connector.id.as_str()))
++                .collect()
++        } else {
++            accessible_connectors
++        };
++
++        let mut merged = all_connectors
++            .into_iter()
++            .map(|mut connector| {
++                connector.is_accessible = false;
++                (connector.id.clone(), connector)
++            })
++            .collect::<HashMap<_, _>>();
++
++        for mut connector in accessible_connectors {
++            connector.is_accessible = true;
++            merged
++                .entry(connector.id.clone())
++                .and_modify(|existing| existing.is_accessible = true)
++                .or_insert(connector);
++        }
++
++        let mut merged = merged.into_values().collect::<Vec<_>>();
++        merged.sort_by(|left, right| left.name.cmp(&right.name).then(left.id.cmp(&right.id)));
++        merged
++    }
++}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/extensions.rs b/app-server/src/extensions.rs
---- a/app-server/src/extensions.rs	2026-06-30 20:02:12.969835000 +0200
+--- a/app-server/src/extensions.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server/src/extensions.rs	2026-06-30 18:58:11.876445000 +0200
 @@ -36,6 +36,7 @@
      pub(crate) thread_manager: Weak<ThreadManager>,
@@ -182,9 +383,17 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    pub(crate) async fn connection_closed(&self, _connection_id: ConnectionId) {}
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/lib.rs b/app-server/src/lib.rs
---- a/app-server/src/lib.rs	2026-06-30 20:02:12.970223000 +0200
-+++ b/app-server/src/lib.rs	2026-06-30 18:51:20.133781000 +0200
-@@ -94,7 +94,11 @@
+--- a/app-server/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server/src/lib.rs	2026-07-01 12:50:38.377103000 +0200
+@@ -83,6 +83,7 @@
+ mod app_server_tracing;
+ mod attestation;
+ mod bespoke_event_handling;
++mod chatgpt_apps;
+ mod command_exec;
+ mod config;
+ mod config_manager;
+@@ -94,7 +95,11 @@
  mod error_code;
  mod extensions;
  mod filters;
@@ -196,7 +405,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod fuzzy_file_search;
  mod image_url;
  pub mod in_process;
-@@ -106,10 +110,15 @@
+@@ -106,10 +111,15 @@
  mod request_processors;
  mod request_serialization;
  mod server_request_error;
@@ -212,7 +421,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  pub use crate::error_code::INPUT_TOO_LARGE_ERROR_CODE;
  pub use crate::error_code::INVALID_PARAMS_ERROR_CODE;
-@@ -1317,9 +1326,12 @@
+@@ -1317,9 +1327,12 @@
  }
  
  fn loader_overrides_with_test_user_config_file(
@@ -227,7 +436,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      if let Some(path) = test_user_config_file {
          let path = AbsolutePathBuf::from_absolute_path(path).map_err(|err| {
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/mcp_refresh.rs b/app-server/src/mcp_refresh.rs
---- a/app-server/src/mcp_refresh.rs	2026-06-30 20:02:12.970326000 +0200
+--- a/app-server/src/mcp_refresh.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server/src/mcp_refresh.rs	2026-06-30 15:34:52.753465000 +0200
 @@ -216,6 +216,7 @@
              .expect("refresh tests require state db");
@@ -246,8 +455,24 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                          thread_store: Arc::clone(&thread_store),
                      },
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/message_processor.rs b/app-server/src/message_processor.rs
---- a/app-server/src/message_processor.rs	2026-06-30 20:02:12.970456000 +0200
-+++ b/app-server/src/message_processor.rs	2026-06-30 15:34:52.753343000 +0200
+--- a/app-server/src/message_processor.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server/src/message_processor.rs	2026-07-01 12:51:15.263959000 +0200
+@@ -5,6 +5,7 @@
+ use std::sync::atomic::AtomicBool;
+ 
+ use crate::attestation::app_server_attestation_provider;
++use crate::chatgpt_apps::workspace_settings;
+ use crate::config_manager::ConfigManager;
+ use crate::connection_rpc_gate::ConnectionRpcGate;
+ use crate::current_time::app_server_time_provider;
+@@ -67,7 +68,6 @@
+ use codex_app_server_protocol::ServerRequestPayload;
+ use codex_app_server_protocol::experimental_required_message;
+ use codex_arg0::Arg0DispatchPaths;
+-use codex_chatgpt::workspace_settings;
+ use codex_core::ThreadManager;
+ use codex_core::config::Config;
+ use codex_exec_server::EnvironmentManager;
 @@ -337,7 +337,9 @@
          let thread_store = codex_core::thread_store_from_config(config.as_ref(), state_db.clone());
          let environment_manager_for_requests = Arc::clone(&environment_manager);
@@ -266,6 +491,141 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                          executor_skill_provider: Arc::clone(&executor_skill_provider),
                          thread_store: Arc::clone(&thread_store),
                      },
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/account_processor.rs b/app-server/src/request_processors/account_processor.rs
+--- a/app-server/src/request_processors/account_processor.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server/src/request_processors/account_processor.rs	2026-07-01 09:46:34.388224000 +0200
+@@ -13,10 +13,12 @@
+ const LOGIN_ISSUER_OVERRIDE_ENV_VAR: &str = "CODEX_APP_SERVER_LOGIN_ISSUER";
+ 
+ enum ActiveLogin {
++    #[cfg(feature = "chatgpt-login")]
+     Browser {
+         shutdown_handle: ShutdownHandle,
+         login_id: Uuid,
+     },
++    #[cfg(feature = "chatgpt-login")]
+     DeviceCode {
+         cancel: CancellationToken,
+         login_id: Uuid,
+@@ -26,6 +28,7 @@
+ impl ActiveLogin {
+     fn login_id(&self) -> Uuid {
+         match self {
++            #[cfg(feature = "chatgpt-login")]
+             ActiveLogin::Browser { login_id, .. } | ActiveLogin::DeviceCode { login_id, .. } => {
+                 *login_id
+             }
+@@ -34,9 +37,11 @@
+ 
+     fn cancel(&self) {
+         match self {
++            #[cfg(feature = "chatgpt-login")]
+             ActiveLogin::Browser {
+                 shutdown_handle, ..
+             } => shutdown_handle.shutdown(),
++            #[cfg(feature = "chatgpt-login")]
+             ActiveLogin::DeviceCode { cancel, .. } => cancel.cancel(),
+         }
+     }
+@@ -280,6 +285,12 @@
+         )
+     }
+ 
++    fn chatgpt_login_disabled_error() -> JSONRPCErrorError {
++        invalid_request(
++            "ChatGPT login is disabled when CODEX_API_ONLY is enabled. Use API key login instead.",
++        )
++    }
++
+     async fn login_api_key_common(
+         &self,
+         params: &LoginApiKeyParams,
+@@ -334,6 +345,7 @@
+     }
+ 
+     // Build options for a ChatGPT login attempt; performs validation.
++    #[cfg(feature = "chatgpt-login")]
+     async fn login_chatgpt_common(
+         &self,
+         codex_streamlined_login: bool,
+@@ -344,6 +356,10 @@
+             return Err(self.external_auth_active_error());
+         }
+ 
++        if is_api_only_mode_enabled() {
++            return Err(Self::chatgpt_login_disabled_error());
++        }
++
+         if matches!(config.forced_login_method, Some(ForcedLoginMethod::Api)) {
+             return Err(invalid_request(
+                 "ChatGPT login is disabled. Use API key login instead.",
+@@ -376,6 +392,7 @@
+         Ok(opts)
+     }
+ 
++    #[cfg(feature = "chatgpt-login")]
+     fn login_chatgpt_device_code_start_error(err: IoError) -> JSONRPCErrorError {
+         let is_not_found = err.kind() == std::io::ErrorKind::NotFound;
+         if is_not_found {
+@@ -385,6 +402,7 @@
+         }
+     }
+ 
++    #[cfg(feature = "chatgpt-login")]
+     async fn login_chatgpt_v2(
+         &self,
+         request_id: ConnectionRequestId,
+@@ -394,6 +412,18 @@
+         self.outgoing.send_result(request_id, result).await;
+     }
+ 
++    #[cfg(not(feature = "chatgpt-login"))]
++    async fn login_chatgpt_v2(
++        &self,
++        request_id: ConnectionRequestId,
++        _codex_streamlined_login: bool,
++    ) {
++        self.outgoing
++            .send_result(request_id, Err(Self::chatgpt_login_disabled_error()))
++            .await;
++    }
++
++    #[cfg(feature = "chatgpt-login")]
+     async fn login_chatgpt_response(
+         &self,
+         codex_streamlined_login: bool,
+@@ -461,11 +491,20 @@
+         })
+     }
+ 
++    #[cfg(feature = "chatgpt-login")]
+     async fn login_chatgpt_device_code_v2(&self, request_id: ConnectionRequestId) {
+         let result = self.login_chatgpt_device_code_response().await;
+         self.outgoing.send_result(request_id, result).await;
+     }
+ 
++    #[cfg(not(feature = "chatgpt-login"))]
++    async fn login_chatgpt_device_code_v2(&self, request_id: ConnectionRequestId) {
++        self.outgoing
++            .send_result(request_id, Err(Self::chatgpt_login_disabled_error()))
++            .await;
++    }
++
++    #[cfg(feature = "chatgpt-login")]
+     async fn login_chatgpt_device_code_response(
+         &self,
+     ) -> Result<LoginAccountResponse, JSONRPCErrorError> {
+@@ -588,6 +627,10 @@
+         chatgpt_account_id: String,
+         chatgpt_plan_type: Option<String>,
+     ) -> Result<LoginAccountResponse, JSONRPCErrorError> {
++        if is_api_only_mode_enabled() {
++            return Err(Self::chatgpt_login_disabled_error());
++        }
++
+         if matches!(
+             self.config.forced_login_method,
+             Some(ForcedLoginMethod::Api)
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/marketplace_processor_freebsd.rs b/app-server/src/request_processors/marketplace_processor_freebsd.rs
 --- a/app-server/src/request_processors/marketplace_processor_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
 +++ b/app-server/src/request_processors/marketplace_processor_freebsd.rs	2026-06-30 18:33:21.147995000 +0200
@@ -435,7 +795,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    invalid_request("plugins are not available on this FreeBSD exec build")
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/thread_processor.rs b/app-server/src/request_processors/thread_processor.rs
---- a/app-server/src/request_processors/thread_processor.rs	2026-06-30 20:02:12.972616000 +0200
+--- a/app-server/src/request_processors/thread_processor.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server/src/request_processors/thread_processor.rs	2026-06-30 15:34:52.754095000 +0200
 @@ -1132,6 +1132,7 @@
          let mut thread_extension_init = ExtensionDataInit::new();
@@ -446,7 +806,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          }
          let create_thread_started_at = std::time::Instant::now();
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/turn_processor.rs b/app-server/src/request_processors/turn_processor.rs
---- a/app-server/src/request_processors/turn_processor.rs	2026-06-30 20:02:12.973032000 +0200
+--- a/app-server/src/request_processors/turn_processor.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server/src/request_processors/turn_processor.rs	2026-07-01 06:12:59.886127000 +0200
 @@ -66,6 +66,7 @@
  
@@ -483,9 +843,17 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          self.outgoing
              .record_request_turn_id(&request_id, &turn_id)
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors.rs b/app-server/src/request_processors.rs
---- a/app-server/src/request_processors.rs	2026-06-30 20:02:12.970799000 +0200
-+++ b/app-server/src/request_processors.rs	2026-07-01 06:12:53.011689000 +0200
-@@ -31,8 +31,11 @@
+--- a/app-server/src/request_processors.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server/src/request_processors.rs	2026-07-01 12:51:15.423478000 +0200
+@@ -1,5 +1,7 @@
+ use crate::bespoke_event_handling::apply_bespoke_event_handling;
+ use crate::bespoke_event_handling::maybe_emit_hook_prompt_item_completed;
++use crate::chatgpt_apps::connectors;
++use crate::chatgpt_apps::workspace_settings;
+ use crate::command_exec::CommandExecManager;
+ use crate::command_exec::StartCommandExecParams;
+ use crate::config_manager::ConfigManager;
+@@ -31,8 +33,11 @@
  use codex_app_server_protocol::AdditionalContextKind;
  use codex_app_server_protocol::AppInfo;
  use codex_app_server_protocol::AppListUpdatedNotification;
@@ -497,7 +865,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_app_server_protocol::AppTemplateUnavailableReason;
  use codex_app_server_protocol::AppsListParams;
  use codex_app_server_protocol::AppsListResponse;
-@@ -93,12 +96,17 @@
+@@ -93,12 +98,17 @@
  use codex_app_server_protocol::LoginApiKeyParams;
  use codex_app_server_protocol::LogoutAccountResponse;
  use codex_app_server_protocol::MarketplaceAddParams;
@@ -515,7 +883,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_app_server_protocol::MarketplaceUpgradeResponse;
  use codex_app_server_protocol::McpResourceReadParams;
  use codex_app_server_protocol::McpResourceReadResponse;
-@@ -118,40 +126,61 @@
+@@ -118,40 +128,61 @@
  use codex_app_server_protocol::PermissionProfileListParams;
  use codex_app_server_protocol::PermissionProfileListResponse;
  use codex_app_server_protocol::PermissionProfileSummary;
@@ -577,7 +945,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_app_server_protocol::PluginUninstallResponse;
  use codex_app_server_protocol::RateLimitResetCreditsSummary;
  use codex_app_server_protocol::RequestId;
-@@ -164,6 +193,7 @@
+@@ -164,6 +195,7 @@
  use codex_app_server_protocol::SendAddCreditsNudgeEmailResponse;
  use codex_app_server_protocol::ServerNotification;
  use codex_app_server_protocol::ServerRequestResolvedNotification;
@@ -585,6 +953,15 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_app_server_protocol::SkillSummary;
  use codex_app_server_protocol::SkillsConfigWriteParams;
  use codex_app_server_protocol::SkillsConfigWriteResponse;
+@@ -294,8 +326,6 @@
+ use codex_backend_client::ConsumeRateLimitResetCreditCode as BackendConsumeRateLimitResetCreditCode;
+ use codex_backend_client::RequestError as BackendRequestError;
+ use codex_backend_client::TokenUsageProfile;
+-use codex_chatgpt::connectors;
+-use codex_chatgpt::workspace_settings;
+ use codex_config::CloudConfigBundleLoadError;
+ use codex_config::CloudConfigBundleLoadErrorCode;
+ use codex_config::ConfigLayerStack;
 @@ -330,29 +360,52 @@
  use codex_core::windows_sandbox::WindowsSandboxSetupMode as CoreWindowsSandboxSetupMode;
  use codex_core::windows_sandbox::WindowsSandboxSetupRequest;
@@ -638,7 +1015,28 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_core_plugins::remote::RemotePluginSummary as RemoteCatalogPluginSummary;
  use codex_exec_server::EnvironmentManager;
  use codex_exec_server::LOCAL_ENVIRONMENT_ID;
-@@ -382,6 +435,7 @@
+@@ -367,13 +420,20 @@
+ use codex_git_utils::resolve_root_git_project_for_trust;
+ use codex_login::AuthManager;
+ use codex_login::CodexAuth;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::ServerOptions as LoginServerOptions;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::ShutdownHandle;
+ use codex_login::auth::login_with_chatgpt_auth_tokens;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::complete_device_code_login;
++use codex_login::is_api_only_mode_enabled;
+ use codex_login::login_with_api_key;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::oauth_client_id;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::request_device_code;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::run_login_server;
+ use codex_mcp::McpRuntimeContext;
+ use codex_mcp::McpServerStatusSnapshot;
+@@ -382,6 +442,7 @@
  use codex_mcp::discover_supported_scopes;
  use codex_mcp::read_mcp_resource as read_mcp_resource_without_thread;
  use codex_mcp::resolve_oauth_scopes;
@@ -646,7 +1044,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_memories_write::clear_memory_roots_contents;
  use codex_model_provider::create_model_provider;
  use codex_models_manager::collaboration_mode_presets::builtin_collaboration_mode_presets;
-@@ -491,9 +545,15 @@
+@@ -491,9 +552,15 @@
  mod fs_processor;
  mod git_processor;
  mod initialize_processor;
@@ -662,7 +1060,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod process_exec_processor;
  mod remote_control_processor;
  mod search;
-@@ -514,9 +574,15 @@
+@@ -514,9 +581,15 @@
  pub(crate) use fs_processor::FsRequestProcessor;
  pub(crate) use git_processor::GitRequestProcessor;
  pub(crate) use initialize_processor::InitializeRequestProcessor;
@@ -678,7 +1076,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) use process_exec_processor::ProcessExecRequestProcessor;
  pub(crate) use remote_control_processor::RemoteControlRequestProcessor;
  pub(crate) use search::SearchRequestProcessor;
-@@ -535,6 +601,11 @@
+@@ -535,6 +608,11 @@
  use crate::thread_state::ThreadStateManager;
  use token_usage_replay::latest_token_usage_turn_id_from_rollout_items;
  use token_usage_replay::send_thread_token_usage_update_to_connection;
@@ -691,7 +1089,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  fn resolve_request_cwd(cwd: Option<PathBuf>) -> Result<Option<AbsolutePathBuf>, JSONRPCErrorError> {
      cwd.map(|cwd| {
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/skills_watcher.rs b/app-server/src/skills_watcher.rs
---- a/app-server/src/skills_watcher.rs	2026-06-30 20:02:12.973190000 +0200
+--- a/app-server/src/skills_watcher.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server/src/skills_watcher.rs	2026-06-30 18:50:43.967807000 +0200
 @@ -3,6 +3,7 @@
  use std::time::Duration;
@@ -746,7 +1144,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/thread_state.rs b/app-server/src/thread_state.rs
---- a/app-server/src/thread_state.rs	2026-06-30 20:02:12.973256000 +0200
+--- a/app-server/src/thread_state.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server/src/thread_state.rs	2026-06-30 18:50:35.043522000 +0200
 @@ -8,7 +8,6 @@
  use codex_app_server_protocol::TurnError;
@@ -775,8 +1173,177 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(target_os = "freebsd")]
 +#[derive(Debug, Default)]
 +pub(crate) struct WatchRegistration;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-client/Cargo.toml b/app-server-client/Cargo.toml
+--- a/app-server-client/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server-client/Cargo.toml	2026-07-01 18:26:06.971848000 +0200
+@@ -12,13 +12,24 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["chatgpt-login", "remote-client", "websocket"]
++api-only = ["codex-app-server/api-only"]
++chatgpt-login = ["codex-app-server/chatgpt-login"]
++remote-client = ["dep:tokio-tungstenite", "dep:url"]
++websocket = [
++    "codex-app-server/websocket",
++    "codex-core/websocket",
++    "codex-exec-server/remote-websocket",
++]
++
+ [dependencies]
+-codex-app-server = { workspace = true }
++codex-app-server = { path = "../app-server", default-features = false }
+ codex-app-server-protocol = { workspace = true }
+ codex-arg0 = { workspace = true }
+ codex-config = { workspace = true }
+-codex-core = { workspace = true }
+-codex-exec-server = { workspace = true }
++codex-core = { path = "../core", default-features = false }
++codex-exec-server = { path = "../exec-server", default-features = false }
+ codex-feedback = { workspace = true }
+ codex-protocol = { workspace = true }
+ codex-uds = { workspace = true }
+@@ -28,10 +39,10 @@
+ serde = { workspace = true }
+ serde_json = { workspace = true }
+ tokio = { workspace = true, features = ["sync", "time", "rt"] }
+-tokio-tungstenite = { workspace = true }
++tokio-tungstenite = { workspace = true, optional = true }
+ toml = { workspace = true }
+ tracing = { workspace = true }
+-url = { workspace = true }
++url = { workspace = true, optional = true }
+ 
+ [dev-dependencies]
+ pretty_assertions = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-client/src/lib.rs b/app-server-client/src/lib.rs
+--- a/app-server-client/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server-client/src/lib.rs	2026-07-01 15:57:47.399781000 +0200
+@@ -16,6 +16,7 @@
+ //! surfaces as channel-full errors rather than unbounded memory growth.
+ 
+ mod path;
++#[cfg(feature = "remote-client")]
+ mod remote;
+ 
+ use std::error::Error;
+@@ -68,8 +69,11 @@
+ use tracing::warn;
+ 
+ pub use crate::path::AppServerPath;
++#[cfg(feature = "remote-client")]
+ pub use crate::remote::RemoteAppServerClient;
++#[cfg(feature = "remote-client")]
+ pub use crate::remote::RemoteAppServerConnectArgs;
++#[cfg(feature = "remote-client")]
+ pub use crate::remote::RemoteAppServerEndpoint;
+ 
+ /// Transitional access to core-only embedded app-server types.
+@@ -466,11 +470,13 @@
+ #[derive(Clone)]
+ pub enum AppServerRequestHandle {
+     InProcess(InProcessAppServerRequestHandle),
++    #[cfg(feature = "remote-client")]
+     Remote(crate::remote::RemoteAppServerRequestHandle),
+ }
+ 
+ pub enum AppServerClient {
+     InProcess(InProcessAppServerClient),
++    #[cfg(feature = "remote-client")]
+     Remote(RemoteAppServerClient),
+ }
+ 
+@@ -835,6 +841,7 @@
+     pub async fn request(&self, request: ClientRequest) -> IoResult<RequestResult> {
+         match self {
+             Self::InProcess(handle) => handle.request(request).await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(handle) => handle.request(request).await,
+         }
+     }
+@@ -845,6 +852,7 @@
+     {
+         match self {
+             Self::InProcess(handle) => handle.request_typed(request).await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(handle) => handle.request_typed(request).await,
+         }
+     }
+@@ -856,6 +864,7 @@
+             Self::InProcess(_) => Some(AppServerPath::from_app_server(
+                 local_codex_home.display().to_string(),
+             )),
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.codex_home().map(AppServerPath::from_app_server),
+         }
+     }
+@@ -863,6 +872,7 @@
+     pub async fn request(&self, request: ClientRequest) -> IoResult<RequestResult> {
+         match self {
+             Self::InProcess(client) => client.request(request).await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.request(request).await,
+         }
+     }
+@@ -873,6 +883,7 @@
+     {
+         match self {
+             Self::InProcess(client) => client.request_typed(request).await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.request_typed(request).await,
+         }
+     }
+@@ -880,6 +891,7 @@
+     pub async fn notify(&self, notification: ClientNotification) -> IoResult<()> {
+         match self {
+             Self::InProcess(client) => client.notify(notification).await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.notify(notification).await,
+         }
+     }
+@@ -891,6 +903,7 @@
+     ) -> IoResult<()> {
+         match self {
+             Self::InProcess(client) => client.resolve_server_request(request_id, result).await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.resolve_server_request(request_id, result).await,
+         }
+     }
+@@ -902,6 +915,7 @@
+     ) -> IoResult<()> {
+         match self {
+             Self::InProcess(client) => client.reject_server_request(request_id, error).await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.reject_server_request(request_id, error).await,
+         }
+     }
+@@ -909,6 +923,7 @@
+     pub async fn next_event(&mut self) -> Option<AppServerEvent> {
+         match self {
+             Self::InProcess(client) => client.next_event().await.map(Into::into),
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.next_event().await,
+         }
+     }
+@@ -916,6 +931,7 @@
+     pub async fn shutdown(self) -> IoResult<()> {
+         match self {
+             Self::InProcess(client) => client.shutdown().await,
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => client.shutdown().await,
+         }
+     }
+@@ -923,6 +939,7 @@
+     pub fn request_handle(&self) -> AppServerRequestHandle {
+         match self {
+             Self::InProcess(client) => AppServerRequestHandle::InProcess(client.request_handle()),
++            #[cfg(feature = "remote-client")]
+             Self::Remote(client) => AppServerRequestHandle::Remote(client.request_handle()),
+         }
+     }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-protocol/Cargo.toml b/app-server-protocol/Cargo.toml
---- a/app-server-protocol/Cargo.toml	2026-06-30 20:02:12.940861000 +0200
+--- a/app-server-protocol/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server-protocol/Cargo.toml	2026-06-30 06:30:24.952026000 +0200
 @@ -26,16 +26,18 @@
  serde_with = { workspace = true }
@@ -802,7 +1369,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [dev-dependencies]
  anyhow = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-protocol/src/protocol/v2/mcp.rs b/app-server-protocol/src/protocol/v2/mcp.rs
---- a/app-server-protocol/src/protocol/v2/mcp.rs	2026-06-30 20:02:12.964836000 +0200
+--- a/app-server-protocol/src/protocol/v2/mcp.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/app-server-protocol/src/protocol/v2/mcp.rs	2026-06-30 06:30:34.641587000 +0200
 @@ -261,6 +261,7 @@
      }
@@ -836,8 +1403,907 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  impl From<rmcp::model::CreateElicitationResult> for McpServerElicitationRequestResponse {
      fn from(value: rmcp::model::CreateElicitationResult) -> Self {
          Self {
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/Cargo.toml b/app-server-transport/Cargo.toml
+--- a/app-server-transport/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server-transport/Cargo.toml	2026-07-01 18:27:10.060038000 +0200
+@@ -12,45 +12,73 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["server-transport", "websocket"]
++server-transport = [
++    "dep:anyhow",
++    "dep:axum",
++    "dep:base64",
++    "dep:clap",
++    "dep:codex-api",
++    "dep:codex-model-provider",
++    "dep:codex-uds",
++    "dep:codex-utils-rustls-provider",
++    "dep:constant_time_eq",
++    "dep:futures",
++    "dep:gethostname",
++    "dep:hmac",
++    "dep:jsonwebtoken",
++    "dep:owo-colors",
++    "dep:sha2",
++    "dep:time",
++    "dep:tokio-tungstenite",
++    "dep:url",
++    "dep:uuid",
++    "axum/http1",
++    "axum/json",
++    "axum/tokio",
++    "axum/ws",
++]
++websocket = [
++    "codex-api/websocket",
++    "codex-core/websocket",
++    "codex-model-provider/websocket",
++]
++
+ [dependencies]
+-anyhow = { workspace = true }
+-axum = { workspace = true, default-features = false, features = [
+-    "http1",
+-    "json",
+-    "tokio",
+-    "ws",
+-] }
+-base64 = { workspace = true }
+-clap = { workspace = true, features = ["derive"] }
+-codex-api = { workspace = true }
++anyhow = { workspace = true, optional = true }
++axum = { workspace = true, default-features = false, optional = true }
++base64 = { workspace = true, optional = true }
++clap = { workspace = true, features = ["derive"], optional = true }
++codex-api = { path = "../codex-api", default-features = false, optional = true }
+ codex-app-server-protocol = { workspace = true }
+-codex-core = { workspace = true }
++codex-core = { path = "../core", default-features = false }
+ codex-login = { workspace = true }
+-codex-model-provider = { workspace = true }
++codex-model-provider = { path = "../model-provider", default-features = false, optional = true }
+ codex-state = { workspace = true }
+-codex-uds = { workspace = true }
++codex-uds = { workspace = true, optional = true }
+ codex-utils-absolute-path = { workspace = true }
+-codex-utils-rustls-provider = { workspace = true }
+-constant_time_eq = { workspace = true }
+-futures = { workspace = true }
+-gethostname = { workspace = true }
+-hmac = { workspace = true }
+-jsonwebtoken = { workspace = true }
+-owo-colors = { workspace = true, features = ["supports-colors"] }
++codex-utils-rustls-provider = { workspace = true, optional = true }
++constant_time_eq = { workspace = true, optional = true }
++futures = { workspace = true, optional = true }
++gethostname = { workspace = true, optional = true }
++hmac = { workspace = true, optional = true }
++jsonwebtoken = { workspace = true, optional = true }
++owo-colors = { workspace = true, features = ["supports-colors"], optional = true }
+ serde = { workspace = true, features = ["derive"] }
+ serde_json = { workspace = true }
+-sha2 = { workspace = true }
+-time = { workspace = true }
++sha2 = { workspace = true, optional = true }
++time = { workspace = true, optional = true }
+ tokio = { workspace = true, features = [
+     "io-std",
+     "macros",
+     "rt-multi-thread",
+ ] }
+-tokio-tungstenite = { workspace = true }
++tokio-tungstenite = { workspace = true, optional = true }
+ tokio-util = { workspace = true }
+ tracing = { workspace = true, features = ["log"] }
+-url = { workspace = true }
+-uuid = { workspace = true, features = ["serde", "v7"] }
++url = { workspace = true, optional = true }
++uuid = { workspace = true, features = ["serde", "v7"], optional = true }
+ 
+ [dev-dependencies]
+ chrono = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/auth_stub.rs b/app-server-transport/src/transport/auth_stub.rs
+--- a/app-server-transport/src/transport/auth_stub.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/app-server-transport/src/transport/auth_stub.rs	2026-07-01 18:06:48.867562000 +0200
+@@ -0,0 +1,59 @@
++use codex_utils_absolute_path::AbsolutePathBuf;
++use std::io;
++use std::path::PathBuf;
++
++#[derive(Debug, Clone, Default, PartialEq, Eq)]
++pub struct AppServerWebsocketAuthArgs {
++    pub ws_auth: Option<WebsocketAuthCliMode>,
++    pub ws_token_file: Option<PathBuf>,
++    pub ws_token_sha256: Option<String>,
++    pub ws_shared_secret_file: Option<PathBuf>,
++    pub ws_issuer: Option<String>,
++    pub ws_audience: Option<String>,
++    pub ws_max_clock_skew_seconds: Option<u64>,
++}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum WebsocketAuthCliMode {
++    CapabilityToken,
++    SignedBearerToken,
++}
++
++#[derive(Debug, Clone, Default, PartialEq, Eq)]
++pub struct AppServerWebsocketAuthSettings {
++    pub config: Option<AppServerWebsocketAuthConfig>,
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub enum AppServerWebsocketAuthConfig {
++    CapabilityToken {
++        source: AppServerWebsocketCapabilityTokenSource,
++    },
++    SignedBearerToken {
++        shared_secret_file: AbsolutePathBuf,
++        issuer: Option<String>,
++        audience: Option<String>,
++        max_clock_skew_seconds: u64,
++    },
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub enum AppServerWebsocketCapabilityTokenSource {
++    TokenFile { token_file: AbsolutePathBuf },
++    TokenSha256 { token_sha256: [u8; 32] },
++}
++
++#[derive(Clone, Debug, Default)]
++pub struct WebsocketAuthPolicy;
++
++impl AppServerWebsocketAuthArgs {
++    pub fn try_into_settings(self) -> io::Result<AppServerWebsocketAuthSettings> {
++        Ok(AppServerWebsocketAuthSettings::default())
++    }
++}
++
++pub fn policy_from_settings(
++    _settings: &AppServerWebsocketAuthSettings,
++) -> io::Result<WebsocketAuthPolicy> {
++    Ok(WebsocketAuthPolicy)
++}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/mod.rs b/app-server-transport/src/transport/mod.rs
+--- a/app-server-transport/src/transport/mod.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/app-server-transport/src/transport/mod.rs	2026-07-01 16:02:38.045138000 +0200
+@@ -1,4 +1,8 @@
++#[cfg(feature = "server-transport")]
+ pub mod auth;
++#[cfg(not(feature = "server-transport"))]
++#[path = "auth_stub.rs"]
++pub mod auth;
+ 
+ use crate::outgoing_message::ConnectionId;
+ use crate::outgoing_message::OutgoingError;
+@@ -23,11 +27,27 @@
+ /// plenty for an interactive CLI.
+ pub const CHANNEL_CAPACITY: usize = 128;
+ 
++#[cfg(feature = "server-transport")]
+ mod remote_control;
++#[cfg(not(feature = "server-transport"))]
++#[path = "remote_control_stub.rs"]
++mod remote_control;
++#[cfg(feature = "server-transport")]
+ mod stdio;
++#[cfg(not(feature = "server-transport"))]
++#[path = "stdio_stub.rs"]
++mod stdio;
++#[cfg(feature = "server-transport")]
+ mod unix_socket;
+-#[cfg(test)]
++#[cfg(not(feature = "server-transport"))]
++#[path = "unix_socket_stub.rs"]
++mod unix_socket;
++#[cfg(all(test, feature = "server-transport"))]
+ mod unix_socket_tests;
++#[cfg(feature = "server-transport")]
++mod websocket;
++#[cfg(not(feature = "server-transport"))]
++#[path = "websocket_stub.rs"]
+ mod websocket;
+ 
+ pub use remote_control::REMOTE_CONTROL_DISABLED_ENV_VAR;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/remote_control_stub.rs b/app-server-transport/src/transport/remote_control_stub.rs
+--- a/app-server-transport/src/transport/remote_control_stub.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/app-server-transport/src/transport/remote_control_stub.rs	2026-07-01 18:06:48.867622000 +0200
+@@ -0,0 +1,224 @@
++use super::TransportEvent;
++use codex_app_server_protocol::RemoteControlClientsListParams;
++use codex_app_server_protocol::RemoteControlClientsListResponse;
++use codex_app_server_protocol::RemoteControlClientsRevokeParams;
++use codex_app_server_protocol::RemoteControlClientsRevokeResponse;
++use codex_app_server_protocol::RemoteControlConnectionStatus;
++use codex_app_server_protocol::RemoteControlPairingStartParams;
++use codex_app_server_protocol::RemoteControlPairingStartResponse;
++use codex_app_server_protocol::RemoteControlPairingStatusParams;
++use codex_app_server_protocol::RemoteControlPairingStatusResponse;
++use codex_app_server_protocol::RemoteControlStatusChangedNotification;
++use codex_login::AuthManager;
++use codex_state::StateRuntime;
++use std::error::Error;
++use std::fmt;
++use std::io;
++use std::sync::Arc;
++use tokio::sync::mpsc;
++use tokio::sync::oneshot;
++use tokio::sync::watch;
++use tokio::task::JoinHandle;
++use tokio_util::sync::CancellationToken;
++
++pub struct RemoteControlStartConfig {
++    pub remote_control_url: String,
++    pub installation_id: String,
++    pub policy: RemoteControlPolicy,
++}
++
++#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
++pub enum RemoteControlPolicy {
++    #[default]
++    Allowed,
++    DisabledByRequirements,
++}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum RemoteControlStartupMode {
++    ResolvePersisted,
++    DisabledEphemeral,
++    EnabledEphemeral,
++}
++
++pub const REMOTE_CONTROL_DISABLED_ENV_VAR: &str =
++    "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED";
++
++pub fn take_remote_control_disabled_env() -> bool {
++    let disabled =
++        std::env::var_os(REMOTE_CONTROL_DISABLED_ENV_VAR).is_some_and(|value| value == "1");
++    // SAFETY: app-server calls this synchronously at process startup, before spawning threads.
++    unsafe { std::env::remove_var(REMOTE_CONTROL_DISABLED_ENV_VAR) };
++    disabled
++}
++
++#[derive(Clone)]
++pub struct RemoteControlHandle {
++    policy: RemoteControlPolicy,
++    status_tx: Arc<watch::Sender<RemoteControlStatusChangedNotification>>,
++}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct RemoteControlUnavailable;
++
++impl fmt::Display for RemoteControlUnavailable {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        write!(
++            f,
++            "remote control cannot be enabled in api-only app-server transport builds"
++        )
++    }
++}
++
++impl Error for RemoteControlUnavailable {}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct RemoteControlDisabledByRequirements;
++
++impl fmt::Display for RemoteControlDisabledByRequirements {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        write!(f, "remote control is disabled by managed requirements")
++    }
++}
++
++impl Error for RemoteControlDisabledByRequirements {}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum RemoteControlEnableError {
++    Unavailable(RemoteControlUnavailable),
++    DisabledByRequirements(RemoteControlDisabledByRequirements),
++}
++
++impl fmt::Display for RemoteControlEnableError {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        match self {
++            Self::Unavailable(err) => err.fmt(f),
++            Self::DisabledByRequirements(err) => err.fmt(f),
++        }
++    }
++}
++
++impl Error for RemoteControlEnableError {}
++
++impl RemoteControlHandle {
++    pub fn ensure_remote_control_allowed(&self) -> Result<(), RemoteControlDisabledByRequirements> {
++        match self.policy {
++            RemoteControlPolicy::Allowed => Ok(()),
++            RemoteControlPolicy::DisabledByRequirements => Err(RemoteControlDisabledByRequirements),
++        }
++    }
++
++    pub fn enable_ephemeral(
++        &self,
++    ) -> Result<RemoteControlStatusChangedNotification, RemoteControlEnableError> {
++        self.ensure_remote_control_allowed()
++            .map_err(RemoteControlEnableError::DisabledByRequirements)?;
++        Err(RemoteControlEnableError::Unavailable(
++            RemoteControlUnavailable,
++        ))
++    }
++
++    pub async fn enable(
++        &self,
++        _app_server_client_name: Option<&str>,
++    ) -> io::Result<RemoteControlStatusChangedNotification> {
++        self.ensure_remote_control_allowed()
++            .map_err(|err| io::Error::new(io::ErrorKind::PermissionDenied, err))?;
++        Err(remote_control_unavailable_error())
++    }
++
++    pub async fn disable(
++        &self,
++        _app_server_client_name: Option<&str>,
++    ) -> io::Result<RemoteControlStatusChangedNotification> {
++        self.ensure_remote_control_allowed()
++            .map_err(|err| io::Error::new(io::ErrorKind::PermissionDenied, err))?;
++        Ok(self.disabled_status())
++    }
++
++    pub async fn disable_ephemeral(&self) -> RemoteControlStatusChangedNotification {
++        self.disabled_status()
++    }
++
++    pub fn status(&self) -> RemoteControlStatusChangedNotification {
++        self.status_tx.borrow().clone()
++    }
++
++    pub fn status_receiver(&self) -> watch::Receiver<RemoteControlStatusChangedNotification> {
++        self.status_tx.subscribe()
++    }
++
++    pub async fn resolve_persisted_preference(
++        &self,
++        _app_server_client_name: Option<&str>,
++    ) -> io::Result<bool> {
++        Ok(false)
++    }
++
++    pub async fn start_pairing(
++        &self,
++        _params: RemoteControlPairingStartParams,
++        _app_server_client_name: Option<&str>,
++    ) -> io::Result<RemoteControlPairingStartResponse> {
++        Err(remote_control_unavailable_error())
++    }
++
++    pub async fn pairing_status(
++        &self,
++        _params: RemoteControlPairingStatusParams,
++    ) -> io::Result<RemoteControlPairingStatusResponse> {
++        Err(remote_control_unavailable_error())
++    }
++
++    pub async fn list_clients(
++        &self,
++        _params: RemoteControlClientsListParams,
++    ) -> io::Result<RemoteControlClientsListResponse> {
++        Err(remote_control_unavailable_error())
++    }
++
++    pub async fn revoke_client(
++        &self,
++        _params: RemoteControlClientsRevokeParams,
++    ) -> io::Result<RemoteControlClientsRevokeResponse> {
++        Err(remote_control_unavailable_error())
++    }
++
++    fn disabled_status(&self) -> RemoteControlStatusChangedNotification {
++        let mut status = self.status();
++        status.status = RemoteControlConnectionStatus::Disabled;
++        status.environment_id = None;
++        self.status_tx.send_replace(status.clone());
++        status
++    }
++}
++
++pub async fn start_remote_control(
++    config: RemoteControlStartConfig,
++    _state_db: Option<Arc<StateRuntime>>,
++    _auth_manager: Arc<AuthManager>,
++    _transport_event_tx: mpsc::Sender<TransportEvent>,
++    shutdown_token: CancellationToken,
++    _app_server_client_name_rx: Option<oneshot::Receiver<String>>,
++    _startup_mode: RemoteControlStartupMode,
++) -> io::Result<(JoinHandle<()>, RemoteControlHandle)> {
++    let initial_status = RemoteControlStatusChangedNotification {
++        status: RemoteControlConnectionStatus::Disabled,
++        server_name: "api-only".to_string(),
++        installation_id: config.installation_id,
++        environment_id: None,
++    };
++    let (status_tx, _status_rx) = watch::channel(initial_status);
++    let handle = RemoteControlHandle {
++        policy: config.policy,
++        status_tx: Arc::new(status_tx),
++    };
++    let join_handle = tokio::spawn(async move {
++        shutdown_token.cancelled().await;
++    });
++    Ok((join_handle, handle))
++}
++
++fn remote_control_unavailable_error() -> io::Error {
++    io::Error::new(io::ErrorKind::InvalidInput, RemoteControlUnavailable)
++}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/stdio_stub.rs b/app-server-transport/src/transport/stdio_stub.rs
+--- a/app-server-transport/src/transport/stdio_stub.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/app-server-transport/src/transport/stdio_stub.rs	2026-07-01 18:06:48.867668000 +0200
+@@ -0,0 +1,16 @@
++use super::TransportEvent;
++use std::io::Result as IoResult;
++use tokio::sync::mpsc;
++use tokio::sync::oneshot;
++use tokio::task::JoinHandle;
++
++pub async fn start_stdio_connection(
++    _transport_event_tx: mpsc::Sender<TransportEvent>,
++    _stdio_handles: &mut Vec<JoinHandle<()>>,
++    _initialize_client_name_tx: oneshot::Sender<String>,
++) -> IoResult<()> {
++    Err(std::io::Error::new(
++        std::io::ErrorKind::Unsupported,
++        "stdio app-server transport is disabled in api-only builds",
++    ))
++}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/unix_socket_stub.rs b/app-server-transport/src/transport/unix_socket_stub.rs
+--- a/app-server-transport/src/transport/unix_socket_stub.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/app-server-transport/src/transport/unix_socket_stub.rs	2026-07-01 18:06:48.867716000 +0200
+@@ -0,0 +1,30 @@
++use super::TransportEvent;
++use codex_utils_absolute_path::AbsolutePathBuf;
++use std::io::Result as IoResult;
++use std::path::Path;
++use tokio::sync::mpsc;
++use tokio::task::JoinHandle;
++use tokio_util::sync::CancellationToken;
++
++pub struct AppServerStartupLock;
++
++pub async fn acquire_app_server_startup_lock(
++    _startup_lock_path: AbsolutePathBuf,
++) -> IoResult<AppServerStartupLock> {
++    Ok(AppServerStartupLock)
++}
++
++pub async fn prepare_control_socket_path(_socket_path: &Path) -> IoResult<()> {
++    Ok(())
++}
++
++pub async fn start_control_socket_acceptor(
++    _socket_path: AbsolutePathBuf,
++    _transport_event_tx: mpsc::Sender<TransportEvent>,
++    _shutdown_token: CancellationToken,
++) -> IoResult<JoinHandle<()>> {
++    Err(std::io::Error::new(
++        std::io::ErrorKind::Unsupported,
++        "unix socket app-server transport is disabled in api-only builds",
++    ))
++}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/websocket_stub.rs b/app-server-transport/src/transport/websocket_stub.rs
+--- a/app-server-transport/src/transport/websocket_stub.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/app-server-transport/src/transport/websocket_stub.rs	2026-07-01 18:06:48.867760000 +0200
+@@ -0,0 +1,19 @@
++use super::TransportEvent;
++use super::auth::WebsocketAuthPolicy;
++use std::io::Result as IoResult;
++use std::net::SocketAddr;
++use tokio::sync::mpsc;
++use tokio::task::JoinHandle;
++use tokio_util::sync::CancellationToken;
++
++pub async fn start_websocket_acceptor(
++    _bind_address: SocketAddr,
++    _transport_event_tx: mpsc::Sender<TransportEvent>,
++    _shutdown_token: CancellationToken,
++    _auth_policy: WebsocketAuthPolicy,
++) -> IoResult<JoinHandle<()>> {
++    Err(std::io::Error::new(
++        std::io::ErrorKind::Unsupported,
++        "websocket app-server transport is disabled in api-only builds",
++    ))
++}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/backend-client/Cargo.toml b/backend-client/Cargo.toml
+--- a/backend-client/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/backend-client/Cargo.toml	2026-07-01 18:27:56.550003000 +0200
+@@ -12,13 +12,17 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++websocket = ["codex-api/websocket"]
++
+ [dependencies]
+ anyhow = "1"
+ serde = { version = "1", features = ["derive"] }
+ serde_json = "1"
+ reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+ codex-backend-openapi-models = { path = "../codex-backend-openapi-models" }
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
+ codex-client = { workspace = true }
+ codex-login = { workspace = true }
+ codex-model-provider = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cli/Cargo.toml b/cli/Cargo.toml
+--- a/cli/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/cli/Cargo.toml	2026-07-01 12:39:44.387832000 +0200
+@@ -17,30 +17,47 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["chatgpt-login"]
++api-only = [
++    "codex-app-server/api-only",
++    "codex-cloud-tasks/api-only",
++    "codex-exec/api-only",
++    "codex-login/api-only",
++    "codex-tui/api-only",
++]
++chatgpt-login = [
++    "codex-app-server/chatgpt-login",
++    "codex-cloud-tasks/chatgpt-login",
++    "codex-exec/chatgpt-login",
++    "codex-login/chatgpt-login",
++    "codex-tui/chatgpt-login",
++]
++
+ [dependencies]
+ anyhow = { workspace = true }
+ clap = { workspace = true, features = ["derive", "env"] }
+ clap_complete = { workspace = true }
+-codex-app-server = { workspace = true }
++codex-app-server = { path = "../app-server", default-features = false }
+ codex-app-server-daemon = { workspace = true }
+ codex-app-server-protocol = { workspace = true }
+ codex-app-server-test-client = { workspace = true }
+ codex-arg0 = { workspace = true }
+ codex-api = { workspace = true }
+ codex-chatgpt = { workspace = true }
+-codex-cloud-tasks = { path = "../cloud-tasks" }
++codex-cloud-tasks = { path = "../cloud-tasks", default-features = false }
+ codex-utils-cli = { workspace = true }
+ codex-config = { workspace = true }
+ codex-core = { workspace = true }
+ codex-core-plugins = { workspace = true }
+ codex-home = { workspace = true }
+-codex-exec = { workspace = true }
++codex-exec = { path = "../exec", default-features = false }
+ codex-exec-server = { workspace = true }
+ codex-execpolicy = { workspace = true }
+ codex-features = { workspace = true }
+ codex-git-utils = { workspace = true }
+ codex-install-context = { workspace = true }
+-codex-login = { workspace = true }
++codex-login = { path = "../login", default-features = false }
+ codex-memories-write = { workspace = true }
+ codex-mcp = { workspace = true }
+ codex-mcp-server = { workspace = true }
+@@ -56,7 +73,7 @@
+ codex-state = { workspace = true }
+ codex-stdio-to-uds = { workspace = true }
+ codex-terminal-detection = { workspace = true }
+-codex-tui = { workspace = true }
++codex-tui = { path = "../tui", default-features = false }
+ codex-utils-absolute-path = { workspace = true }
+ codex-utils-path = { workspace = true }
+ crossterm = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cli/src/login.rs b/cli/src/login.rs
+--- a/cli/src/login.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/cli/src/login.rs	2026-07-01 09:45:09.108312000 +0200
+@@ -10,15 +10,22 @@
+ use codex_app_server_protocol::AuthMode;
+ use codex_config::types::AuthCredentialsStoreMode;
+ use codex_core::config::Config;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::AuthKeyringBackendKind;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::AuthRouteConfig;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::CLIENT_ID;
+ use codex_login::CodexAuth;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::ServerOptions;
++use codex_login::is_api_only_mode_enabled;
+ use codex_login::login_with_access_token;
+ use codex_login::login_with_api_key;
+ use codex_login::logout_with_revoke;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::run_device_code_login;
++#[cfg(feature = "chatgpt-login")]
+ use codex_login::run_login_server;
+ use codex_protocol::config_types::ForcedLoginMethod;
+ use codex_utils_cli::CliConfigOverrides;
+@@ -36,10 +43,14 @@
+ 
+ const CHATGPT_LOGIN_DISABLED_MESSAGE: &str =
+     "ChatGPT login is disabled. Use API key login instead.";
++const API_ONLY_CHATGPT_LOGIN_DISABLED_MESSAGE: &str =
++    "ChatGPT login is disabled when CODEX_API_ONLY is enabled. Use API key login instead.";
+ const API_KEY_LOGIN_DISABLED_MESSAGE: &str =
+     "API key login is disabled. Use ChatGPT login instead.";
+ const ACCESS_TOKEN_LOGIN_DISABLED_MESSAGE: &str =
+     "Access token login is disabled. Use API key login instead.";
++const API_ONLY_ACCESS_TOKEN_LOGIN_DISABLED_MESSAGE: &str =
++    "Access token login is disabled when CODEX_API_ONLY is enabled. Use API key login instead.";
+ const LOGIN_SUCCESS_MESSAGE: &str = "Successfully logged in";
+ 
+ /// Installs a small file-backed tracing layer for direct `codex login` flows.
+@@ -110,12 +121,14 @@
+     Some(guard)
+ }
+ 
++#[cfg(feature = "chatgpt-login")]
+ fn print_login_server_start(actual_port: u16, auth_url: &str) {
+     eprintln!(
+         "Starting local login server on http://localhost:{actual_port}.\nIf your browser did not open, navigate to this URL to authenticate:\n\n{auth_url}\n\nOn a remote or headless machine? Use `codex login --device-auth` instead."
+     );
+ }
+ 
++#[cfg(feature = "chatgpt-login")]
+ async fn clear_existing_auth_before_login(
+     codex_home: &Path,
+     auth_credentials_store_mode: AuthCredentialsStoreMode,
+@@ -134,6 +147,7 @@
+     }
+ }
+ 
++#[cfg(feature = "chatgpt-login")]
+ pub async fn login_with_chatgpt(
+     codex_home: PathBuf,
+     forced_chatgpt_workspace_id: Option<Vec<String>>,
+@@ -164,11 +178,17 @@
+     server.block_until_done().await
+ }
+ 
++#[cfg(feature = "chatgpt-login")]
+ pub async fn run_login_with_chatgpt(cli_config_overrides: CliConfigOverrides) -> ! {
+     let config = load_config_or_exit(cli_config_overrides).await;
+     let _login_log_guard = init_login_file_logging(&config);
+     tracing::info!("starting browser login flow");
+ 
++    if is_api_only_mode_enabled() {
++        eprintln!("{API_ONLY_CHATGPT_LOGIN_DISABLED_MESSAGE}");
++        std::process::exit(1);
++    }
++
+     if matches!(config.forced_login_method, Some(ForcedLoginMethod::Api)) {
+         eprintln!("{CHATGPT_LOGIN_DISABLED_MESSAGE}");
+         std::process::exit(1);
+@@ -195,6 +215,15 @@
+     }
+ }
+ 
++#[cfg(not(feature = "chatgpt-login"))]
++pub async fn run_login_with_chatgpt(cli_config_overrides: CliConfigOverrides) -> ! {
++    let config = load_config_or_exit(cli_config_overrides).await;
++    let _login_log_guard = init_login_file_logging(&config);
++    tracing::info!("rejecting browser login flow because chatgpt-login feature is disabled");
++    eprintln!("{API_ONLY_CHATGPT_LOGIN_DISABLED_MESSAGE}");
++    std::process::exit(1);
++}
++
+ pub async fn run_login_with_api_key(
+     cli_config_overrides: CliConfigOverrides,
+     api_key: String,
+@@ -233,6 +262,11 @@
+     let _login_log_guard = init_login_file_logging(&config);
+     tracing::info!("starting access token login flow");
+ 
++    if is_api_only_mode_enabled() {
++        eprintln!("{API_ONLY_ACCESS_TOKEN_LOGIN_DISABLED_MESSAGE}");
++        std::process::exit(1);
++    }
++
+     if matches!(config.forced_login_method, Some(ForcedLoginMethod::Api)) {
+         eprintln!("{ACCESS_TOKEN_LOGIN_DISABLED_MESSAGE}");
+         std::process::exit(1);
+@@ -303,6 +337,7 @@
+ }
+ 
+ /// Login using the OAuth device code flow.
++#[cfg(feature = "chatgpt-login")]
+ pub async fn run_login_with_device_code(
+     cli_config_overrides: CliConfigOverrides,
+     issuer_base_url: Option<String>,
+@@ -311,6 +346,10 @@
+     let config = load_config_or_exit(cli_config_overrides).await;
+     let _login_log_guard = init_login_file_logging(&config);
+     tracing::info!("starting device code login flow");
++    if is_api_only_mode_enabled() {
++        eprintln!("{API_ONLY_CHATGPT_LOGIN_DISABLED_MESSAGE}");
++        std::process::exit(1);
++    }
+     if matches!(config.forced_login_method, Some(ForcedLoginMethod::Api)) {
+         eprintln!("{CHATGPT_LOGIN_DISABLED_MESSAGE}");
+         std::process::exit(1);
+@@ -347,10 +386,24 @@
+     }
+ }
+ 
++#[cfg(not(feature = "chatgpt-login"))]
++pub async fn run_login_with_device_code(
++    cli_config_overrides: CliConfigOverrides,
++    _issuer_base_url: Option<String>,
++    _client_id: Option<String>,
++) -> ! {
++    let config = load_config_or_exit(cli_config_overrides).await;
++    let _login_log_guard = init_login_file_logging(&config);
++    tracing::info!("rejecting device code login flow because chatgpt-login feature is disabled");
++    eprintln!("{API_ONLY_CHATGPT_LOGIN_DISABLED_MESSAGE}");
++    std::process::exit(1);
++}
++
+ /// Prefers device-code login (with `open_browser = false`) when headless environment is detected, but keeps
+ /// `codex login` working in environments where device-code may be disabled/feature-gated.
+ /// If `run_device_code_login` returns `ErrorKind::NotFound` ("device-code unsupported"), this
+ /// falls back to starting the local browser login server.
++#[cfg(feature = "chatgpt-login")]
+ pub async fn run_login_with_device_code_fallback_to_browser(
+     cli_config_overrides: CliConfigOverrides,
+     issuer_base_url: Option<String>,
+@@ -359,6 +412,10 @@
+     let config = load_config_or_exit(cli_config_overrides).await;
+     let _login_log_guard = init_login_file_logging(&config);
+     tracing::info!("starting login flow with device code fallback");
++    if is_api_only_mode_enabled() {
++        eprintln!("{API_ONLY_CHATGPT_LOGIN_DISABLED_MESSAGE}");
++        std::process::exit(1);
++    }
+     if matches!(config.forced_login_method, Some(ForcedLoginMethod::Api)) {
+         eprintln!("{CHATGPT_LOGIN_DISABLED_MESSAGE}");
+         std::process::exit(1);
+@@ -419,6 +476,21 @@
+             }
+         }
+     }
++}
++
++#[cfg(not(feature = "chatgpt-login"))]
++pub async fn run_login_with_device_code_fallback_to_browser(
++    cli_config_overrides: CliConfigOverrides,
++    _issuer_base_url: Option<String>,
++    _client_id: Option<String>,
++) -> ! {
++    let config = load_config_or_exit(cli_config_overrides).await;
++    let _login_log_guard = init_login_file_logging(&config);
++    tracing::info!(
++        "rejecting device code fallback login flow because chatgpt-login feature is disabled"
++    );
++    eprintln!("{API_ONLY_CHATGPT_LOGIN_DISABLED_MESSAGE}");
++    std::process::exit(1);
+ }
+ 
+ pub async fn run_login_status(cli_config_overrides: CliConfigOverrides) -> ! {
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cli/tests/login.rs b/cli/tests/login.rs
+--- a/cli/tests/login.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/cli/tests/login.rs	2026-07-01 09:24:21.965072000 +0200
+@@ -3,6 +3,7 @@
+ use anyhow::Context;
+ use anyhow::Result;
+ use codex_login::CLIENT_ID;
++use codex_login::CODEX_API_ONLY_ENV_VAR;
+ use codex_login::REVOKE_TOKEN_URL_OVERRIDE_ENV_VAR;
+ use predicates::str::contains;
+ use pretty_assertions::assert_eq;
+@@ -55,6 +56,41 @@
+     assert_eq!(auth["OPENAI_API_KEY"], "sk-test");
+     assert!(auth.get("tokens").is_none());
+     assert!(auth.get("agent_identity").is_none());
++
++    Ok(())
++}
++
++#[test]
++fn api_only_default_login_rejects_chatgpt_flow() -> Result<()> {
++    let codex_home = TempDir::new()?;
++    write_file_auth_config(codex_home.path())?;
++
++    let mut cmd = codex_command(codex_home.path())?;
++    cmd.env(CODEX_API_ONLY_ENV_VAR, "1")
++        .arg("login")
++        .assert()
++        .failure()
++        .stderr(contains(
++            "ChatGPT login is disabled when CODEX_API_ONLY is enabled",
++        ));
++
++    Ok(())
++}
++
++#[test]
++fn api_only_access_token_login_rejects_access_token_flow() -> Result<()> {
++    let codex_home = TempDir::new()?;
++    write_file_auth_config(codex_home.path())?;
++
++    let mut cmd = codex_command(codex_home.path())?;
++    cmd.env(CODEX_API_ONLY_ENV_VAR, "true")
++        .args(["login", "--with-access-token"])
++        .write_stdin("not-a-jwt\n")
++        .assert()
++        .failure()
++        .stderr(contains(
++            "Access token login is disabled when CODEX_API_ONLY is enabled",
++        ));
+ 
+     Ok(())
+ }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cloud-config/Cargo.toml b/cloud-config/Cargo.toml
+--- a/cloud-config/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/cloud-config/Cargo.toml	2026-07-01 18:25:44.232969000 +0200
+@@ -7,14 +7,22 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["websocket"]
++websocket = [
++    "codex-backend-client/websocket",
++    "codex-core/websocket",
++    "codex-otel/websocket",
++]
++
+ [dependencies]
+ base64 = { workspace = true }
+ chrono = { workspace = true, features = ["serde"] }
+-codex-backend-client = { workspace = true }
++codex-backend-client = { path = "../backend-client", default-features = false }
+ codex-config = { workspace = true }
+-codex-core = { workspace = true }
++codex-core = { path = "../core", default-features = false }
+ codex-login = { workspace = true }
+-codex-otel = { workspace = true }
++codex-otel = { path = "../otel", default-features = false }
+ codex-protocol = { workspace = true }
+ hmac = "0.12.1"
+ serde = { workspace = true, features = ["derive"] }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cloud-tasks/Cargo.toml b/cloud-tasks/Cargo.toml
+--- a/cloud-tasks/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/cloud-tasks/Cargo.toml	2026-07-01 12:39:44.387607000 +0200
+@@ -12,6 +12,17 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["chatgpt-login"]
++api-only = [
++    "codex-login/api-only",
++    "codex-tui/api-only",
++]
++chatgpt-login = [
++    "codex-login/chatgpt-login",
++    "codex-tui/chatgpt-login",
++]
++
+ [dependencies]
+ anyhow = { workspace = true }
+ chrono = { workspace = true, features = ["serde"] }
+@@ -22,9 +33,9 @@
+ codex-cloud-tasks-mock-client = { workspace = true }
+ codex-core = { workspace = true }
+ codex-git-utils = { workspace = true }
+-codex-login = { path = "../login" }
++codex-login = { path = "../login", default-features = false }
+ codex-model-provider = { workspace = true }
+-codex-tui = { workspace = true }
++codex-tui = { path = "../tui", default-features = false }
+ codex-utils-cli = { workspace = true }
+ crossterm = { workspace = true, features = ["event-stream"] }
+ owo-colors = { workspace = true, features = ["supports-colors"] }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/code-mode/Cargo.toml b/code-mode/Cargo.toml
---- a/code-mode/Cargo.toml	2026-06-30 20:02:12.989519000 +0200
+--- a/code-mode/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/code-mode/Cargo.toml	2026-06-30 02:36:43.155555000 +0200
 @@ -9,21 +9,10 @@
  name = "codex_code_mode"
@@ -863,7 +2329,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -[dev-dependencies]
 -pretty_assertions = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/code-mode/src/lib.rs b/code-mode/src/lib.rs
---- a/code-mode/src/lib.rs	2026-06-30 20:02:12.989820000 +0200
+--- a/code-mode/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/code-mode/src/lib.rs	2026-06-30 18:09:45.127028000 +0200
 @@ -1,9 +1,141 @@
 -mod cell_actor;
@@ -1014,23 +2480,384 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        error_text: Some(UNAVAILABLE.to_string()),
 +    }
 +}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/Cargo.toml b/codex-api/Cargo.toml
+--- a/codex-api/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/codex-api/Cargo.toml	2026-07-01 18:10:51.257356000 +0200
+@@ -4,6 +4,10 @@
+ edition.workspace = true
+ license.workspace = true
+ 
++[features]
++default = ["websocket"]
++websocket = ["dep:tokio-tungstenite", "dep:tungstenite"]
++
+ [dependencies]
+ async-channel = { workspace = true }
+ base64 = { workspace = true }
+@@ -20,8 +24,8 @@
+ serde_json = { workspace = true }
+ thiserror = { workspace = true }
+ tokio = { workspace = true, features = ["fs", "macros", "net", "rt", "sync", "time"] }
+-tokio-tungstenite = { workspace = true }
+-tungstenite = { workspace = true }
++tokio-tungstenite = { workspace = true, optional = true }
++tungstenite = { workspace = true, optional = true }
+ tracing = { workspace = true }
+ eventsource-stream = { workspace = true }
+ regex-lite = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/endpoint/mod.rs b/codex-api/src/endpoint/mod.rs
+--- a/codex-api/src/endpoint/mod.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/codex-api/src/endpoint/mod.rs	2026-07-01 18:10:51.257470000 +0200
+@@ -3,8 +3,16 @@
+ pub(crate) mod memories;
+ pub(crate) mod models;
+ pub(crate) mod realtime_call;
++#[cfg(feature = "websocket")]
+ pub(crate) mod realtime_websocket;
++#[cfg(not(feature = "websocket"))]
++#[path = "realtime_websocket_stub.rs"]
++pub(crate) mod realtime_websocket;
+ pub(crate) mod responses;
++#[cfg(feature = "websocket")]
++pub(crate) mod responses_websocket;
++#[cfg(not(feature = "websocket"))]
++#[path = "responses_websocket_stub.rs"]
+ pub(crate) mod responses_websocket;
+ pub(crate) mod search;
+ mod session;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/endpoint/realtime_websocket_stub.rs b/codex-api/src/endpoint/realtime_websocket_stub.rs
+--- a/codex-api/src/endpoint/realtime_websocket_stub.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/codex-api/src/endpoint/realtime_websocket_stub.rs	2026-07-01 18:33:47.438951000 +0200
+@@ -0,0 +1,176 @@
++#[path = "realtime_websocket/methods_common.rs"]
++mod methods_common;
++#[path = "realtime_websocket/methods_v1.rs"]
++mod methods_v1;
++#[path = "realtime_websocket/methods_v2.rs"]
++mod methods_v2;
++#[path = "realtime_websocket/protocol.rs"]
++mod protocol;
++#[path = "realtime_websocket/protocol_common.rs"]
++mod protocol_common;
++#[path = "realtime_websocket/protocol_v1.rs"]
++mod protocol_v1;
++#[path = "realtime_websocket/protocol_v2.rs"]
++mod protocol_v2;
++
++use crate::error::ApiError;
++use crate::provider::Provider;
++use codex_protocol::protocol::ConversationTextRole;
++use http::HeaderMap;
++
++pub use methods_common::session_update_session_json;
++pub use protocol::RealtimeEventParser;
++pub use protocol::RealtimeOutputModality;
++pub use protocol::RealtimeSessionConfig;
++pub use protocol::RealtimeSessionMode;
++pub use protocol::RealtimeVoice;
++pub use protocol::parse_realtime_event;
++
++#[derive(Clone)]
++pub struct RealtimeWebsocketConnection {
++    writer: RealtimeWebsocketWriter,
++    events: RealtimeWebsocketEvents,
++}
++
++#[derive(Clone)]
++pub struct RealtimeWebsocketWriter;
++
++#[derive(Clone)]
++pub struct RealtimeWebsocketEvents;
++
++pub struct RealtimeWebsocketClient {
++    _provider: Provider,
++}
++
++impl RealtimeWebsocketConnection {
++    pub async fn send_audio_frame(
++        &self,
++        _frame: protocol::RealtimeAudioFrame,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn send_conversation_item_create(
++        &self,
++        _text: String,
++        _role: ConversationTextRole,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn send_conversation_function_call_output(
++        &self,
++        _call_id: String,
++        _output_text: String,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn close(&self) -> Result<(), ApiError> {
++        Ok(())
++    }
++
++    pub async fn next_event(&self) -> Result<Option<protocol::RealtimeEvent>, ApiError> {
++        Ok(None)
++    }
++
++    pub fn writer(&self) -> RealtimeWebsocketWriter {
++        self.writer.clone()
++    }
++
++    pub fn events(&self) -> RealtimeWebsocketEvents {
++        self.events.clone()
++    }
++}
++
++impl RealtimeWebsocketWriter {
++    pub async fn send_audio_frame(
++        &self,
++        _frame: protocol::RealtimeAudioFrame,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn send_conversation_item_create(
++        &self,
++        _text: String,
++        _role: ConversationTextRole,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn send_conversation_handoff_append(
++        &self,
++        _handoff_id: String,
++        _output_text: String,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn send_conversation_function_call_output(
++        &self,
++        _call_id: String,
++        _output_text: String,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn send_response_create(&self) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn send_session_update(
++        &self,
++        _instructions: String,
++        _session_mode: RealtimeSessionMode,
++        _output_modality: RealtimeOutputModality,
++        _voice: RealtimeVoice,
++    ) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn close(&self) -> Result<(), ApiError> {
++        Ok(())
++    }
++
++    pub async fn send_payload(&self, _payload: String) -> Result<(), ApiError> {
++        Err(websocket_disabled_error())
++    }
++}
++
++impl RealtimeWebsocketEvents {
++    pub async fn next_event(&self) -> Result<Option<protocol::RealtimeEvent>, ApiError> {
++        Ok(None)
++    }
++}
++
++impl RealtimeWebsocketClient {
++    pub fn new(provider: Provider) -> Self {
++        Self {
++            _provider: provider,
++        }
++    }
++
++    pub async fn connect(
++        &self,
++        _config: RealtimeSessionConfig,
++        _extra_headers: HeaderMap,
++        _default_headers: HeaderMap,
++    ) -> Result<RealtimeWebsocketConnection, ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn connect_webrtc_sideband(
++        &self,
++        _config: RealtimeSessionConfig,
++        _call_id: &str,
++        _extra_headers: HeaderMap,
++        _default_headers: HeaderMap,
++    ) -> Result<RealtimeWebsocketConnection, ApiError> {
++        Err(websocket_disabled_error())
++    }
++}
++
++fn websocket_disabled_error() -> ApiError {
++    ApiError::Stream("realtime websocket support is disabled in this build".to_string())
++}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/endpoint/responses_websocket_stub.rs b/codex-api/src/endpoint/responses_websocket_stub.rs
+--- a/codex-api/src/endpoint/responses_websocket_stub.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/codex-api/src/endpoint/responses_websocket_stub.rs	2026-07-01 18:10:51.257541000 +0200
+@@ -0,0 +1,82 @@
++use crate::auth::SharedAuthProvider;
++use crate::common::ResponseStream;
++use crate::common::ResponsesWsRequest;
++use crate::error::ApiError;
++use crate::provider::Provider;
++use crate::telemetry::WebsocketTelemetry;
++use http::HeaderMap;
++use http::StatusCode;
++use std::sync::Arc;
++use std::sync::OnceLock;
++use std::time::Duration;
++
++#[derive(Debug)]
++pub struct ResponsesWebsocketConnection;
++
++impl ResponsesWebsocketConnection {
++    pub async fn is_closed(&self) -> bool {
++        true
++    }
++
++    pub async fn stream_request(
++        &self,
++        _request: ResponsesWsRequest,
++        _connection_reused: bool,
++        _turn_state: Option<Arc<OnceLock<String>>>,
++    ) -> Result<ResponseStream, ApiError> {
++        Err(websocket_disabled_error())
++    }
++}
++
++pub struct ResponsesWebsocketClient {
++    _provider: Provider,
++    _auth: SharedAuthProvider,
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct ResponsesWebsocketClose {
++    pub code: String,
++    pub reason: String,
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct ResponsesWebsocketProbe {
++    pub url: String,
++    pub status: StatusCode,
++    pub reasoning_included: bool,
++    pub models_etag_present: bool,
++    pub server_model_present: bool,
++    pub immediate_close: Option<ResponsesWebsocketClose>,
++}
++
++impl ResponsesWebsocketClient {
++    pub fn new(provider: Provider, auth: SharedAuthProvider) -> Self {
++        Self {
++            _provider: provider,
++            _auth: auth,
++        }
++    }
++
++    pub async fn connect(
++        &self,
++        _extra_headers: HeaderMap,
++        _default_headers: HeaderMap,
++        _turn_state: Option<Arc<OnceLock<String>>>,
++        _telemetry: Option<Arc<dyn WebsocketTelemetry>>,
++    ) -> Result<ResponsesWebsocketConnection, ApiError> {
++        Err(websocket_disabled_error())
++    }
++
++    pub async fn probe_handshake(
++        &self,
++        _extra_headers: HeaderMap,
++        _default_headers: HeaderMap,
++        _immediate_close_timeout: Duration,
++    ) -> Result<ResponsesWebsocketProbe, ApiError> {
++        Err(websocket_disabled_error())
++    }
++}
++
++fn websocket_disabled_error() -> ApiError {
++    ApiError::Stream("responses websocket support is disabled in this build".to_string())
++}
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/telemetry.rs b/codex-api/src/telemetry.rs
+--- a/codex-api/src/telemetry.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/codex-api/src/telemetry.rs	2026-07-01 18:14:52.052813000 +0200
+@@ -11,7 +11,9 @@
+ use std::sync::Arc;
+ use std::time::Duration;
+ use tokio::time::Instant;
++#[cfg(feature = "websocket")]
+ use tokio_tungstenite::tungstenite::Error;
++#[cfg(feature = "websocket")]
+ use tokio_tungstenite::tungstenite::Message;
+ 
+ /// Generic telemetry.
+@@ -32,6 +34,7 @@
+ }
+ 
+ /// Telemetry for Responses WebSocket transport.
++#[cfg(feature = "websocket")]
+ pub trait WebsocketTelemetry: Send + Sync {
+     fn on_ws_request(&self, duration: Duration, error: Option<&ApiError>, connection_reused: bool);
+ 
+@@ -40,6 +43,12 @@
+         result: &Result<Option<Result<Message, Error>>, ApiError>,
+         duration: Duration,
+     );
++}
++
++/// Telemetry for Responses WebSocket transport.
++#[cfg(not(feature = "websocket"))]
++pub trait WebsocketTelemetry: Send + Sync {
++    fn on_ws_request(&self, duration: Duration, error: Option<&ApiError>, connection_reused: bool);
+ }
+ 
+ pub(crate) trait WithStatus {
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-mcp/Cargo.toml b/codex-mcp/Cargo.toml
---- a/codex-mcp/Cargo.toml	2026-06-30 20:02:12.994104000 +0200
-+++ b/codex-mcp/Cargo.toml	2026-06-30 15:31:58.841411000 +0200
-@@ -16,27 +16,29 @@
+--- a/codex-mcp/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/codex-mcp/Cargo.toml	2026-07-01 18:28:44.592922000 +0200
+@@ -12,31 +12,43 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++websocket = [
++    "codex-api/websocket",
++    "codex-exec-server/remote-websocket",
++    "codex-model-provider/websocket",
++    "codex-otel/websocket",
++    "codex-rmcp-client/websocket",
++]
++
+ [dependencies]
  anyhow = { workspace = true }
  arc-swap = { workspace = true }
  async-channel = { workspace = true }
 -codex-async-utils = { workspace = true }
 -codex-api = { workspace = true }
  codex-config = { workspace = true }
- codex-exec-server = { workspace = true }
+-codex-exec-server = { workspace = true }
++codex-exec-server = { path = "../exec-server", default-features = false }
  codex-login = { workspace = true }
 -codex-model-provider = { workspace = true }
 -codex-otel = { workspace = true }
  codex-plugin = { workspace = true }
  codex-protocol = { workspace = true }
- codex-rmcp-client = { workspace = true }
+-codex-rmcp-client = { workspace = true }
++codex-rmcp-client = { path = "../rmcp-client", default-features = false }
  codex-utils-path-uri = { workspace = true }
 -codex-utils-plugins = { workspace = true }
  futures = { workspace = true }
@@ -1042,9 +2869,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +
 +[target.'cfg(not(target_os = "freebsd"))'.dependencies]
 +codex-async-utils = { workspace = true }
-+codex-api = { workspace = true }
-+codex-model-provider = { workspace = true }
-+codex-otel = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
++codex-model-provider = { path = "../model-provider", default-features = false }
++codex-otel = { path = "../otel", default-features = false }
 +codex-utils-plugins = { workspace = true }
 +regex-lite = { workspace = true }
 +rmcp = { workspace = true, default-features = false, features = ["base64", "macros", "schemars", "server"] }
@@ -2320,7 +4147,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        .map(ToString::to_string)
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-mcp/src/lib.rs b/codex-mcp/src/lib.rs
---- a/codex-mcp/src/lib.rs	2026-06-30 20:02:12.994590000 +0200
+--- a/codex-mcp/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/codex-mcp/src/lib.rs	2026-06-30 18:09:45.332615000 +0200
 @@ -1,84 +1,182 @@
 +#[cfg(target_os = "freebsd")]
@@ -2506,7 +4333,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(not(target_os = "freebsd"))]
  pub(crate) mod tools;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/config/Cargo.toml b/config/Cargo.toml
---- a/config/Cargo.toml	2026-06-30 20:02:12.995403000 +0200
+--- a/config/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/config/Cargo.toml	2026-06-30 03:20:08.193794000 +0200
 @@ -30,7 +30,6 @@
  gethostname = { workspace = true }
@@ -2533,7 +4360,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [target.'cfg(unix)'.dependencies]
  dns-lookup = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/config/src/thread_config.rs b/config/src/thread_config.rs
---- a/config/src/thread_config.rs	2026-06-30 20:02:12.997685000 +0200
+--- a/config/src/thread_config.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/config/src/thread_config.rs	2026-06-30 03:20:31.060677000 +0200
 @@ -11,7 +11,50 @@
  
@@ -2587,9 +4414,29 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use remote::RemoteThreadConfigLoader;
  
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/Cargo.toml b/core/Cargo.toml
---- a/core/Cargo.toml	2026-06-30 20:02:13.002585000 +0200
-+++ b/core/Cargo.toml	2026-06-30 18:48:12.036291000 +0200
-@@ -75,7 +75,6 @@
+--- a/core/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/core/Cargo.toml	2026-07-01 18:27:44.257876000 +0200
+@@ -15,6 +15,10 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++websocket = ["codex-api/websocket", "dep:tokio-tungstenite"]
++
+ [dependencies]
+ anyhow = { workspace = true }
+ arc-swap = { workspace = true }
+@@ -24,7 +28,7 @@
+ chrono = { workspace = true, features = ["serde"] }
+ clap = { workspace = true, features = ["derive"] }
+ codex-analytics = { workspace = true }
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
+ codex-app-server-protocol = { workspace = true }
+ codex-apply-patch = { workspace = true }
+ codex-async-utils = { workspace = true }
+@@ -75,7 +79,6 @@
  codex-utils-pty = { workspace = true }
  codex-utils-string = { workspace = true }
  codex-utils-stream-parser = { workspace = true }
@@ -2597,7 +4444,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  csv = { workspace = true }
  dirs = { workspace = true }
  dunce = { workspace = true }
-@@ -83,19 +82,12 @@
+@@ -83,19 +86,12 @@
  futures = { workspace = true }
  http = { workspace = true }
  iana-time-zone = { workspace = true }
@@ -2617,7 +4464,16 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  serde = { workspace = true, features = ["derive"] }
  serde_json = { workspace = true }
  sha1 = { workspace = true }
-@@ -120,6 +112,15 @@
+@@ -111,7 +107,7 @@
+     "signal",
+ ] }
+ tokio-util = { workspace = true, features = ["rt"] }
+-tokio-tungstenite = { workspace = true }
++tokio-tungstenite = { workspace = true, optional = true }
+ toml = { workspace = true }
+ toml_edit = { workspace = true }
+ tracing = { workspace = true, features = ["log"] }
+@@ -120,6 +116,15 @@
  which = { workspace = true }
  whoami = { workspace = true }
  
@@ -2633,7 +4489,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  # Build OpenSSL from source for musl builds.
  [target.x86_64-unknown-linux-musl.dependencies]
  openssl-sys = { workspace = true, features = ["vendored"] }
-@@ -130,6 +131,9 @@
+@@ -130,6 +135,9 @@
  
  [target.'cfg(unix)'.dependencies]
  codex-shell-escalation = { workspace = true }
@@ -2643,8 +4499,446 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  assert_cmd = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/client.rs b/core/src/client.rs
+--- a/core/src/client.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/core/src/client.rs	2026-07-01 18:33:12.114013000 +0200
+@@ -25,9 +25,12 @@
+ 
+ use std::collections::HashMap;
+ use std::sync::Arc;
++#[cfg(feature = "websocket")]
+ use std::sync::Mutex as StdMutex;
+ use std::sync::OnceLock;
++#[cfg(feature = "websocket")]
+ use std::sync::atomic::AtomicBool;
++#[cfg(feature = "websocket")]
+ use std::sync::atomic::Ordering;
+ 
+ use codex_api::ApiError;
+@@ -46,20 +49,26 @@
+ use codex_api::ReasoningContext;
+ use codex_api::RequestTelemetry;
+ use codex_api::ReqwestTransport;
++#[cfg(feature = "websocket")]
+ use codex_api::ResponseCreateWsRequest;
+ use codex_api::ResponsesApiRequest;
+ use codex_api::ResponsesClient as ApiResponsesClient;
+ use codex_api::ResponsesOptions as ApiResponsesOptions;
++#[cfg(feature = "websocket")]
+ use codex_api::ResponsesWebsocketClient as ApiWebSocketResponsesClient;
++#[cfg(feature = "websocket")]
+ use codex_api::ResponsesWebsocketConnection as ApiWebSocketConnection;
++#[cfg(feature = "websocket")]
+ use codex_api::ResponsesWsRequest;
+ use codex_api::SharedAuthProvider;
+ use codex_api::SseTelemetry;
+ use codex_api::TransportError;
++#[cfg(feature = "websocket")]
+ use codex_api::WebsocketTelemetry;
+ use codex_api::auth_header_telemetry;
+ use codex_api::build_session_headers;
+ use codex_api::create_text_param_for_request;
++#[cfg(feature = "websocket")]
+ use codex_api::response_create_client_metadata;
+ use codex_app_server_protocol::AuthMode;
+ use codex_login::AuthManager;
+@@ -68,6 +77,7 @@
+ use codex_login::UnauthorizedRecovery;
+ use codex_login::default_client::build_reqwest_client;
+ use codex_otel::SessionTelemetry;
++#[cfg(feature = "websocket")]
+ use codex_otel::current_span_w3c_trace_context;
+ 
+ use codex_protocol::ThreadId;
+@@ -94,8 +104,11 @@
+ use std::time::Instant;
+ use tokio::sync::mpsc;
+ use tokio::sync::oneshot;
++#[cfg(feature = "websocket")]
+ use tokio::sync::oneshot::error::TryRecvError;
++#[cfg(feature = "websocket")]
+ use tokio_tungstenite::tungstenite::Error;
++#[cfg(feature = "websocket")]
+ use tokio_tungstenite::tungstenite::Message;
+ use tokio_util::sync::CancellationToken;
+ use tracing::instrument;
+@@ -118,7 +131,7 @@
+ use codex_login::auth_env_telemetry::collect_auth_env_telemetry;
+ use codex_model_provider::SharedModelProvider;
+ use codex_model_provider::create_model_provider;
+-#[cfg(test)]
++#[cfg(all(test, feature = "websocket"))]
+ use codex_model_provider_info::DEFAULT_WEBSOCKET_CONNECT_TIMEOUT_MS;
+ use codex_model_provider_info::ModelProviderInfo;
+ use codex_model_provider_info::WireApi;
+@@ -137,12 +150,16 @@
+ pub const X_CODEX_WINDOW_ID_HEADER: &str = "x-codex-window-id";
+ pub const X_OPENAI_MEMGEN_REQUEST_HEADER: &str = "x-openai-memgen-request";
+ pub const X_OPENAI_SUBAGENT_HEADER: &str = "x-openai-subagent";
++#[cfg(feature = "websocket")]
+ pub const X_RESPONSESAPI_INCLUDE_TIMING_METRICS_HEADER: &str =
+     "x-responsesapi-include-timing-metrics";
++#[cfg(feature = "websocket")]
+ const X_CODEX_WS_STREAM_REQUEST_START_MS_CLIENT_METADATA_KEY: &str =
+     "x-codex-ws-stream-request-start-ms";
++#[cfg(feature = "websocket")]
+ const WS_REQUEST_HEADER_RESPONSES_LITE_CLIENT_METADATA_KEY: &str =
+     "ws_request_header_x_openai_internal_codex_responses_lite";
++#[cfg(feature = "websocket")]
+ const RESPONSES_WEBSOCKETS_V2_BETA_HEADER_VALUE: &str = "responses_websockets=2026-02-06";
+ const X_OPENAI_INTERNAL_CODEX_RESPONSES_LITE_HEADER: &str =
+     "x-openai-internal-codex-responses-lite";
+@@ -152,7 +169,7 @@
+ // period between stream events.
+ const COMPACT_REQUEST_TIMEOUT_IDLE_MULTIPLIER: u32 = 4;
+ const MEMORIES_SUMMARIZE_ENDPOINT: &str = "/memories/trace_summarize";
+-#[cfg(test)]
++#[cfg(all(test, feature = "websocket"))]
+ pub(crate) const WEBSOCKET_CONNECT_TIMEOUT: Duration =
+     Duration::from_millis(DEFAULT_WEBSOCKET_CONNECT_TIMEOUT_MS);
+ 
+@@ -186,7 +203,9 @@
+     item_ids_enabled: bool,
+     include_attestation: bool,
+     attestation_provider: Option<Arc<dyn AttestationProvider>>,
++    #[cfg(feature = "websocket")]
+     disable_websockets: AtomicBool,
++    #[cfg(feature = "websocket")]
+     cached_websocket_session: StdMutex<WebsocketSession>,
+ }
+ 
+@@ -265,16 +284,22 @@
+ 
+ #[derive(Debug, Default)]
+ struct WebsocketSession {
++    #[cfg(feature = "websocket")]
+     connection: Option<ApiWebSocketConnection>,
++    #[cfg(feature = "websocket")]
+     last_request: Option<ResponsesApiRequest>,
++    #[cfg(feature = "websocket")]
+     last_response_rx: Option<oneshot::Receiver<LastResponse>>,
++    #[cfg(feature = "websocket")]
+     last_response_from_untraced_warmup: bool,
++    #[cfg(feature = "websocket")]
+     connection_reused: StdMutex<bool>,
+ }
+ 
+ // This is intentionally not a `PartialEq` implementation: request equality includes `input` and
+ // `client_metadata`, while websocket reuse compares the input separately and ignores metadata.
+ // Keep the destructuring exhaustive so new request fields require an explicit reuse decision.
++#[cfg(feature = "websocket")]
+ fn responses_request_properties_match(
+     previous: &ResponsesApiRequest,
+     current: &ResponsesApiRequest,
+@@ -326,6 +351,7 @@
+         && previous_text == current_text
+ }
+ 
++#[cfg(feature = "websocket")]
+ impl WebsocketSession {
+     fn set_connection_reused(&self, connection_reused: bool) {
+         *self
+@@ -342,6 +368,7 @@
+     }
+ }
+ 
++#[cfg(feature = "websocket")]
+ enum WebsocketStreamOutcome {
+     Stream(ResponseStream),
+     FallbackToHttp,
+@@ -408,7 +435,9 @@
+                 item_ids_enabled,
+                 include_attestation,
+                 attestation_provider,
++                #[cfg(feature = "websocket")]
+                 disable_websockets: AtomicBool::new(false),
++                #[cfg(feature = "websocket")]
+                 cached_websocket_session: StdMutex::new(WebsocketSession::default()),
+             }),
+             prompt_cache_key_override: None,
+@@ -445,6 +474,7 @@
+         self.state.provider.auth_manager()
+     }
+ 
++    #[cfg(feature = "websocket")]
+     fn take_cached_websocket_session(&self) -> WebsocketSession {
+         let mut cached_websocket_session = self
+             .state
+@@ -454,6 +484,12 @@
+         std::mem::take(&mut *cached_websocket_session)
+     }
+ 
++    #[cfg(not(feature = "websocket"))]
++    fn take_cached_websocket_session(&self) -> WebsocketSession {
++        WebsocketSession::default()
++    }
++
++    #[cfg(feature = "websocket")]
+     fn store_cached_websocket_session(&self, websocket_session: WebsocketSession) {
+         *self
+             .state
+@@ -462,25 +498,37 @@
+             .unwrap_or_else(std::sync::PoisonError::into_inner) = websocket_session;
+     }
+ 
++    #[cfg(not(feature = "websocket"))]
++    fn store_cached_websocket_session(&self, _websocket_session: WebsocketSession) {}
++
+     pub(crate) fn force_http_fallback(
+         &self,
+         session_telemetry: &SessionTelemetry,
+         _model_info: &ModelInfo,
+     ) -> bool {
+-        let websocket_enabled = self.responses_websocket_enabled();
+-        let activated =
+-            websocket_enabled && !self.state.disable_websockets.swap(true, Ordering::Relaxed);
+-        if activated {
+-            warn!("falling back to HTTP");
+-            session_telemetry.counter(
+-                "codex.transport.fallback_to_http",
+-                /*inc*/ 1,
+-                &[("from_wire_api", "responses_websocket")],
+-            );
++        #[cfg(not(feature = "websocket"))]
++        {
++            let _ = session_telemetry;
++            return false;
+         }
+ 
+-        self.store_cached_websocket_session(WebsocketSession::default());
+-        activated
++        #[cfg(feature = "websocket")]
++        {
++            let websocket_enabled = self.responses_websocket_enabled();
++            let activated =
++                websocket_enabled && !self.state.disable_websockets.swap(true, Ordering::Relaxed);
++            if activated {
++                warn!("falling back to HTTP");
++                session_telemetry.counter(
++                    "codex.transport.fallback_to_http",
++                    /*inc*/ 1,
++                    &[("from_wire_api", "responses_websocket")],
++                );
++            }
++
++            self.store_cached_websocket_session(WebsocketSession::default());
++            activated
++        }
+     }
+ 
+     /// Compacts the current conversation history using the Compact endpoint.
+@@ -705,6 +753,7 @@
+         extra_headers
+     }
+ 
++    #[cfg(feature = "websocket")]
+     fn build_ws_client_metadata(
+         &self,
+         responses_metadata: &CodexResponsesMetadata,
+@@ -852,6 +901,7 @@
+     /// Returns whether the Responses-over-WebSocket transport is active for this session.
+     ///
+     /// WebSocket use is controlled by provider capability and session-scoped fallback state.
++    #[cfg(feature = "websocket")]
+     pub fn responses_websocket_enabled(&self) -> bool {
+         if !self.state.provider.info().supports_websockets
+             || self.state.disable_websockets.load(Ordering::Relaxed)
+@@ -862,6 +912,12 @@
+         true
+     }
+ 
++    /// Returns whether the Responses-over-WebSocket transport is active for this session.
++    #[cfg(not(feature = "websocket"))]
++    pub fn responses_websocket_enabled(&self) -> bool {
++        false
++    }
++
+     /// Returns auth + provider configuration resolved from the current session auth state.
+     ///
+     /// This centralizes setup used by both prewarm and normal request paths so they stay in
+@@ -881,6 +937,7 @@
+     ///
+     /// Both startup prewarm and in-turn `needs_new` reconnects call this path so handshake
+     /// behavior remains consistent across both flows.
++    #[cfg(feature = "websocket")]
+     #[allow(clippy::too_many_arguments)]
+     async fn connect_websocket(
+         &self,
+@@ -965,6 +1022,7 @@
+     }
+ 
+     /// Builds websocket handshake headers for both prewarm and turn-time reconnect.
++    #[cfg(feature = "websocket")]
+     async fn build_websocket_headers(
+         &self,
+         responses_metadata: &CodexResponsesMetadata,
+@@ -1011,6 +1069,7 @@
+         Arc::clone(&self.turn_state)
+     }
+ 
++    #[cfg(feature = "websocket")]
+     fn reset_websocket_session(&mut self) {
+         self.websocket_session.connection = None;
+         self.websocket_session.last_request = None;
+@@ -1055,6 +1114,7 @@
+         }
+     }
+ 
++    #[cfg(feature = "websocket")]
+     fn get_incremental_items(
+         &self,
+         request: &ResponsesApiRequest,
+@@ -1097,6 +1157,7 @@
+         Some(incremental_items.to_vec())
+     }
+ 
++    #[cfg(feature = "websocket")]
+     fn get_last_response(&mut self) -> Option<LastResponse> {
+         self.websocket_session
+             .last_response_rx
+@@ -1107,6 +1168,7 @@
+             })
+     }
+ 
++    #[cfg(feature = "websocket")]
+     fn prepare_websocket_request(
+         &mut self,
+         payload: ResponseCreateWsRequest,
+@@ -1143,6 +1205,7 @@
+     /// Opportunistically preconnects a websocket for this turn-scoped client session.
+     ///
+     /// This performs only connection setup; it never sends prompt payloads.
++    #[cfg(feature = "websocket")]
+     pub async fn preconnect_websocket(
+         &mut self,
+         session_telemetry: &SessionTelemetry,
+@@ -1181,7 +1244,19 @@
+             .set_connection_reused(/*connection_reused*/ false);
+         Ok(())
+     }
++
++    /// Opportunistically preconnects a websocket for this turn-scoped client session.
++    #[cfg(not(feature = "websocket"))]
++    pub async fn preconnect_websocket(
++        &mut self,
++        _session_telemetry: &SessionTelemetry,
++        _responses_metadata: &CodexResponsesMetadata,
++    ) -> std::result::Result<(), ApiError> {
++        Ok(())
++    }
++
+     /// Returns a websocket connection for this turn.
++    #[cfg(feature = "websocket")]
+     #[instrument(
+         name = "model_client.websocket_connection",
+         level = "info",
+@@ -1388,6 +1463,7 @@
+     }
+ 
+     /// Streams a turn via the Responses API over WebSocket transport.
++    #[cfg(feature = "websocket")]
+     #[allow(clippy::too_many_arguments)]
+     #[instrument(
+         name = "model_client.stream_responses_websocket",
+@@ -1568,6 +1644,7 @@
+     }
+ 
+     /// Builds telemetry for the Responses API WebSocket transport.
++    #[cfg(feature = "websocket")]
+     fn build_websocket_telemetry(
+         session_telemetry: &SessionTelemetry,
+         auth_context: AuthRequestTelemetryContext,
+@@ -1584,6 +1661,7 @@
+         websocket_telemetry
+     }
+ 
++    #[cfg(feature = "websocket")]
+     #[allow(clippy::too_many_arguments)]
+     pub async fn prewarm_websocket(
+         &mut self,
+@@ -1637,7 +1715,22 @@
+         }
+     }
+ 
++    #[cfg(not(feature = "websocket"))]
+     #[allow(clippy::too_many_arguments)]
++    pub async fn prewarm_websocket(
++        &mut self,
++        _prompt: &Prompt,
++        _model_info: &ModelInfo,
++        _session_telemetry: &SessionTelemetry,
++        _effort: Option<ReasoningEffortConfig>,
++        _summary: ReasoningSummaryConfig,
++        _service_tier: Option<String>,
++        _responses_metadata: &CodexResponsesMetadata,
++    ) -> Result<()> {
++        Ok(())
++    }
++
++    #[allow(clippy::too_many_arguments)]
+     /// Streams a single model request within the current turn.
+     ///
+     /// The caller is responsible for passing per-turn settings explicitly (model selection,
+@@ -1660,6 +1753,7 @@
+         let wire_api = self.client.state.provider.info().wire_api;
+         match wire_api {
+             WireApi::Responses => {
++                #[cfg(feature = "websocket")]
+                 if self.client.responses_websocket_enabled() {
+                     let request_trace = current_span_w3c_trace_context();
+                     match self
+@@ -1710,11 +1804,20 @@
+         session_telemetry: &SessionTelemetry,
+         model_info: &ModelInfo,
+     ) -> bool {
+-        let activated = self
+-            .client
+-            .force_http_fallback(session_telemetry, model_info);
+-        self.websocket_session = WebsocketSession::default();
+-        activated
++        #[cfg(not(feature = "websocket"))]
++        {
++            let _ = (session_telemetry, model_info);
++            return false;
++        }
++
++        #[cfg(feature = "websocket")]
++        {
++            let activated = self
++                .client
++                .force_http_fallback(session_telemetry, model_info);
++            self.websocket_session = WebsocketSession::default();
++            activated
++        }
+     }
+ }
+ 
+@@ -1722,6 +1825,7 @@
+ ///
+ /// Meant to be called just before sending the request over the socket, to capture realistic
+ /// transport timing.
++#[cfg(feature = "websocket")]
+ fn stamp_ws_stream_request_start_ms(request: &mut ResponsesWsRequest) {
+     let ResponsesWsRequest::ResponseCreate(payload) = request;
+     payload
+@@ -2003,6 +2107,7 @@
+     }
+ }
+ 
++#[cfg(feature = "websocket")]
+ struct WebsocketConnectParams<'a> {
+     session_telemetry: &'a SessionTelemetry,
+     api_provider: codex_api::Provider,
+@@ -2230,6 +2335,7 @@
+     }
+ }
+ 
++#[cfg(feature = "websocket")]
+ impl WebsocketTelemetry for ApiTelemetry {
+     fn on_ws_request(&self, duration: Duration, error: Option<&ApiError>, connection_reused: bool) {
+         let error_message = error.map(telemetry_api_error_message);
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/codex_thread.rs b/core/src/codex_thread.rs
---- a/core/src/codex_thread.rs	2026-06-30 20:02:13.005193000 +0200
+--- a/core/src/codex_thread.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/codex_thread.rs	2026-06-30 18:09:45.800686000 +0200
 @@ -4,6 +4,7 @@
  use crate::session::SessionSettingsUpdate;
@@ -2663,7 +4957,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use std::collections::HashMap;
  use std::path::PathBuf;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/config/mod.rs b/core/src/config/mod.rs
---- a/core/src/config/mod.rs	2026-06-30 20:02:13.007170000 +0200
+--- a/core/src/config/mod.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/config/mod.rs	2026-06-30 18:09:45.928481000 +0200
 @@ -73,10 +73,13 @@
  use codex_install_context::InstallContext;
@@ -2690,7 +4984,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use serde::Serialize;
  use std::collections::BTreeMap;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/context_manager/history.rs b/core/src/context_manager/history.rs
---- a/core/src/context_manager/history.rs	2026-06-30 20:02:13.008978000 +0200
+--- a/core/src/context_manager/history.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/context_manager/history.rs	2026-06-30 06:15:06.495052000 +0200
 @@ -5,7 +5,9 @@
  use crate::event_mapping::is_contextual_dev_message_content;
@@ -2757,7 +5051,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      let key = sha1_digest(image_url.as_bytes());
      ORIGINAL_IMAGE_ESTIMATE_CACHE.get_or_insert_with(key, || {
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/lib.rs b/core/src/lib.rs
---- a/core/src/lib.rs	2026-06-30 20:02:13.011342000 +0200
+--- a/core/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/lib.rs	2026-07-01 06:11:11.919568000 +0200
 @@ -52,6 +52,7 @@
  pub use landlock::spawn_command_under_linux_sandbox;
@@ -2778,7 +5072,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) mod mention_syntax;
  pub(crate) mod utils;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/mcp_tool_call.rs b/core/src/mcp_tool_call.rs
---- a/core/src/mcp_tool_call.rs	2026-06-30 20:02:13.011724000 +0200
+--- a/core/src/mcp_tool_call.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/mcp_tool_call.rs	2026-06-30 18:09:46.132490000 +0200
 @@ -41,7 +41,9 @@
  use codex_mcp::CODEX_APPS_MCP_SERVER_NAME;
@@ -2820,7 +5114,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              sess.as_ref(),
              turn_context.as_ref(),
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/mcp_tool_exposure_test.rs b/core/src/mcp_tool_exposure_test.rs
---- a/core/src/mcp_tool_exposure_test.rs	2026-06-30 20:02:13.012005000 +0200
+--- a/core/src/mcp_tool_exposure_test.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/mcp_tool_exposure_test.rs	2026-06-30 18:10:55.690597000 +0200
 @@ -2,12 +2,12 @@
  use std::sync::Arc;
@@ -2839,7 +5133,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use super::*;
  use crate::config::CONFIG_TOML_FILE;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/responses_metadata.rs b/core/src/responses_metadata.rs
---- a/core/src/responses_metadata.rs	2026-06-30 20:02:13.013013000 +0200
+--- a/core/src/responses_metadata.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/responses_metadata.rs	2026-07-01 06:11:32.943209000 +0200
 @@ -187,6 +187,7 @@
          to_ascii_json_string(&self.turn_metadata_payload()).ok()
@@ -2850,7 +5144,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          serde_json::to_value(self.turn_metadata_payload()).ok()
      }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/handlers.rs b/core/src/session/handlers.rs
---- a/core/src/session/handlers.rs	2026-06-30 20:02:13.013620000 +0200
+--- a/core/src/session/handlers.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/session/handlers.rs	2026-06-30 18:09:46.194162000 +0200
 @@ -50,6 +50,7 @@
  use codex_protocol::request_user_input::RequestUserInputResponse;
@@ -2874,7 +5168,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      if let Err(err) = sess
          .resolve_elicitation(server_name, request_id, response)
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/mcp.rs b/core/src/session/mcp.rs
---- a/core/src/session/mcp.rs	2026-06-30 20:02:13.013774000 +0200
+--- a/core/src/session/mcp.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/session/mcp.rs	2026-07-01 06:11:47.614600000 +0200
 @@ -1,7 +1,11 @@
  use super::*;
@@ -2958,7 +5252,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  }
  
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/mod.rs b/core/src/session/mod.rs
---- a/core/src/session/mod.rs	2026-06-30 20:02:13.014176000 +0200
+--- a/core/src/session/mod.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/session/mod.rs	2026-07-01 06:11:37.490183000 +0200
 @@ -73,9 +73,18 @@
  use codex_login::CodexAuth;
@@ -3004,7 +5298,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          let state = self.state.lock().await;
          state.get_connector_selection()
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/state/session.rs b/core/src/state/session.rs
---- a/core/src/state/session.rs	2026-06-30 20:02:13.016483000 +0200
+--- a/core/src/state/session.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/state/session.rs	2026-07-01 06:11:42.064949000 +0200
 @@ -254,6 +254,7 @@
      }
@@ -3015,7 +5309,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          self.active_connector_selection.clone()
      }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/state/turn.rs b/core/src/state/turn.rs
---- a/core/src/state/turn.rs	2026-06-30 20:02:13.016554000 +0200
+--- a/core/src/state/turn.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/state/turn.rs	2026-06-30 18:09:46.366258000 +0200
 @@ -8,6 +8,7 @@
  use tokio_util::task::AbortOnDropHandle;
@@ -3034,7 +5328,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  use crate::agent::control::AgentExecutionGuard;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/context.rs b/core/src/tools/context.rs
---- a/core/src/tools/context.rs	2026-06-30 20:02:13.017890000 +0200
+--- a/core/src/tools/context.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/tools/context.rs	2026-07-01 06:11:18.708961000 +0200
 @@ -63,6 +63,7 @@
  }
@@ -3053,7 +5347,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      fn response_payload(&self) -> FunctionCallOutputPayload {
          let mut payload = self.result.as_function_call_output_payload();
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/handlers/mod.rs b/core/src/tools/handlers/mod.rs
---- a/core/src/tools/handlers/mod.rs	2026-06-30 20:02:13.019158000 +0200
+--- a/core/src/tools/handlers/mod.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/tools/handlers/mod.rs	2026-07-01 06:11:27.718265000 +0200
 @@ -9,8 +9,11 @@
  pub(crate) mod get_context_remaining_spec;
@@ -3082,7 +5376,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use new_context_window::NewContextWindowHandler;
  pub use plan::PlanHandler;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/handlers/request_plugin_install.rs b/core/src/tools/handlers/request_plugin_install.rs
---- a/core/src/tools/handlers/request_plugin_install.rs	2026-06-30 20:02:13.020334000 +0200
+--- a/core/src/tools/handlers/request_plugin_install.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/tools/handlers/request_plugin_install.rs	2026-06-30 15:32:31.639302000 +0200
 @@ -4,6 +4,7 @@
  use codex_config::types::ToolSuggestDisabledTool;
@@ -3101,7 +5395,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use serde_json::Value;
  use tracing::warn;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/handlers/tool_search.rs b/core/src/tools/handlers/tool_search.rs
---- a/core/src/tools/handlers/tool_search.rs	2026-06-30 20:02:13.020958000 +0200
+--- a/core/src/tools/handlers/tool_search.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/tools/handlers/tool_search.rs	2026-06-30 18:18:10.762618000 +0200
 @@ -180,19 +180,20 @@
      }
@@ -3136,7 +5430,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                      "properties": {},
                      "additionalProperties": false,
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/spec_plan.rs b/core/src/tools/spec_plan.rs
---- a/core/src/tools/spec_plan.rs	2026-06-30 20:02:13.022754000 +0200
+--- a/core/src/tools/spec_plan.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/tools/spec_plan.rs	2026-06-30 18:09:46.634267000 +0200
 @@ -13,11 +13,15 @@
  use crate::tools::handlers::ExecCommandHandlerOptions;
@@ -3216,7 +5510,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          }
      }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/turn_metadata.rs b/core/src/turn_metadata.rs
---- a/core/src/turn_metadata.rs	2026-06-30 20:02:13.023096000 +0200
+--- a/core/src/turn_metadata.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core/src/turn_metadata.rs	2026-07-01 06:12:00.543741000 +0200
 @@ -28,11 +28,15 @@
  use codex_protocol::protocol::ThreadSource;
@@ -3243,7 +5537,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          &self,
          context: McpTurnMetadataContext<'_>,
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-plugins/Cargo.toml b/core-plugins/Cargo.toml
---- a/core-plugins/Cargo.toml	2026-06-30 20:02:12.998772000 +0200
+--- a/core-plugins/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/core-plugins/Cargo.toml	2026-06-30 18:35:54.877268000 +0200
 @@ -14,34 +14,36 @@
  
@@ -4433,7 +6727,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +pub use remote::RecommendedPlugin;
 +pub use remote::RecommendedPluginsMode;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-plugins/src/lib.rs b/core-plugins/src/lib.rs
---- a/core-plugins/src/lib.rs	2026-06-30 20:02:12.999005000 +0200
+--- a/core-plugins/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core-plugins/src/lib.rs	2026-06-30 18:20:37.220904000 +0200
 @@ -1,60 +1,117 @@
 +#[cfg(target_os = "freebsd")]
@@ -4555,7 +6849,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(not(target_os = "freebsd"))]
  pub use remote::RecommendedPluginsMode;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-skills/Cargo.toml b/core-skills/Cargo.toml
---- a/core-skills/Cargo.toml	2026-06-30 20:02:13.001613000 +0200
+--- a/core-skills/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/core-skills/Cargo.toml	2026-06-30 18:38:51.779532000 +0200
 @@ -14,21 +14,23 @@
  
@@ -5322,7 +7616,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-skills/src/lib.rs b/core-skills/src/lib.rs
---- a/core-skills/src/lib.rs	2026-06-30 20:02:13.001840000 +0200
+--- a/core-skills/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/core-skills/src/lib.rs	2026-06-30 18:15:54.972382000 +0200
 @@ -1,36 +1,77 @@
 +#[cfg(target_os = "freebsd")]
@@ -5402,8 +7696,55 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use service::SkillsService;
 +#[cfg(not(target_os = "freebsd"))]
  pub use skill_instructions::SkillInstructions;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/Cargo.toml b/exec/Cargo.toml
+--- a/exec/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/exec/Cargo.toml	2026-07-01 18:25:55.853829000 +0200
+@@ -21,20 +21,38 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["chatgpt-login", "websocket"]
++api-only = [
++    "codex-app-server-client/api-only",
++    "codex-login/api-only",
++]
++chatgpt-login = [
++    "codex-app-server-client/chatgpt-login",
++    "codex-login/chatgpt-login",
++]
++websocket = [
++    "codex-app-server-client/websocket",
++    "codex-cloud-config/websocket",
++    "codex-core/websocket",
++    "codex-model-provider-info/websocket",
++    "codex-otel/websocket",
++]
++
+ [dependencies]
+ anyhow = { workspace = true }
+ clap = { workspace = true, features = ["derive"] }
+ codex-arg0 = { workspace = true }
+-codex-app-server-client = { workspace = true }
++codex-app-server-client = { path = "../app-server-client", default-features = false }
+ codex-app-server-protocol = { workspace = true }
+-codex-cloud-config = { workspace = true }
++codex-cloud-config = { path = "../cloud-config", default-features = false }
+ codex-config = { workspace = true }
+-codex-core = { workspace = true }
++codex-core = { path = "../core", default-features = false }
+ codex-feedback = { workspace = true }
+ codex-git-utils = { workspace = true }
+ codex-login = { workspace = true }
+-codex-model-provider-info = { workspace = true }
+-codex-otel = { workspace = true }
++codex-model-provider-info = { path = "../model-provider-info", default-features = false }
++codex-otel = { path = "../otel", default-features = false }
+ codex-protocol = { workspace = true }
+ codex-utils-absolute-path = { workspace = true }
+ codex-utils-cli = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/cli.rs b/exec/src/cli.rs
---- a/exec/src/cli.rs	2026-06-30 20:02:13.038629000 +0200
+--- a/exec/src/cli.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/exec/src/cli.rs	2026-06-30 19:53:37.457043000 +0200
 @@ -60,6 +60,15 @@
      #[arg(long = "color", value_enum, default_value_t = Color::Auto)]
@@ -5437,7 +7778,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  #[cfg(test)]
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/cli_tests.rs b/exec/src/cli_tests.rs
---- a/exec/src/cli_tests.rs	2026-06-30 20:02:13.038656000 +0200
+--- a/exec/src/cli_tests.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/exec/src/cli_tests.rs	2026-06-30 19:55:45.540139000 +0200
 @@ -75,6 +75,20 @@
  }
@@ -5461,7 +7802,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      let cli = Cli::parse_from(["codex-exec", "--full-auto", "summarize"]);
  
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/event_processor_with_human_output.rs b/exec/src/event_processor_with_human_output.rs
---- a/exec/src/event_processor_with_human_output.rs	2026-06-30 20:02:13.038740000 +0200
+--- a/exec/src/event_processor_with_human_output.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/exec/src/event_processor_with_human_output.rs	2026-07-01 06:27:42.724465000 +0200
 @@ -16,6 +16,7 @@
  use owo_colors::OwoColorize;
@@ -5600,8 +7941,8 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    )
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/event_processor_with_human_output_tests.rs b/exec/src/event_processor_with_human_output_tests.rs
---- a/exec/src/event_processor_with_human_output_tests.rs	2026-06-30 20:02:13.038791000 +0200
-+++ b/exec/src/event_processor_with_human_output_tests.rs	2026-07-01 06:27:52.087655000 +0200
+--- a/exec/src/event_processor_with_human_output_tests.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec/src/event_processor_with_human_output_tests.rs	2026-07-01 18:35:50.991400000 +0200
 @@ -1,3 +1,4 @@
 +use codex_app_server_protocol::CommandExecutionStatus;
  use codex_app_server_protocol::ServerNotification;
@@ -5667,7 +8008,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +
 +#[test]
 +fn command_only_mode_hides_turn_diffs() {
-+    let diff = "diff --git a/src/lib.rs b/src/lib.rs\n";
++    let diff = concat!("diff --", "git a/src/lib.rs b/src/lib.rs\n");
 +
 +    assert!(should_print_turn_diff(ExecOutputMode::Full, diff));
 +    assert!(!should_print_turn_diff(ExecOutputMode::CommandOnly, diff));
@@ -5719,7 +8060,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          show_raw_agent_reasoning: false,
          last_message_path: None,
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/lib.rs b/exec/src/lib.rs
---- a/exec/src/lib.rs	2026-06-30 20:02:13.039120000 +0200
+--- a/exec/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/exec/src/lib.rs	2026-06-30 19:54:59.269390000 +0200
 @@ -209,6 +209,7 @@
      dangerously_bypass_approvals_and_sandbox: bool,
@@ -5762,17 +8103,34 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      };
      if oss {
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/Cargo.toml b/exec-server/Cargo.toml
---- a/exec-server/Cargo.toml	2026-06-30 20:02:13.034477000 +0200
-+++ b/exec-server/Cargo.toml	2026-06-30 03:29:36.291271000 +0200
-@@ -15,7 +15,6 @@
- axum = { workspace = true, features = ["http1", "tokio", "ws"] }
+--- a/exec-server/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/Cargo.toml	2026-07-01 18:27:50.495582000 +0200
+@@ -10,14 +10,21 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++remote-websocket = [
++    "axum/ws",
++    "codex-api/websocket",
++    "dep:tokio-tungstenite",
++]
++
+ [dependencies]
+ arc-swap = { workspace = true }
+-axum = { workspace = true, features = ["http1", "tokio", "ws"] }
++axum = { workspace = true, default-features = false, features = ["http1", "tokio"] }
  base64 = { workspace = true }
  bytes = { workspace = true }
 -clatter = { workspace = true }
  codex-app-server-protocol = { workspace = true }
- codex-api = { workspace = true }
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
  codex-client = { workspace = true }
-@@ -30,7 +29,6 @@
+ codex-file-system = { workspace = true }
+ codex-protocol = { workspace = true }
+@@ -30,7 +37,6 @@
  futures = { workspace = true }
  http = { workspace = true }
  reqwest = { workspace = true, features = ["json", "rustls-tls", "stream"] }
@@ -5780,7 +8138,14 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  serde = { workspace = true, features = ["derive"] }
  serde_json = { workspace = true }
  thiserror = { workspace = true }
-@@ -53,6 +51,10 @@
+@@ -47,12 +53,16 @@
+     "time",
+ ] }
+ tokio-util = { workspace = true, features = ["io", "rt"] }
+-tokio-tungstenite = { workspace = true }
++tokio-tungstenite = { workspace = true, optional = true }
+ tracing = { workspace = true }
+ uuid = { workspace = true, features = ["v4"] }
  
  [target.'cfg(unix)'.dependencies]
  libc = { workspace = true }
@@ -5791,54 +8156,102 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [target.'cfg(windows)'.dependencies]
  windows-sys = { version = "0.52", features = [
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/client.rs b/exec-server/src/client.rs
+--- a/exec-server/src/client.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/src/client.rs	2026-07-01 18:23:15.910938000 +0200
+@@ -415,11 +415,15 @@
+     #[error("timed out connecting to exec-server websocket `{url}` after {timeout:?}")]
+     WebSocketConnectTimeout { url: String, timeout: Duration },
+     #[error("failed to connect to exec-server websocket `{url}`: {source}")]
++    #[cfg(feature = "remote-websocket")]
+     WebSocketConnect {
+         url: String,
+         #[source]
+         source: tokio_tungstenite::tungstenite::Error,
+     },
++    #[error("failed to connect to exec-server websocket `{url}`: {source}")]
++    #[cfg(not(feature = "remote-websocket"))]
++    WebSocketConnect { url: String, source: String },
+     #[error("timed out waiting for exec-server initialize handshake after {timeout:?}")]
+     InitializeTimedOut { timeout: Duration },
+     #[error("exec-server transport closed")]
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/client_transport.rs b/exec-server/src/client_transport.rs
---- a/exec-server/src/client_transport.rs	2026-06-30 20:02:13.035095000 +0200
-+++ b/exec-server/src/client_transport.rs	2026-06-30 06:15:06.495387000 +0200
-@@ -7,6 +7,7 @@
+--- a/exec-server/src/client_transport.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/src/client_transport.rs	2026-07-01 18:32:25.196532000 +0200
+@@ -5,30 +5,45 @@
+ use tokio::io::AsyncBufReadExt;
+ use tokio::io::BufReader;
  use tokio::process::Command;
++#[cfg(feature = "remote-websocket")]
  use tokio::time::timeout;
++#[cfg(feature = "remote-websocket")]
  use tokio_tungstenite::connect_async;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use tokio_tungstenite::connect_async_with_config;
  use tracing::debug;
  use tracing::warn;
-@@ -15,10 +16,13 @@
+ 
++#[cfg(feature = "remote-websocket")]
+ use codex_utils_rustls_provider::ensure_rustls_crypto_provider;
  
  use crate::ExecServerClient;
  use crate::ExecServerError;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::client_api::DEFAULT_REMOTE_EXEC_SERVER_CONNECT_TIMEOUT;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::client_api::DEFAULT_REMOTE_EXEC_SERVER_INITIALIZE_TIMEOUT;
  use crate::client_api::ExecServerClientConnectOptions;
++#[cfg(feature = "remote-websocket")]
  use crate::client_api::NoiseRendezvousConnectArgs;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::client_api::NoiseRendezvousConnectBundle;
++#[cfg(feature = "remote-websocket")]
  use crate::client_api::NoiseRendezvousConnectProvider;
++#[cfg(feature = "remote-websocket")]
  use crate::client_api::RemoteExecServerConnectArgs;
-@@ -26,9 +30,13 @@
+ use crate::client_api::StdioExecServerCommand;
  use crate::client_api::StdioExecServerConnectArgs;
  use crate::connection::JsonRpcConnection;
++#[cfg(feature = "remote-websocket")]
  use crate::noise_channel::NoiseChannelIdentity;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::noise_relay::NoiseHarnessConnectionArgs;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::noise_relay::noise_harness_connection_from_websocket;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::noise_relay::noise_relay_websocket_config;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::relay::harness_connection_from_websocket;
  
  const ENVIRONMENT_CLIENT_NAME: &str = "codex-environment";
-@@ -41,6 +49,7 @@
+@@ -40,7 +55,13 @@
+ /// every physical connection attempt.
  #[derive(Clone)]
  pub(crate) enum ExecServerReconnectStrategy {
++    #[cfg(feature = "remote-websocket")]
      WebSocket(RemoteExecServerConnectArgs),
-+    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
++    #[cfg(feature = "remote-websocket")]
++    #[cfg_attr(
++        any(target_os = "freebsd", not(feature = "remote-websocket")),
++        allow(dead_code)
++    )]
      NoiseRendezvous {
          provider: Arc<dyn NoiseRendezvousConnectProvider>,
          identity: NoiseChannelIdentity,
-@@ -69,16 +78,30 @@
+@@ -55,6 +76,12 @@
+         &self,
+         session_id: &str,
+     ) -> Result<(JsonRpcConnection, ExecServerClientConnectOptions), ExecServerError> {
++        #[cfg(not(feature = "remote-websocket"))]
++        {
++            let _ = session_id;
++            match *self {}
++        }
++        #[cfg(feature = "remote-websocket")]
+         match self {
+             Self::WebSocket(args) => {
+                 let mut args = args.clone();
+@@ -69,16 +96,30 @@
                  connect_timeout,
                  initialize_timeout,
              } => {
@@ -5879,7 +8292,36 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              }
          }
      }
-@@ -110,16 +133,25 @@
+@@ -97,29 +138,46 @@
+                 connect_timeout,
+                 initialize_timeout,
+             } => {
+-                Self::connect_websocket(RemoteExecServerConnectArgs {
+-                    websocket_url,
+-                    client_name: ENVIRONMENT_CLIENT_NAME.to_string(),
+-                    connect_timeout,
+-                    initialize_timeout,
+-                    resume_session_id: None,
+-                })
+-                .await
++                #[cfg(not(feature = "remote-websocket"))]
++                {
++                    let _ = (websocket_url, connect_timeout, initialize_timeout);
++                    Err(remote_relay_disabled_error())
++                }
++                #[cfg(feature = "remote-websocket")]
++                {
++                    Self::connect_websocket(RemoteExecServerConnectArgs {
++                        websocket_url,
++                        client_name: ENVIRONMENT_CLIENT_NAME.to_string(),
++                        connect_timeout,
++                        initialize_timeout,
++                        resume_session_id: None,
++                    })
++                    .await
++                }
+             }
+             crate::client_api::ExecServerTransportParams::NoiseRendezvous {
                  provider,
                  identity,
              } => {
@@ -5893,7 +8335,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -                let (connection, options) =
 -                    Self::open_initial_noise_rendezvous_connection(&provider, &identity).await?;
 -                Self::connect_with_recovery(connection, options, Some(reconnect_strategy)).await
-+                #[cfg(not(target_os = "freebsd"))]
++                #[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
 +                {
 +                    let reconnect_strategy = ExecServerReconnectStrategy::NoiseRendezvous {
 +                        provider: Arc::clone(&provider),
@@ -5907,7 +8349,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +                            .await?;
 +                    Self::connect_with_recovery(connection, options, Some(reconnect_strategy)).await
 +                }
-+                #[cfg(target_os = "freebsd")]
++                #[cfg(any(not(feature = "remote-websocket"), target_os = "freebsd"))]
 +                {
 +                    let _ = (provider, identity);
 +                    Err(remote_relay_disabled_error())
@@ -5915,15 +8357,31 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              }
              crate::client_api::ExecServerTransportParams::StdioCommand {
                  command,
-@@ -136,6 +168,7 @@
+@@ -136,6 +194,7 @@
          }
      }
  
-+    #[cfg(not(target_os = "freebsd"))]
++    #[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
      async fn open_initial_noise_rendezvous_connection(
          provider: &Arc<dyn NoiseRendezvousConnectProvider>,
          identity: &NoiseChannelIdentity,
-@@ -202,7 +235,14 @@
+@@ -170,6 +229,7 @@
+         }
+     }
+ 
++    #[cfg(feature = "remote-websocket")]
+     pub async fn connect_websocket(
+         args: RemoteExecServerConnectArgs,
+     ) -> Result<Self, ExecServerError> {
+@@ -183,6 +243,7 @@
+         .await
+     }
+ 
++    #[cfg(feature = "remote-websocket")]
+     pub(crate) async fn open_websocket_connection(
+         args: &RemoteExecServerConnectArgs,
+     ) -> Result<JsonRpcConnection, ExecServerError> {
+@@ -202,7 +263,14 @@
  
          let connection_label = format!("exec-server websocket {websocket_url}");
          let connection = if is_rendezvous_harness_url(&websocket_url) {
@@ -5939,19 +8397,27 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          } else {
              JsonRpcConnection::from_websocket(stream, connection_label)
          };
-@@ -223,6 +263,7 @@
+@@ -216,6 +284,7 @@
+     /// only ciphertext after that. Environment-managed connections use a
+     /// retained [`NoiseRendezvousConnectProvider`] so recovery can fetch a fresh
+     /// bundle for each reconnect.
++    #[cfg(feature = "remote-websocket")]
+     pub async fn connect_noise_rendezvous(
+         args: NoiseRendezvousConnectArgs,
+     ) -> Result<Self, ExecServerError> {
+@@ -223,6 +292,7 @@
          Self::connect(connection, options).await
      }
  
-+    #[cfg(not(target_os = "freebsd"))]
++    #[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
      pub(crate) async fn open_noise_rendezvous_connection(
          args: NoiseRendezvousConnectArgs,
      ) -> Result<(JsonRpcConnection, ExecServerClientConnectOptions), ExecServerError> {
-@@ -289,6 +330,13 @@
+@@ -289,6 +359,13 @@
          ))
      }
  
-+    #[cfg(target_os = "freebsd")]
++    #[cfg(any(not(feature = "remote-websocket"), target_os = "freebsd"))]
 +    pub(crate) async fn open_noise_rendezvous_connection(
 +        _args: NoiseRendezvousConnectArgs,
 +    ) -> Result<(JsonRpcConnection, ExecServerClientConnectOptions), ExecServerError> {
@@ -5961,31 +8427,168 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      pub(crate) async fn connect_stdio_command(
          args: StdioExecServerConnectArgs,
      ) -> Result<Self, ExecServerError> {
-@@ -340,6 +388,13 @@
+@@ -330,6 +407,7 @@
+     }
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ fn is_rendezvous_harness_url(websocket_url: &str) -> bool {
+     let Some((_path, query)) = websocket_url.split_once('?') else {
+         return false;
+@@ -340,6 +418,12 @@
          .any(|(key, value)| key == "role" && value == "harness")
  }
  
-+#[cfg(target_os = "freebsd")]
 +fn remote_relay_disabled_error() -> ExecServerError {
 +    ExecServerError::Protocol(
-+        "remote exec-server relay is disabled in FreeBSD exec builds".to_string(),
++        "remote exec-server websocket support is disabled in this build".to_string(),
 +    )
 +}
 +
  fn stdio_command_process(stdio_command: &StdioExecServerCommand) -> Command {
      let mut command = Command::new(&stdio_command.program);
      command.args(&stdio_command.args);
-@@ -352,6 +407,6 @@
+@@ -352,6 +436,6 @@
      command
  }
  
 -#[cfg(test)]
-+#[cfg(all(test, not(target_os = "freebsd")))]
++#[cfg(all(test, feature = "remote-websocket", not(target_os = "freebsd")))]
  #[path = "client_transport_tests.rs"]
  mod tests;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/connection.rs b/exec-server/src/connection.rs
+--- a/exec-server/src/connection.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/src/connection.rs	2026-07-01 18:22:25.514342000 +0200
+@@ -5,11 +5,16 @@
+ use std::sync::atomic::Ordering;
+ use std::time::Duration;
+ 
++#[cfg(feature = "remote-websocket")]
+ use axum::extract::ws::Message as AxumWebSocketMessage;
++#[cfg(feature = "remote-websocket")]
+ use axum::extract::ws::WebSocket as AxumWebSocket;
+ use codex_app_server_protocol::JSONRPCMessage;
++#[cfg(feature = "remote-websocket")]
+ use futures::Sink;
++#[cfg(feature = "remote-websocket")]
+ use futures::SinkExt;
++#[cfg(feature = "remote-websocket")]
+ use futures::Stream;
+ use futures::StreamExt;
+ use tokio::io::AsyncRead;
+@@ -18,7 +23,9 @@
+ use tokio::sync::mpsc;
+ use tokio::sync::watch;
+ use tokio::time::timeout;
++#[cfg(feature = "remote-websocket")]
+ use tokio_tungstenite::WebSocketStream;
++#[cfg(feature = "remote-websocket")]
+ use tokio_tungstenite::tungstenite::Message;
+ use tracing::debug;
+ use tracing::warn;
+@@ -30,9 +37,9 @@
+ 
+ pub(crate) const CHANNEL_CAPACITY: usize = 128;
+ const STDIO_TERMINATION_GRACE_PERIOD: Duration = Duration::from_secs(2);
+-#[cfg(test)]
++#[cfg(all(test, feature = "remote-websocket"))]
+ pub(crate) const WEBSOCKET_KEEPALIVE_INTERVAL: Duration = Duration::from_millis(25);
+-#[cfg(not(test))]
++#[cfg(all(not(test), feature = "remote-websocket"))]
+ pub(crate) const WEBSOCKET_KEEPALIVE_INTERVAL: Duration = Duration::from_secs(30);
+ 
+ #[derive(Debug)]
+@@ -320,6 +327,7 @@
+         }
+     }
+ 
++    #[cfg(feature = "remote-websocket")]
+     pub(crate) fn from_websocket<S>(stream: WebSocketStream<S>, connection_label: String) -> Self
+     where
+         S: AsyncRead + AsyncWrite + Unpin + Send + 'static,
+@@ -327,10 +335,12 @@
+         Self::from_websocket_stream(stream, connection_label, /*ping_interval*/ None)
+     }
+ 
++    #[cfg(feature = "remote-websocket")]
+     pub(crate) fn from_axum_websocket(stream: AxumWebSocket, connection_label: String) -> Self {
+         Self::from_websocket_stream(stream, connection_label, Some(WEBSOCKET_KEEPALIVE_INTERVAL))
+     }
+ 
++    #[cfg(feature = "remote-websocket")]
+     fn from_websocket_stream<T, M, E>(
+         mut websocket: T,
+         connection_label: String,
+@@ -463,18 +473,21 @@
+     }
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ enum JsonRpcWebSocketFrame {
+     Message(JSONRPCMessage),
+     Close,
+     Ignore,
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ trait JsonRpcWebSocketMessage: Send + 'static {
+     fn parse_jsonrpc_frame(self) -> Result<JsonRpcWebSocketFrame, serde_json::Error>;
+     fn from_text(text: String) -> Self;
+     fn ping() -> Self;
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ impl JsonRpcWebSocketMessage for Message {
+     fn parse_jsonrpc_frame(self) -> Result<JsonRpcWebSocketFrame, serde_json::Error> {
+         match self {
+@@ -500,6 +513,7 @@
+     }
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ impl JsonRpcWebSocketMessage for AxumWebSocketMessage {
+     fn parse_jsonrpc_frame(self) -> Result<JsonRpcWebSocketFrame, serde_json::Error> {
+         match self {
+@@ -561,6 +575,7 @@
+     writer.flush().await
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ async fn send_websocket_jsonrpc_message<W, M, E>(
+     websocket_writer: &mut W,
+     connection_label: &str,
+@@ -588,7 +603,7 @@
+     serde_json::to_string(message)
+ }
+ 
+-#[cfg(test)]
++#[cfg(all(test, feature = "remote-websocket"))]
+ mod tests {
+     use std::pin::Pin;
+     use std::sync::Arc;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/environment_toml.rs b/exec-server/src/environment_toml.rs
+--- a/exec-server/src/environment_toml.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/src/environment_toml.rs	2026-07-01 18:25:04.116203000 +0200
+@@ -5,7 +5,6 @@
+ use std::time::Duration;
+ 
+ use serde::Deserialize;
+-use tokio_tungstenite::tungstenite::client::IntoClientRequest;
+ 
+ use crate::DefaultEnvironmentProvider;
+ use crate::Environment;
+@@ -301,7 +300,7 @@
+             "environment url `{url}` must use ws:// or wss://"
+         )));
+     }
+-    url.into_client_request().map_err(|err| {
++    url.parse::<http::Uri>().map_err(|err| {
+         ExecServerError::Protocol(format!("environment url `{url}` is invalid: {err}"))
+     })?;
+     Ok(url.to_string())
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/lib.rs b/exec-server/src/lib.rs
---- a/exec-server/src/lib.rs	2026-06-30 20:02:13.035673000 +0200
-+++ b/exec-server/src/lib.rs	2026-06-30 03:29:36.291375000 +0200
+--- a/exec-server/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/src/lib.rs	2026-07-01 18:23:46.928152000 +0200
 @@ -12,14 +12,21 @@
  mod fs_sandbox;
  mod local_file_system;
@@ -5995,16 +8598,16 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(target_os = "freebsd")]
 +#[path = "noise_channel_freebsd.rs"]
 +mod noise_channel;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  mod noise_relay;
  mod process;
  mod process_id;
  mod process_sandbox;
  mod protocol;
  mod regular_file;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  mod relay;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  mod relay_proto;
  mod remote;
  mod remote_file_system;
@@ -6073,47 +8676,47 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    Transport(String),
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/remote.rs b/exec-server/src/remote.rs
---- a/exec-server/src/remote.rs	2026-06-30 20:02:13.036791000 +0200
-+++ b/exec-server/src/remote.rs	2026-06-30 06:15:06.495610000 +0200
+--- a/exec-server/src/remote.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/src/remote.rs	2026-07-01 18:24:46.115179000 +0200
 @@ -9,30 +9,41 @@
  use http::HeaderValue;
  use reqwest::StatusCode;
  use serde::Deserialize;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use tokio::time::sleep;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use tokio_tungstenite::connect_async_with_config;
  use tracing::debug;
  use tracing::info;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use tracing::warn;
  
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use codex_utils_rustls_provider::ensure_rustls_crypto_provider;
  
  use crate::EnvironmentRegistryConnectRequest;
  use crate::EnvironmentRegistryConnectResponse;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::EnvironmentRegistryHarnessKeyValidationRequest;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::EnvironmentRegistryHarnessKeyValidationResponse;
  use crate::EnvironmentRegistryRegistrationRequest;
  use crate::EnvironmentRegistryRegistrationResponse;
  use crate::ExecServerError;
  use crate::ExecServerRuntimePaths;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::NoiseChannelIdentity;
  use crate::NoiseChannelPublicKey;
  use crate::NoiseRendezvousConnectBundle;
  use crate::NoiseRendezvousConnectProvider;
  use crate::client_api::DEFAULT_REMOTE_EXEC_SERVER_CONNECT_TIMEOUT;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::noise_relay::noise_relay_websocket_config;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::relay::HarnessKeyValidator;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::relay::run_multiplexed_environment;
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  use crate::server::ConnectionProcessor;
  
  const ERROR_BODY_PREVIEW_BYTES: usize = 4096;
@@ -6129,7 +8732,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      }
  }
  
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  #[derive(Clone)]
  struct RegistryHarnessKeyValidator {
      client: EnvironmentRegistryClient,
@@ -6137,7 +8740,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      executor_registration_id: String,
  }
  
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  impl HarnessKeyValidator for RegistryHarnessKeyValidator {
      /// Authorize the harness key recovered from the first IK message.
      /// Noise proves key possession; the registry decides whether that key may use
@@ -6153,7 +8756,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  /// reconnects. The registration and rendezvous URL are also reused until
  /// rendezvous rejects the URL, at which point the next attempt registers again.
  /// The websocket carries cleartext routing metadata and encrypted payloads.
-+#[cfg(not(target_os = "freebsd"))]
++#[cfg(all(feature = "remote-websocket", not(target_os = "freebsd")))]
  #[tracing::instrument(
      name = "codex.exec_server",
      skip_all,
@@ -6161,7 +8764,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      }
  }
  
-+#[cfg(target_os = "freebsd")]
++#[cfg(any(not(feature = "remote-websocket"), target_os = "freebsd"))]
 +#[tracing::instrument(
 +    name = "codex.exec_server",
 +    skip_all,
@@ -6172,7 +8775,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    _runtime_paths: ExecServerRuntimePaths,
 +) -> Result<(), ExecServerError> {
 +    Err(ExecServerError::Protocol(
-+        "remote exec-server relay is disabled in FreeBSD exec builds".to_string(),
++        "remote exec-server websocket support is disabled in this build".to_string(),
 +    ))
 +}
 +
@@ -6187,8 +8790,85 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(all(test, not(target_os = "freebsd")))]
  #[path = "remote/noise_tests.rs"]
  mod noise_tests;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/server/transport.rs b/exec-server/src/server/transport.rs
+--- a/exec-server/src/server/transport.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/exec-server/src/server/transport.rs	2026-07-01 18:23:39.078485000 +0200
+@@ -1,7 +1,9 @@
+ use axum::Router;
+ use axum::body::Body;
++#[cfg(feature = "remote-websocket")]
+ use axum::extract::ConnectInfo;
+ use axum::extract::State;
++#[cfg(feature = "remote-websocket")]
+ use axum::extract::ws::WebSocketUpgrade;
+ use axum::http::Request;
+ use axum::http::StatusCode;
+@@ -10,6 +12,7 @@
+ use axum::middleware::Next;
+ use axum::response::IntoResponse;
+ use axum::response::Response;
++#[cfg(feature = "remote-websocket")]
+ use axum::routing::any;
+ use axum::routing::get;
+ use std::io::Write as _;
+@@ -29,6 +32,7 @@
+ 
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub(crate) enum ExecServerListenTransport {
++    #[cfg(feature = "remote-websocket")]
+     WebSocket(SocketAddr),
+     Stdio,
+ }
+@@ -63,6 +67,7 @@
+         return Ok(ExecServerListenTransport::Stdio);
+     }
+ 
++    #[cfg(feature = "remote-websocket")]
+     if let Some(socket_addr) = listen_url.strip_prefix("ws://") {
+         return socket_addr
+             .parse::<SocketAddr>()
+@@ -82,6 +87,7 @@
+     runtime_paths: ExecServerRuntimePaths,
+ ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+     match parse_listen_url(listen_url)? {
++        #[cfg(feature = "remote-websocket")]
+         ExecServerListenTransport::WebSocket(bind_address) => {
+             run_websocket_listener(bind_address, runtime_paths).await
+         }
+@@ -116,6 +122,7 @@
+     Ok(())
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ async fn run_websocket_listener(
+     bind_address: SocketAddr,
+     runtime_paths: ExecServerRuntimePaths,
+@@ -140,6 +147,7 @@
+     Ok(())
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ #[derive(Clone)]
+ struct ExecServerWebSocketState {
+     processor: ConnectionProcessor,
+@@ -165,6 +173,7 @@
+     }
+ }
+ 
++#[cfg(feature = "remote-websocket")]
+ async fn websocket_upgrade_handler(
+     websocket: WebSocketUpgrade,
+     ConnectInfo(peer_addr): ConnectInfo<SocketAddr>,
+@@ -182,6 +191,6 @@
+     })
+ }
+ 
+-#[cfg(test)]
++#[cfg(all(test, feature = "remote-websocket"))]
+ #[path = "transport_tests.rs"]
+ mod transport_tests;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/server.rs b/exec-server/src/server.rs
---- a/exec-server/src/server.rs	2026-06-30 20:02:13.037188000 +0200
+--- a/exec-server/src/server.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/exec-server/src/server.rs	2026-06-30 06:15:06.495198000 +0200
 @@ -7,6 +7,7 @@
  mod transport;
@@ -6199,7 +8879,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use transport::DEFAULT_LISTEN_URL;
  pub use transport::ExecServerListenUrlParseError;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/Cargo.toml b/execpolicy/Cargo.toml
---- a/execpolicy/Cargo.toml	2026-06-30 20:02:13.040878000 +0200
+--- a/execpolicy/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/execpolicy/Cargo.toml	2026-06-30 04:01:55.365752000 +0200
 @@ -25,8 +25,10 @@
  serde = { workspace = true, features = ["derive"] }
@@ -6214,7 +8894,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [dev-dependencies]
  pretty_assertions = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/src/error.rs b/execpolicy/src/error.rs
---- a/execpolicy/src/error.rs	2026-06-30 20:02:13.041055000 +0200
+--- a/execpolicy/src/error.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/execpolicy/src/error.rs	2026-06-30 04:01:55.365970000 +0200
 @@ -1,3 +1,4 @@
 +#[cfg(not(target_os = "freebsd"))]
@@ -6238,7 +8918,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                  let resolved = span.resolve_span();
                  ErrorLocation {
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/src/lib.rs b/execpolicy/src/lib.rs
---- a/execpolicy/src/lib.rs	2026-06-30 20:02:13.041126000 +0200
+--- a/execpolicy/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/execpolicy/src/lib.rs	2026-06-30 04:01:55.365860000 +0200
 @@ -3,6 +3,10 @@
  pub(crate) mod error;
@@ -6276,7 +8956,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/src/rule.rs b/execpolicy/src/rule.rs
---- a/execpolicy/src/rule.rs	2026-06-30 20:02:13.041296000 +0200
+--- a/execpolicy/src/rule.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/execpolicy/src/rule.rs	2026-06-30 06:15:06.494737000 +0200
 @@ -1,11 +1,14 @@
  use crate::decision::Decision;
@@ -6310,7 +8990,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      policy: &Policy,
      _rules: &[RuleRef],
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/feedback/Cargo.toml b/feedback/Cargo.toml
---- a/feedback/Cargo.toml	2026-06-30 20:02:13.046336000 +0200
+--- a/feedback/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/feedback/Cargo.toml	2026-06-30 02:36:43.155638000 +0200
 @@ -11,9 +11,11 @@
  anyhow = { workspace = true }
@@ -6326,7 +9006,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [dev-dependencies]
  pretty_assertions = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/feedback/src/lib.rs b/feedback/src/lib.rs
---- a/feedback/src/lib.rs	2026-06-30 20:02:13.046471000 +0200
+--- a/feedback/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/feedback/src/lib.rs	2026-06-30 02:36:43.155654000 +0200
 @@ -1,5 +1,6 @@
  use std::collections::BTreeMap;
@@ -6400,7 +9080,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      match classification {
          "bug" => "Bug".to_string(),
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/Cargo.toml b/file-search/Cargo.toml
---- a/file-search/Cargo.toml	2026-06-30 20:02:13.046522000 +0200
+--- a/file-search/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/file-search/Cargo.toml	2026-06-30 18:55:30.362330000 +0200
 @@ -18,11 +18,13 @@
  
@@ -6642,7 +9322,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/src/lib.rs b/file-search/src/lib.rs
---- a/file-search/src/lib.rs	2026-06-30 20:02:13.046690000 +0200
+--- a/file-search/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/file-search/src/lib.rs	2026-06-30 18:55:30.361807000 +0200
 @@ -1,1187 +1,9 @@
 -use crossbeam_channel::Receiver;
@@ -7841,7 +10521,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(not(target_os = "freebsd"))]
 +pub use real::*;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/src/main.rs b/file-search/src/main.rs
---- a/file-search/src/main.rs	2026-06-30 20:02:13.046720000 +0200
+--- a/file-search/src/main.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/file-search/src/main.rs	2026-06-30 18:55:30.362240000 +0200
 @@ -1,13 +1,22 @@
 +#[cfg(not(target_os = "freebsd"))]
@@ -9078,7 +11758,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/keyring-store/Cargo.toml b/keyring-store/Cargo.toml
---- a/keyring-store/Cargo.toml	2026-06-30 20:02:13.049610000 +0200
+--- a/keyring-store/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/keyring-store/Cargo.toml	2026-06-30 02:36:43.155668000 +0200
 @@ -20,7 +20,7 @@
  [target.'cfg(target_os = "windows")'.dependencies]
@@ -9090,7 +11770,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [lib]
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/keyring-store/src/lib.rs b/keyring-store/src/lib.rs
---- a/keyring-store/src/lib.rs	2026-06-30 20:02:13.049656000 +0200
+--- a/keyring-store/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/keyring-store/src/lib.rs	2026-06-30 02:36:43.155682000 +0200
 @@ -1,3 +1,4 @@
 +#[cfg(not(target_os = "freebsd"))]
@@ -9132,18 +11812,314 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  impl KeyringStore for DefaultKeyringStore {
      fn load(&self, service: &str, account: &str) -> Result<Option<String>, CredentialStoreError> {
          trace!("keyring.load start, service={service}, account={account}");
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider/Cargo.toml b/model-provider/Cargo.toml
---- a/model-provider/Cargo.toml	2026-06-30 20:02:13.055411000 +0200
-+++ b/model-provider/Cargo.toml	2026-06-30 02:36:43.155696000 +0200
-@@ -15,7 +15,6 @@
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/Cargo.toml b/login/Cargo.toml
+--- a/login/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/login/Cargo.toml	2026-07-01 09:42:53.860271000 +0200
+@@ -7,6 +7,13 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["chatgpt-login"]
++# Forces API-key-only authentication at compile time.
++api-only = []
++# Enables managed ChatGPT browser and device-code login flows.
++chatgpt-login = ["dep:rand", "dep:tiny_http", "dep:urlencoding", "dep:webbrowser"]
++
  [dependencies]
- codex-api = { workspace = true }
+ base64 = { workspace = true }
+ chrono = { workspace = true, features = ["serde"] }
+@@ -23,13 +30,13 @@
+ codex-utils-template = { workspace = true }
+ once_cell = { workspace = true }
+ os_info = { workspace = true }
+-rand = { workspace = true }
++rand = { workspace = true, optional = true }
+ reqwest = { workspace = true, features = ["json", "blocking"] }
+ serde = { workspace = true, features = ["derive"] }
+ serde_json = { workspace = true }
+ sha2 = { workspace = true }
+ thiserror = { workspace = true }
+-tiny_http = { workspace = true }
++tiny_http = { workspace = true, optional = true }
+ tokio = { workspace = true, features = [
+     "io-std",
+     "macros",
+@@ -39,8 +46,8 @@
+ ] }
+ tracing = { workspace = true }
+ url = { workspace = true }
+-urlencoding = { workspace = true }
+-webbrowser = { workspace = true }
++urlencoding = { workspace = true, optional = true }
++webbrowser = { workspace = true, optional = true }
+ 
+ [dev-dependencies]
+ anyhow = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/src/auth/auth_tests.rs b/login/src/auth/auth_tests.rs
+--- a/login/src/auth/auth_tests.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/login/src/auth/auth_tests.rs	2026-07-01 09:33:57.583445000 +0200
+@@ -31,6 +31,21 @@
+ const WORKSPACE_ID_SECOND_ALLOWED: &str = "123e4567-e89b-42d3-a456-426614174001";
+ const WORKSPACE_ID_DISALLOWED: &str = "123e4567-e89b-42d3-a456-426614174002";
+ 
++#[test]
++#[serial(codex_auth_env)]
++#[cfg(not(feature = "api-only"))]
++fn api_only_mode_disabled_without_feature_or_env() {
++    let _api_only_guard = EnvVarGuard::remove(CODEX_API_ONLY_ENV_VAR);
++
++    assert!(!super::is_api_only_mode_enabled());
++}
++
++#[test]
++#[cfg(feature = "api-only")]
++fn api_only_mode_enabled_by_compile_time_feature() {
++    assert!(super::is_api_only_mode_enabled());
++}
++
+ #[tokio::test]
+ async fn refresh_without_id_token() {
+     let codex_home = tempdir().unwrap();
+@@ -1645,6 +1660,72 @@
+     assert!(
+         !codex_home.path().join("auth.json").exists(),
+         "auth.json should be removed on mismatch"
++    );
++}
++
++#[tokio::test]
++#[serial(codex_auth_env)]
++async fn enforce_login_restrictions_allows_api_key_when_api_only() {
++    let _api_only_guard = EnvVarGuard::set(CODEX_API_ONLY_ENV_VAR, "1");
++    let _access_token_guard = remove_access_token_env_var();
++    let codex_home = tempdir().unwrap();
++    login_with_api_key(
++        codex_home.path(),
++        "sk-test",
++        AuthCredentialsStoreMode::File,
++        AuthKeyringBackendKind::default(),
++    )
++    .expect("login with api key should succeed");
++
++    let config = build_config(
++        codex_home.path(),
++        /*forced_login_method*/ None,
++        /*forced_chatgpt_workspace_id*/ None,
++    )
++    .await;
++
++    super::enforce_login_restrictions(&config)
++        .await
++        .expect("API key auth should be allowed in API-only mode");
++    assert!(
++        codex_home.path().join("auth.json").exists(),
++        "auth.json should remain for API key auth"
++    );
++}
++
++#[tokio::test]
++#[serial(codex_auth_env)]
++async fn enforce_login_restrictions_logs_out_chatgpt_when_api_only() {
++    let _api_only_guard = EnvVarGuard::set(CODEX_API_ONLY_ENV_VAR, "true");
++    let _access_token_guard = remove_access_token_env_var();
++    let codex_home = tempdir().unwrap();
++    write_auth_file(
++        AuthFileParams {
++            openai_api_key: None,
++            chatgpt_plan_type: Some("pro".to_string()),
++            chatgpt_account_id: Some(WORKSPACE_ID_ALLOWED.to_string()),
++        },
++        codex_home.path(),
++    )
++    .expect("failed to write chatgpt auth file");
++
++    let config = build_config(
++        codex_home.path(),
++        /*forced_login_method*/ None,
++        /*forced_chatgpt_workspace_id*/ None,
++    )
++    .await;
++
++    let err = super::enforce_login_restrictions(&config)
++        .await
++        .expect_err("ChatGPT auth should be rejected in API-only mode");
++    assert!(
++        err.to_string()
++            .contains("API-only mode requires API key authentication")
++    );
++    assert!(
++        !codex_home.path().join("auth.json").exists(),
++        "auth.json should be removed for ChatGPT auth in API-only mode"
+     );
+ }
+ 
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/src/auth/manager.rs b/login/src/auth/manager.rs
+--- a/login/src/auth/manager.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/login/src/auth/manager.rs	2026-07-01 09:44:25.313174000 +0200
+@@ -130,8 +130,23 @@
+ pub const REFRESH_TOKEN_URL_OVERRIDE_ENV_VAR: &str = "CODEX_REFRESH_TOKEN_URL_OVERRIDE";
+ pub const REVOKE_TOKEN_URL_OVERRIDE_ENV_VAR: &str = "CODEX_REVOKE_TOKEN_URL_OVERRIDE";
+ pub const CLIENT_ID_OVERRIDE_ENV_VAR: &str = "CODEX_APP_SERVER_LOGIN_CLIENT_ID";
++pub const CODEX_API_ONLY_ENV_VAR: &str = "CODEX_API_ONLY";
+ static NEXT_DUMMY_AUTH_ID: AtomicU64 = AtomicU64::new(1);
+ 
++pub fn is_api_only_mode_enabled() -> bool {
++    if cfg!(feature = "api-only") {
++        return true;
++    }
++
++    let Some(value) = env::var_os(CODEX_API_ONLY_ENV_VAR) else {
++        return false;
++    };
++    matches!(
++        value.to_string_lossy().trim().to_ascii_lowercase().as_str(),
++        "1" | "true" | "yes" | "on"
++    )
++}
++
+ #[derive(Debug, Error)]
+ pub enum RefreshTokenError {
+     #[error("{0}")]
+@@ -922,8 +937,24 @@
+     expected_workspace_ids: Option<&[String]>,
+     auth: &PersonalAccessTokenAuth,
+ ) -> std::io::Result<()> {
+-    crate::server::ensure_workspace_account_allowed(expected_workspace_ids, auth.account_id())
+-        .map_err(|message| std::io::Error::new(std::io::ErrorKind::PermissionDenied, message))
++    let Some(expected_workspace_ids) = expected_workspace_ids else {
++        return Ok(());
++    };
++
++    if expected_workspace_ids
++        .iter()
++        .any(|workspace_id| workspace_id == auth.account_id())
++    {
++        Ok(())
++    } else {
++        Err(std::io::Error::new(
++            std::io::ErrorKind::PermissionDenied,
++            format!(
++                "Login is restricted to workspace id(s) {}.",
++                expected_workspace_ids.join(", ")
++            ),
++        ))
++    }
+ }
+ 
+ /// Writes an in-memory auth payload for externally managed ChatGPT tokens.
+@@ -1019,6 +1050,28 @@
+     else {
+         return Ok(());
+     };
++
++    if is_api_only_mode_enabled() {
++        let api_only_violation = match auth.auth_mode() {
++            AuthMode::ApiKey | AuthMode::BedrockApiKey => None,
++            AuthMode::Chatgpt
++            | AuthMode::ChatgptAuthTokens
++            | AuthMode::AgentIdentity
++            | AuthMode::PersonalAccessToken => Some(
++                "API-only mode requires API key authentication, but non-API-key credentials are currently being used. Logging out."
++                    .to_string(),
++            ),
++        };
++
++        if let Some(message) = api_only_violation {
++            return logout_with_message(
++                &config.codex_home,
++                message,
++                config.auth_credentials_store_mode,
++                config.keyring_backend_kind,
++            );
++        }
++    }
+ 
+     if let Some(required_method) = config.forced_login_method {
+         let method_violation = match (required_method, auth.auth_mode()) {
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/src/lib.rs b/login/src/lib.rs
+--- a/login/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/login/src/lib.rs	2026-07-01 09:43:03.761638000 +0200
+@@ -2,20 +2,31 @@
+ pub mod auth_env_telemetry;
+ pub mod token_data;
+ 
++#[cfg(feature = "chatgpt-login")]
+ mod device_code_auth;
+ mod outbound_proxy;
++#[cfg(feature = "chatgpt-login")]
+ mod pkce;
++#[cfg(feature = "chatgpt-login")]
+ mod server;
+ 
+ pub use codex_client::BuildCustomCaTransportError as BuildLoginHttpClientError;
+ pub use codex_config::types::AuthCredentialsStoreMode;
++#[cfg(feature = "chatgpt-login")]
+ pub use device_code_auth::DeviceCode;
++#[cfg(feature = "chatgpt-login")]
+ pub use device_code_auth::complete_device_code_login;
++#[cfg(feature = "chatgpt-login")]
+ pub use device_code_auth::request_device_code;
++#[cfg(feature = "chatgpt-login")]
+ pub use device_code_auth::run_device_code_login;
++#[cfg(feature = "chatgpt-login")]
+ pub use server::LoginServer;
++#[cfg(feature = "chatgpt-login")]
+ pub use server::ServerOptions;
++#[cfg(feature = "chatgpt-login")]
+ pub use server::ShutdownHandle;
++#[cfg(feature = "chatgpt-login")]
+ pub use server::run_login_server;
+ 
+ pub use auth::AgentIdentityAuthPolicy;
+@@ -28,6 +39,7 @@
+ pub use auth::CLIENT_ID_OVERRIDE_ENV_VAR;
+ pub use auth::CODEX_ACCESS_TOKEN_ENV_VAR;
+ pub use auth::CODEX_API_KEY_ENV_VAR;
++pub use auth::CODEX_API_ONLY_ENV_VAR;
+ pub use auth::CodexAuth;
+ pub use auth::ExternalAuth;
+ pub use auth::ExternalAuthChatgptMetadata;
+@@ -42,6 +54,7 @@
+ pub use auth::UnauthorizedRecovery;
+ pub use auth::default_client;
+ pub use auth::enforce_login_restrictions;
++pub use auth::is_api_only_mode_enabled;
+ pub use auth::load_auth_dot_json;
+ pub use auth::login_with_access_token;
+ pub use auth::login_with_api_key;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider/Cargo.toml b/model-provider/Cargo.toml
+--- a/model-provider/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/model-provider/Cargo.toml	2026-07-01 18:28:36.772180000 +0200
+@@ -12,21 +12,32 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++websocket = [
++    "codex-api/websocket",
++    "codex-model-provider-info/websocket",
++    "codex-otel/websocket",
++    "codex-response-debug-context/websocket",
++]
++
+ [dependencies]
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
  codex-agent-identity = { workspace = true }
 -codex-aws-auth = { workspace = true }
  codex-client = { workspace = true }
  codex-feedback = { workspace = true }
  codex-login = { workspace = true }
-@@ -27,6 +26,9 @@
+-codex-model-provider-info = { workspace = true }
++codex-model-provider-info = { path = "../model-provider-info", default-features = false }
+ codex-models-manager = { workspace = true }
+-codex-otel = { workspace = true }
++codex-otel = { path = "../otel", default-features = false }
+ codex-protocol = { workspace = true }
+-codex-response-debug-context = { workspace = true }
++codex-response-debug-context = { path = "../response-debug-context", default-features = false }
  http = { workspace = true }
  tokio = { workspace = true, features = ["sync", "time"] }
  tracing = { workspace = true, features = ["log"] }
@@ -9154,7 +12130,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [dev-dependencies]
  pretty_assertions = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider/src/lib.rs b/model-provider/src/lib.rs
---- a/model-provider/src/lib.rs	2026-06-30 20:02:13.055715000 +0200
+--- a/model-provider/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/model-provider/src/lib.rs	2026-06-30 02:36:43.155711000 +0200
 @@ -1,3 +1,4 @@
 +#[cfg(not(target_os = "freebsd"))]
@@ -9162,7 +12138,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod auth;
  mod bearer_auth_provider;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider/src/provider.rs b/model-provider/src/provider.rs
---- a/model-provider/src/provider.rs	2026-06-30 20:02:13.055831000 +0200
+--- a/model-provider/src/provider.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/model-provider/src/provider.rs	2026-06-30 02:36:43.155726000 +0200
 @@ -17,6 +17,7 @@
  use codex_protocol::error::CodexErr;
@@ -9194,8 +12170,25 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      }
  }
  
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider-info/Cargo.toml b/model-provider-info/Cargo.toml
+--- a/model-provider-info/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/model-provider-info/Cargo.toml	2026-07-01 18:28:03.792974000 +0200
+@@ -12,8 +12,12 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++websocket = ["codex-api/websocket"]
++
+ [dependencies]
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
+ codex-app-server-protocol = { workspace = true }
+ codex-protocol = { workspace = true }
+ http = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/Cargo.toml b/network-proxy/Cargo.toml
---- a/network-proxy/Cargo.toml	2026-06-30 20:02:13.056801000 +0200
+--- a/network-proxy/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/network-proxy/Cargo.toml	2026-06-30 18:42:11.404160000 +0200
 @@ -14,20 +14,20 @@
  
@@ -9264,7 +12257,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    false
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/lib.rs b/network-proxy/src/lib.rs
---- a/network-proxy/src/lib.rs	2026-06-30 20:02:13.057229000 +0200
+--- a/network-proxy/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/network-proxy/src/lib.rs	2026-06-30 18:44:26.172144000 +0200
 @@ -1,20 +1,59 @@
  #![deny(clippy::print_stdout, clippy::print_stderr)]
@@ -9981,7 +12974,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/runtime.rs b/network-proxy/src/runtime.rs
---- a/network-proxy/src/runtime.rs	2026-06-30 20:02:13.057930000 +0200
+--- a/network-proxy/src/runtime.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/network-proxy/src/runtime.rs	2026-06-30 03:47:01.684815000 +0200
 @@ -589,6 +589,7 @@
          Ok(guard.mitm.clone())
@@ -10439,9 +13432,22 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/Cargo.toml b/otel/Cargo.toml
---- a/otel/Cargo.toml	2026-06-30 20:02:13.058491000 +0200
-+++ b/otel/Cargo.toml	2026-06-30 03:15:04.908608000 +0200
-@@ -20,7 +20,27 @@
+--- a/otel/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/otel/Cargo.toml	2026-07-01 18:28:25.227806000 +0200
+@@ -12,15 +12,39 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++websocket = ["codex-api/websocket", "dep:tokio-tungstenite"]
++
+ [dependencies]
+ chrono = { workspace = true }
+ codex-utils-absolute-path = { workspace = true }
+ codex-utils-string = { workspace = true }
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
  codex-app-server-protocol = { workspace = true }
  codex-protocol = { workspace = true }
  eventsource-stream = { workspace = true }
@@ -10458,7 +13464,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +strum_macros = { workspace = true }
 +thiserror = { workspace = true }
 +tokio = { workspace = true }
-+tokio-tungstenite = { workspace = true }
++tokio-tungstenite = { workspace = true, optional = true }
 +tracing = { workspace = true }
 +tracing-opentelemetry = { workspace = true }
 +tracing-subscriber = { workspace = true }
@@ -10469,7 +13475,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  opentelemetry = { workspace = true, features = ["logs", "metrics", "trace"] }
  opentelemetry-appender-tracing = { workspace = true }
  opentelemetry-otlp = { workspace = true, features = [
-@@ -45,18 +65,8 @@
+@@ -45,18 +69,8 @@
      "testing",
      "trace",
  ] }
@@ -10488,8 +13494,19 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  opentelemetry_sdk = { workspace = true, features = [
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/events/session_telemetry.rs b/otel/src/events/session_telemetry.rs
+--- a/otel/src/events/session_telemetry.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/otel/src/events/session_telemetry.rs	2026-07-01 18:20:52.084616000 +0200
+@@ -693,6 +693,7 @@
+         );
+     }
+ 
++    #[cfg(feature = "websocket")]
+     pub fn record_websocket_event(
+         &self,
+         result: &Result<
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/lib.rs b/otel/src/lib.rs
---- a/otel/src/lib.rs	2026-06-30 20:02:13.058770000 +0200
+--- a/otel/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/otel/src/lib.rs	2026-06-30 06:15:06.494367000 +0200
 @@ -1,9 +1,12 @@
 +#![cfg_attr(target_os = "freebsd", allow(dead_code, unused_imports))]
@@ -10505,7 +13522,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod targets;
  
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/metrics/client.rs b/otel/src/metrics/client.rs
---- a/otel/src/metrics/client.rs	2026-06-30 20:02:13.058844000 +0200
+--- a/otel/src/metrics/client.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/otel/src/metrics/client.rs	2026-06-30 03:14:03.728673000 +0200
 @@ -1,531 +1,94 @@
 -use crate::config::OtelExporter;
@@ -11647,7 +14664,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    }
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/metrics/error.rs b/otel/src/metrics/error.rs
---- a/otel/src/metrics/error.rs	2026-06-30 20:02:13.058897000 +0200
+--- a/otel/src/metrics/error.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/otel/src/metrics/error.rs	2026-06-30 03:14:19.034572000 +0200
 @@ -20,6 +20,7 @@
      #[error("counter increment must be non-negative for {name}: {inc}")]
@@ -11658,7 +14675,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      ExporterBuild {
          #[source]
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/provider.rs b/otel/src/provider.rs
---- a/otel/src/provider.rs	2026-06-30 20:02:13.059212000 +0200
+--- a/otel/src/provider.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/otel/src/provider.rs	2026-06-30 03:14:03.728600000 +0200
 @@ -1,542 +1,55 @@
 -use crate::config::OtelExporter;
@@ -12783,11 +15800,38 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        }
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/rmcp-client/Cargo.toml b/rmcp-client/Cargo.toml
---- a/rmcp-client/Cargo.toml	2026-06-30 20:02:13.064211000 +0200
-+++ b/rmcp-client/Cargo.toml	2026-06-30 12:22:57.752455000 +0200
-@@ -9,6 +9,22 @@
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/response-debug-context/Cargo.toml b/response-debug-context/Cargo.toml
+--- a/response-debug-context/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/response-debug-context/Cargo.toml	2026-07-01 18:28:17.243780000 +0200
+@@ -12,9 +12,13 @@
+ [lints]
+ workspace = true
  
++[features]
++default = []
++websocket = ["codex-api/websocket"]
++
+ [dependencies]
+ base64 = { workspace = true }
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
+ http = { workspace = true }
+ serde_json = { workspace = true }
+ 
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/rmcp-client/Cargo.toml b/rmcp-client/Cargo.toml
+--- a/rmcp-client/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/rmcp-client/Cargo.toml	2026-07-01 18:28:50.730188000 +0200
+@@ -7,26 +7,46 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = []
++websocket = [
++    "codex-api/websocket",
++    "codex-exec-server/remote-websocket",
++]
++
  [dependencies]
  anyhow = "1"
 +codex-config = { workspace = true }
@@ -12809,12 +15853,15 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  axum = { workspace = true, default-features = false, features = [
      "http1",
      "json",
-@@ -17,16 +33,13 @@
+     "tokio",
+ ] }
  base64 = { workspace = true }
- codex-api = { workspace = true }
+-codex-api = { workspace = true }
++codex-api = { path = "../codex-api", default-features = false }
  codex-client = { workspace = true }
 -codex-config = { workspace = true }
- codex-exec-server = { workspace = true }
+-codex-exec-server = { workspace = true }
++codex-exec-server = { path = "../exec-server", default-features = false }
  codex-keyring-store = { workspace = true }
 -codex-protocol = { workspace = true }
  codex-secrets = { workspace = true }
@@ -12827,7 +15874,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  keyring = { workspace = true, features = ["crypto-rust"] }
  memchr = { workspace = true }
  oauth2 = "5"
-@@ -47,11 +60,8 @@
+@@ -47,11 +67,8 @@
      "transport-streamable-http-client-reqwest",
      "transport-streamable-http-server",
  ] }
@@ -12839,7 +15886,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  tiny_http = { workspace = true }
  tokio = { workspace = true, features = [
      "io-util",
-@@ -66,13 +76,6 @@
+@@ -66,13 +83,6 @@
  urlencoding = { workspace = true }
  webbrowser = { workspace = true }
  which = { workspace = true }
@@ -12853,7 +15900,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [target.'cfg(target_os = "linux")'.dependencies]
  keyring = { workspace = true, features = ["linux-native-async-persistent"] }
  
-@@ -82,7 +85,7 @@
+@@ -82,7 +92,7 @@
  [target.'cfg(target_os = "windows")'.dependencies]
  keyring = { workspace = true, features = ["windows-native"] }
  
@@ -13506,7 +16553,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    bail!("MCP OAuth login is not available on this FreeBSD build")
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/rmcp-client/src/lib.rs b/rmcp-client/src/lib.rs
---- a/rmcp-client/src/lib.rs	2026-06-30 20:02:13.064864000 +0200
+--- a/rmcp-client/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/rmcp-client/src/lib.rs	2026-06-30 12:16:07.818547000 +0200
 @@ -1,39 +1,86 @@
 +#[cfg(not(target_os = "freebsd"))]
@@ -13597,7 +16644,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(not(target_os = "freebsd"))]
  pub use stdio_server_launcher::StdioServerLauncher;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/sandboxing/Cargo.toml b/sandboxing/Cargo.toml
---- a/sandboxing/Cargo.toml	2026-06-30 20:02:13.069017000 +0200
+--- a/sandboxing/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/sandboxing/Cargo.toml	2026-06-30 18:48:23.122229000 +0200
 @@ -17,7 +17,6 @@
  codex-protocol = { workspace = true }
@@ -13616,7 +16663,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/sandboxing/src/windows.rs b/sandboxing/src/windows.rs
---- a/sandboxing/src/windows.rs	2026-06-30 20:02:13.069810000 +0200
+--- a/sandboxing/src/windows.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/sandboxing/src/windows.rs	2026-07-01 06:11:00.632186000 +0200
 @@ -1,14 +1,19 @@
 +#[cfg(target_os = "windows")]
@@ -13706,7 +16753,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      writable_roots.iter().any(|writable_root| {
          writable_root
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/Cargo.toml b/tools/Cargo.toml
---- a/tools/Cargo.toml	2026-06-30 20:02:13.079304000 +0200
+--- a/tools/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/tools/Cargo.toml	2026-06-30 06:30:24.952119000 +0200
 @@ -18,17 +18,19 @@
  codex-utils-pty = { workspace = true }
@@ -13734,7 +16781,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [dev-dependencies]
  codex-utils-cargo-bin = { workspace = true }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/src/lib.rs b/tools/src/lib.rs
---- a/tools/src/lib.rs	2026-06-30 20:02:13.079760000 +0200
+--- a/tools/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/tools/src/lib.rs	2026-06-30 12:15:45.353928000 +0200
 @@ -6,6 +6,7 @@
  mod function_call_error;
@@ -13765,7 +16812,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use responses_api::tool_definition_to_responses_api_tool;
  pub use tool_call::ConversationHistory;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/src/responses_api.rs b/tools/src/responses_api.rs
---- a/tools/src/responses_api.rs	2026-06-30 20:02:13.079946000 +0200
+--- a/tools/src/responses_api.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/tools/src/responses_api.rs	2026-07-01 06:11:05.897784000 +0200
 @@ -1,7 +1,9 @@
  use crate::JsonSchema;
@@ -13793,8 +16840,104 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub fn mcp_tool_to_deferred_responses_api_tool(
      tool_name: &ToolName,
      tool: &rmcp::model::Tool,
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tui/Cargo.toml b/tui/Cargo.toml
+--- a/tui/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
++++ b/tui/Cargo.toml	2026-07-01 12:40:53.944964000 +0200
+@@ -21,13 +21,26 @@
+ [lints]
+ workspace = true
+ 
++[features]
++default = ["chatgpt-login"]
++api-only = [
++    "codex-app-server-client/api-only",
++    "codex-login/api-only",
++]
++browser-open = ["dep:webbrowser"]
++chatgpt-login = [
++    "browser-open",
++    "codex-app-server-client/chatgpt-login",
++    "codex-login/chatgpt-login",
++]
++
+ [dependencies]
+ anyhow = { workspace = true }
+ base64 = { workspace = true }
+ chrono = { workspace = true, features = ["serde"] }
+ clap = { workspace = true, features = ["derive"] }
+ codex-ansi-escape = { workspace = true }
+-codex-app-server-client = { workspace = true }
++codex-app-server-client = { path = "../app-server-client", default-features = false }
+ codex-app-server-protocol = { workspace = true }
+ codex-arg0 = { workspace = true }
+ codex-install-context = { workspace = true }
+@@ -41,7 +54,7 @@
+ codex-feedback = { workspace = true }
+ codex-file-search = { workspace = true }
+ codex-git-utils = { workspace = true }
+-codex-login = { workspace = true }
++codex-login = { path = "../login", default-features = false }
+ codex-message-history = { workspace = true }
+ codex-model-provider = { workspace = true }
+ codex-model-provider-info = { workspace = true }
+@@ -119,7 +132,7 @@
+ unicode-width = { workspace = true }
+ url = { workspace = true }
+ urlencoding = { workspace = true }
+-webbrowser = { workspace = true }
++webbrowser = { workspace = true, optional = true }
+ uuid = { workspace = true }
+ 
+ codex-windows-sandbox = { workspace = true }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tui/src/app/history_ui.rs b/tui/src/app/history_ui.rs
+--- a/tui/src/app/history_ui.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/tui/src/app/history_ui.rs	2026-07-01 12:40:53.945119000 +0200
+@@ -66,6 +66,7 @@
+         self.insert_pending_usage_output(tui);
+     }
+ 
++    #[cfg(feature = "browser-open")]
+     pub(super) fn open_url_in_browser(&mut self, url: String) {
+         if let Err(err) = webbrowser::open(&url) {
+             self.chat_widget
+@@ -75,6 +76,13 @@
+ 
+         self.chat_widget
+             .add_info_message(format!("Opened {url} in your browser."), /*hint*/ None);
++    }
++
++    #[cfg(not(feature = "browser-open"))]
++    pub(super) fn open_url_in_browser(&mut self, url: String) {
++        self.chat_widget.add_error_message(format!(
++            "Opening URLs in a browser is disabled in this build: {url}"
++        ));
+     }
+ 
+     pub(super) fn open_desktop_thread(&mut self, thread_id: ThreadId) {
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tui/src/onboarding/auth.rs b/tui/src/onboarding/auth.rs
+--- a/tui/src/onboarding/auth.rs	2026-06-29 06:20:21.000000000 +0200
++++ b/tui/src/onboarding/auth.rs	2026-07-01 12:41:47.204618000 +0200
+@@ -993,6 +993,7 @@
+     }
+ }
+ 
++#[cfg(feature = "browser-open")]
+ pub(super) fn maybe_open_auth_url_in_browser(request_handle: &AppServerRequestHandle, url: &str) {
+     if !matches!(request_handle, AppServerRequestHandle::InProcess(_)) {
+         return;
+@@ -1001,6 +1002,10 @@
+     if let Err(err) = webbrowser::open(url) {
+         tracing::warn!("failed to open browser for login URL: {err}");
+     }
++}
++
++#[cfg(not(feature = "browser-open"))]
++pub(super) fn maybe_open_auth_url_in_browser(_request_handle: &AppServerRequestHandle, _url: &str) {
+ }
+ 
+ #[cfg(test)]
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/image/Cargo.toml b/utils/image/Cargo.toml
---- a/utils/image/Cargo.toml	2026-06-30 20:02:13.127798000 +0200
+--- a/utils/image/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/utils/image/Cargo.toml	2026-06-30 02:36:43.155754000 +0200
 @@ -9,19 +9,7 @@
  
@@ -13817,7 +16960,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -name = "prompt_images"
 -harness = false
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/image/src/lib.rs b/utils/image/src/lib.rs
---- a/utils/image/src/lib.rs	2026-06-30 20:02:13.127988000 +0200
+--- a/utils/image/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/utils/image/src/lib.rs	2026-06-30 02:36:43.155770000 +0200
 @@ -1,40 +1,58 @@
 -use std::io::Cursor;
@@ -14275,7 +17418,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -#[path = "image_tests.rs"]
 -mod tests;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/oss/Cargo.toml b/utils/oss/Cargo.toml
---- a/utils/oss/Cargo.toml	2026-06-30 20:02:13.128127000 +0200
+--- a/utils/oss/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
 +++ b/utils/oss/Cargo.toml	2026-06-30 02:36:43.155784000 +0200
 @@ -9,9 +9,6 @@
  
@@ -14288,7 +17431,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [lib]
  doctest = false
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/oss/src/lib.rs b/utils/oss/src/lib.rs
---- a/utils/oss/src/lib.rs	2026-06-30 20:02:13.128165000 +0200
+--- a/utils/oss/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
 +++ b/utils/oss/src/lib.rs	2026-06-30 02:36:43.155799000 +0200
 @@ -1,61 +1,16 @@
 -//! OSS provider utilities shared between TUI and exec.
