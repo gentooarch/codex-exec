@@ -447,8 +447,25 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          let create_thread_started_at = std::time::Instant::now();
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/turn_processor.rs b/app-server/src/request_processors/turn_processor.rs
 --- a/app-server/src/request_processors/turn_processor.rs	2026-06-30 20:02:12.973032000 +0200
-+++ b/app-server/src/request_processors/turn_processor.rs	2026-06-30 19:00:44.976616000 +0200
-@@ -538,6 +538,7 @@
++++ b/app-server/src/request_processors/turn_processor.rs	2026-07-01 06:12:59.886127000 +0200
+@@ -66,6 +66,7 @@
+ 
+ #[derive(Clone)]
+ pub(crate) struct TurnRequestProcessor {
++    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
+     auth_manager: Arc<AuthManager>,
+     thread_manager: Arc<ThreadManager>,
+     outgoing: Arc<OutgoingMessageSender>,
+@@ -452,6 +453,8 @@
+                 .inspect_err(|error| {
+                     self.track_error_response(&request_id, error, /*error_type*/ None);
+                 })?;
++        #[cfg(target_os = "freebsd")]
++        let _ = &thread_id;
+         self.ensure_direct_input_allowed(&request_id, thread.as_ref())
+             .await?;
+         if let Err(error) = Self::validate_v2_input_limit(&params.input) {
+@@ -538,6 +541,7 @@
                  error
              })?;
  
@@ -456,7 +473,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          if turn_has_input {
              let config_snapshot = thread.config_snapshot().await;
              codex_memories_write::start_memories_startup_task(
-@@ -549,6 +550,8 @@
+@@ -549,6 +553,8 @@
                  &config_snapshot.session_source,
              );
          }
@@ -467,8 +484,161 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              .record_request_turn_id(&request_id, &turn_id)
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors.rs b/app-server/src/request_processors.rs
 --- a/app-server/src/request_processors.rs	2026-06-30 20:02:12.970799000 +0200
-+++ b/app-server/src/request_processors.rs	2026-06-30 19:00:35.192328000 +0200
-@@ -382,6 +382,7 @@
++++ b/app-server/src/request_processors.rs	2026-07-01 06:12:53.011689000 +0200
+@@ -31,8 +31,11 @@
+ use codex_app_server_protocol::AdditionalContextKind;
+ use codex_app_server_protocol::AppInfo;
+ use codex_app_server_protocol::AppListUpdatedNotification;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::AppSummary;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::AppTemplateSummary;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::AppTemplateUnavailableReason;
+ use codex_app_server_protocol::AppsListParams;
+ use codex_app_server_protocol::AppsListResponse;
+@@ -93,12 +96,17 @@
+ use codex_app_server_protocol::LoginApiKeyParams;
+ use codex_app_server_protocol::LogoutAccountResponse;
+ use codex_app_server_protocol::MarketplaceAddParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::MarketplaceAddResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::MarketplaceInterface;
+ use codex_app_server_protocol::MarketplaceRemoveParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::MarketplaceRemoveResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::MarketplaceUpgradeErrorInfo;
+ use codex_app_server_protocol::MarketplaceUpgradeParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::MarketplaceUpgradeResponse;
+ use codex_app_server_protocol::McpResourceReadParams;
+ use codex_app_server_protocol::McpResourceReadResponse;
+@@ -118,40 +126,61 @@
+ use codex_app_server_protocol::PermissionProfileListParams;
+ use codex_app_server_protocol::PermissionProfileListResponse;
+ use codex_app_server_protocol::PermissionProfileSummary;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginDetail;
+ use codex_app_server_protocol::PluginInstallParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginInstallResponse;
+ use codex_app_server_protocol::PluginInstalledParams;
+ use codex_app_server_protocol::PluginInstalledResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginInterface;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginListMarketplaceKind;
+ use codex_app_server_protocol::PluginListParams;
+ use codex_app_server_protocol::PluginListResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginMarketplaceEntry;
+ use codex_app_server_protocol::PluginReadParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginReadResponse;
+ use codex_app_server_protocol::PluginShareCheckoutParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareCheckoutResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareContext;
+ use codex_app_server_protocol::PluginShareDeleteParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareDeleteResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareDiscoverability;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareListItem;
+ use codex_app_server_protocol::PluginShareListParams;
+ use codex_app_server_protocol::PluginShareListResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginSharePrincipal;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginSharePrincipalType;
+ use codex_app_server_protocol::PluginShareSaveParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareSaveResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareTarget;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareUpdateDiscoverability;
+ use codex_app_server_protocol::PluginShareUpdateTargetsParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginShareUpdateTargetsResponse;
+ use codex_app_server_protocol::PluginSkillReadParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginSkillReadResponse;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginSource;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginSummary;
+ use codex_app_server_protocol::PluginUninstallParams;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::PluginUninstallResponse;
+ use codex_app_server_protocol::RateLimitResetCreditsSummary;
+ use codex_app_server_protocol::RequestId;
+@@ -164,6 +193,7 @@
+ use codex_app_server_protocol::SendAddCreditsNudgeEmailResponse;
+ use codex_app_server_protocol::ServerNotification;
+ use codex_app_server_protocol::ServerRequestResolvedNotification;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_app_server_protocol::SkillSummary;
+ use codex_app_server_protocol::SkillsConfigWriteParams;
+ use codex_app_server_protocol::SkillsConfigWriteResponse;
+@@ -330,29 +360,52 @@
+ use codex_core::windows_sandbox::WindowsSandboxSetupMode as CoreWindowsSandboxSetupMode;
+ use codex_core::windows_sandbox::WindowsSandboxSetupRequest;
+ use codex_core::windows_sandbox::sandbox_setup_is_complete;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::PluginInstallError as CorePluginInstallError;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::PluginInstallRequest;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::PluginReadRequest;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::PluginUninstallError as CorePluginUninstallError;
+ use codex_core_plugins::PluginsManager;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::loader::load_plugin_apps;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::loader::load_plugin_mcp_servers;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::manifest::PluginManifestInterface;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace::MarketplaceError;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace::MarketplacePluginSource;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace_add::MarketplaceAddError;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace_add::MarketplaceAddRequest;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace_add::add_marketplace as add_marketplace_to_codex_home;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace_remove::MarketplaceRemoveError;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace_remove::MarketplaceRemoveRequest as CoreMarketplaceRemoveRequest;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::marketplace_remove::remove_marketplace;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemoteMarketplace;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemoteMarketplaceSource;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemotePluginCatalogError;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemotePluginDetail as RemoteCatalogPluginDetail;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemotePluginServiceConfig;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemotePluginShareContext as RemoteCatalogPluginShareContext;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemotePluginShareSummary as RemoteCatalogPluginShareSummary;
++#[cfg(not(target_os = "freebsd"))]
+ use codex_core_plugins::remote::RemotePluginSummary as RemoteCatalogPluginSummary;
+ use codex_exec_server::EnvironmentManager;
+ use codex_exec_server::LOCAL_ENVIRONMENT_ID;
+@@ -382,6 +435,7 @@
  use codex_mcp::discover_supported_scopes;
  use codex_mcp::read_mcp_resource as read_mcp_resource_without_thread;
  use codex_mcp::resolve_oauth_scopes;
@@ -476,7 +646,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_memories_write::clear_memory_roots_contents;
  use codex_model_provider::create_model_provider;
  use codex_models_manager::collaboration_mode_presets::builtin_collaboration_mode_presets;
-@@ -491,9 +492,15 @@
+@@ -491,9 +545,15 @@
  mod fs_processor;
  mod git_processor;
  mod initialize_processor;
@@ -492,7 +662,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod process_exec_processor;
  mod remote_control_processor;
  mod search;
-@@ -514,9 +521,15 @@
+@@ -514,9 +574,15 @@
  pub(crate) use fs_processor::FsRequestProcessor;
  pub(crate) use git_processor::GitRequestProcessor;
  pub(crate) use initialize_processor::InitializeRequestProcessor;
@@ -508,7 +678,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) use process_exec_processor::ProcessExecRequestProcessor;
  pub(crate) use remote_control_processor::RemoteControlRequestProcessor;
  pub(crate) use search::SearchRequestProcessor;
-@@ -535,6 +548,11 @@
+@@ -535,6 +601,11 @@
  use crate::thread_state::ThreadStateManager;
  use token_usage_replay::latest_token_usage_turn_id_from_rollout_items;
  use token_usage_replay::send_thread_token_usage_update_to_connection;
@@ -2586,6 +2756,27 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  fn estimate_original_image_bytes(image_url: &str) -> Option<i64> {
      let key = sha1_digest(image_url.as_bytes());
      ORIGINAL_IMAGE_ESTIMATE_CACHE.get_or_insert_with(key, || {
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/lib.rs b/core/src/lib.rs
+--- a/core/src/lib.rs	2026-06-30 20:02:13.011342000 +0200
++++ b/core/src/lib.rs	2026-07-01 06:11:11.919568000 +0200
+@@ -52,6 +52,7 @@
+ pub use landlock::spawn_command_under_linux_sandbox;
+ pub(crate) mod mcp;
+ mod mcp_skill_dependencies;
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ mod mcp_tool_approval_templates;
+ mod mcp_tool_exposure;
+ mod network_policy_decision;
+@@ -62,7 +63,9 @@
+ pub use network_proxy_loader::build_network_proxy_state_and_reloader;
+ mod original_image_detail;
+ pub use codex_mcp::SandboxState;
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ mod mcp_openai_file;
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ mod mcp_tool_call;
+ pub(crate) mod mention_syntax;
+ pub(crate) mod utils;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/mcp_tool_call.rs b/core/src/mcp_tool_call.rs
 --- a/core/src/mcp_tool_call.rs	2026-06-30 20:02:13.011724000 +0200
 +++ b/core/src/mcp_tool_call.rs	2026-06-30 18:09:46.132490000 +0200
@@ -2647,6 +2838,17 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  use super::*;
  use crate::config::CONFIG_TOML_FILE;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/responses_metadata.rs b/core/src/responses_metadata.rs
+--- a/core/src/responses_metadata.rs	2026-06-30 20:02:13.013013000 +0200
++++ b/core/src/responses_metadata.rs	2026-07-01 06:11:32.943209000 +0200
+@@ -187,6 +187,7 @@
+         to_ascii_json_string(&self.turn_metadata_payload()).ok()
+     }
+ 
++    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
+     pub(crate) fn turn_metadata_value(&self) -> Option<Value> {
+         serde_json::to_value(self.turn_metadata_payload()).ok()
+     }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/handlers.rs b/core/src/session/handlers.rs
 --- a/core/src/session/handlers.rs	2026-06-30 20:02:13.013620000 +0200
 +++ b/core/src/session/handlers.rs	2026-06-30 18:09:46.194162000 +0200
@@ -2673,7 +2875,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          .resolve_elicitation(server_name, request_id, response)
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/mcp.rs b/core/src/session/mcp.rs
 --- a/core/src/session/mcp.rs	2026-06-30 20:02:13.013774000 +0200
-+++ b/core/src/session/mcp.rs	2026-06-30 18:09:46.199734000 +0200
++++ b/core/src/session/mcp.rs	2026-07-01 06:11:47.614600000 +0200
 @@ -1,7 +1,11 @@
  use super::*;
 +use codex_mcp::CreateElicitationRequestParams;
@@ -2710,7 +2912,23 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          };
          let event = EventMsg::ElicitationRequest(ElicitationRequestEvent {
              turn_id: params.turn_id,
-@@ -550,15 +550,12 @@
+@@ -253,6 +253,7 @@
+             .await
+     }
+ 
++    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
+     pub async fn list_resources(
+         &self,
+         server: &str,
+@@ -265,6 +266,7 @@
+             .await
+     }
+ 
++    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
+     pub async fn list_resource_templates(
+         &self,
+         server: &str,
+@@ -550,15 +552,12 @@
      request: &ElicitationReviewRequest,
  ) -> GuardianElicitationReview {
      let (meta, requested_schema) = match &request.elicitation {
@@ -2728,7 +2946,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              return if meta_requests_approval_request(meta) {
                  GuardianElicitationReview::Decline(
                      "guardian MCP elicitation review only supports form elicitations",
-@@ -681,8 +678,8 @@
+@@ -681,8 +680,8 @@
  
  fn mcp_elicitation_request_id(id: &RequestId) -> String {
      match id {
@@ -2741,7 +2959,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/mod.rs b/core/src/session/mod.rs
 --- a/core/src/session/mod.rs	2026-06-30 20:02:13.014176000 +0200
-+++ b/core/src/session/mod.rs	2026-06-30 18:09:46.218922000 +0200
++++ b/core/src/session/mod.rs	2026-07-01 06:11:37.490183000 +0200
 @@ -73,9 +73,18 @@
  use codex_login::CodexAuth;
  use codex_login::auth_env_telemetry::collect_auth_env_telemetry;
@@ -2777,6 +2995,25 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use serde_json::Value;
  use tokio::sync::Mutex;
  use tokio::sync::RwLock;
+@@ -1252,6 +1252,7 @@
+     }
+ 
+     // Returns the connector IDs currently selected for this session.
++    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
+     pub(crate) async fn get_connector_selection(&self) -> HashSet<String> {
+         let state = self.state.lock().await;
+         state.get_connector_selection()
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/state/session.rs b/core/src/state/session.rs
+--- a/core/src/state/session.rs	2026-06-30 20:02:13.016483000 +0200
++++ b/core/src/state/session.rs	2026-07-01 06:11:42.064949000 +0200
+@@ -254,6 +254,7 @@
+     }
+ 
+     // Returns the current connector selection tracked on session state.
++    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
+     pub(crate) fn get_connector_selection(&self) -> HashSet<String> {
+         self.active_connector_selection.clone()
+     }
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/state/turn.rs b/core/src/state/turn.rs
 --- a/core/src/state/turn.rs	2026-06-30 20:02:13.016554000 +0200
 +++ b/core/src/state/turn.rs	2026-06-30 18:09:46.366258000 +0200
@@ -2796,10 +3033,29 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use tokio::sync::oneshot;
  
  use crate::agent::control::AgentExecutionGuard;
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/context.rs b/core/src/tools/context.rs
+--- a/core/src/tools/context.rs	2026-06-30 20:02:13.017890000 +0200
++++ b/core/src/tools/context.rs	2026-07-01 06:11:18.708961000 +0200
+@@ -63,6 +63,7 @@
+ }
+ 
+ #[derive(Clone, Debug)]
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ pub struct McpToolOutput {
+     pub result: CallToolResult,
+     pub tool_input: JsonValue,
+@@ -107,6 +108,7 @@
+     }
+ }
+ 
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ impl McpToolOutput {
+     fn response_payload(&self) -> FunctionCallOutputPayload {
+         let mut payload = self.result.as_function_call_output_payload();
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/handlers/mod.rs b/core/src/tools/handlers/mod.rs
 --- a/core/src/tools/handlers/mod.rs	2026-06-30 20:02:13.019158000 +0200
-+++ b/core/src/tools/handlers/mod.rs	2026-06-30 15:33:58.299744000 +0200
-@@ -9,7 +9,9 @@
++++ b/core/src/tools/handlers/mod.rs	2026-07-01 06:11:27.718265000 +0200
+@@ -9,8 +9,11 @@
  pub(crate) mod get_context_remaining_spec;
  mod list_available_plugins_to_install;
  pub(crate) mod list_available_plugins_to_install_spec;
@@ -2807,9 +3063,11 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod mcp;
 +#[cfg(not(target_os = "freebsd"))]
  mod mcp_resource;
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
  pub(crate) mod mcp_resource_spec;
  pub(crate) mod multi_agents;
-@@ -60,9 +62,13 @@
+ pub(crate) mod multi_agents_common;
+@@ -60,9 +63,13 @@
  pub use dynamic::DynamicToolHandler;
  pub use get_context_remaining::GetContextRemainingHandler;
  pub use list_available_plugins_to_install::ListAvailablePluginsToInstallHandler;
@@ -2957,6 +3215,33 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              }
          }
      }
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/turn_metadata.rs b/core/src/turn_metadata.rs
+--- a/core/src/turn_metadata.rs	2026-06-30 20:02:13.023096000 +0200
++++ b/core/src/turn_metadata.rs	2026-07-01 06:12:00.543741000 +0200
+@@ -28,11 +28,15 @@
+ use codex_protocol::protocol::ThreadSource;
+ use codex_utils_absolute_path::AbsolutePathBuf;
+ 
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ const MODEL_KEY: &str = "model";
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ const REASONING_EFFORT_KEY: &str = "reasoning_effort";
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ const USER_INPUT_REQUESTED_DURING_TURN_KEY: &str = "user_input_requested_during_turn";
+ const WORKSPACE_KIND_KEY: &str = "workspace_kind";
+ 
++#[cfg_attr(target_os = "freebsd", allow(dead_code))]
+ pub(crate) struct McpTurnMetadataContext<'a> {
+     pub(crate) model: &'a str,
+     pub(crate) reasoning_effort: Option<ReasoningEffortConfig>,
+@@ -146,6 +150,7 @@
+         }
+     }
+ 
++    #[cfg_attr(target_os = "freebsd", allow(dead_code))]
+     pub(crate) fn current_meta_value_for_mcp_request(
+         &self,
+         context: McpTurnMetadataContext<'_>,
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-plugins/Cargo.toml b/core-plugins/Cargo.toml
 --- a/core-plugins/Cargo.toml	2026-06-30 20:02:12.998772000 +0200
 +++ b/core-plugins/Cargo.toml	2026-06-30 18:35:54.877268000 +0200
@@ -5177,7 +5462,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/event_processor_with_human_output.rs b/exec/src/event_processor_with_human_output.rs
 --- a/exec/src/event_processor_with_human_output.rs	2026-06-30 20:02:13.038740000 +0200
-+++ b/exec/src/event_processor_with_human_output.rs	2026-06-30 19:53:56.905685000 +0200
++++ b/exec/src/event_processor_with_human_output.rs	2026-07-01 06:27:42.724465000 +0200
 @@ -16,6 +16,7 @@
  use owo_colors::OwoColorize;
  use owo_colors::Style;
@@ -5210,7 +5495,18 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              show_agent_reasoning: !config.hide_agent_reasoning,
              show_raw_agent_reasoning: config.show_raw_agent_reasoning,
              last_message_path,
-@@ -154,7 +158,8 @@
+@@ -67,6 +71,10 @@
+     fn render_item_started(&self, item: &ThreadItem) {
+         match item {
+             ThreadItem::CommandExecution { command, cwd, .. } => {
++                let command = match self.exec_output_mode {
++                    ExecOutputMode::Full => command.as_str(),
++                    ExecOutputMode::CommandOnly => command_only_display_line(command),
++                };
+                 eprintln!(
+                     "{}\n{} in {cwd}",
+                     "exec".style(self.italic).style(self.magenta),
+@@ -154,7 +162,8 @@
                          );
                      }
                  }
@@ -5220,7 +5516,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                      && !output.trim().is_empty()
                  {
                      eprintln!("{output}");
-@@ -294,6 +299,13 @@
+@@ -294,6 +303,13 @@
              }
              ServerNotification::ModelVerification(_) => CodexStatus::Running,
              ServerNotification::ThreadTokenUsageUpdated(notification) => {
@@ -5234,7 +5530,16 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                  self.last_total_token_usage = Some(notification.token_usage);
                  CodexStatus::Running
              }
-@@ -374,6 +386,7 @@
+@@ -332,7 +348,7 @@
+                 TurnStatus::InProgress => CodexStatus::Running,
+             },
+             ServerNotification::TurnDiffUpdated(notification) => {
+-                if !notification.diff.trim().is_empty() {
++                if should_print_turn_diff(self.exec_output_mode, &notification.diff) {
+                     eprintln!("{}", notification.diff);
+                 }
+                 CodexStatus::Running
+@@ -374,6 +390,7 @@
      }
  
      fn print_final_output(&mut self) {
@@ -5242,18 +5547,30 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          if self.emit_final_message_on_shutdown
              && let Some(path) = self.last_message_path.as_deref()
          {
-@@ -521,6 +534,39 @@
+@@ -521,6 +538,51 @@
      final_message.is_some() && !final_message_rendered && stdout_is_terminal && stderr_is_terminal
  }
  
 +fn should_print_command_output(
 +    exec_output_mode: ExecOutputMode,
-+    status: CommandExecutionStatus,
++    _status: CommandExecutionStatus,
 +) -> bool {
 +    match exec_output_mode {
 +        ExecOutputMode::Full => true,
-+        ExecOutputMode::CommandOnly => status != CommandExecutionStatus::Completed,
++        ExecOutputMode::CommandOnly => false,
 +    }
++}
++
++fn should_print_turn_diff(exec_output_mode: ExecOutputMode, diff: &str) -> bool {
++    matches!(exec_output_mode, ExecOutputMode::Full) && !diff.trim().is_empty()
++}
++
++fn command_only_display_line(command: &str) -> &str {
++    command
++        .lines()
++        .find(|line| !line.trim().is_empty())
++        .map(str::trim)
++        .unwrap_or("")
 +}
 +
  #[cfg(test)]
@@ -5284,28 +5601,33 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +}
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/event_processor_with_human_output_tests.rs b/exec/src/event_processor_with_human_output_tests.rs
 --- a/exec/src/event_processor_with_human_output_tests.rs	2026-06-30 20:02:13.038791000 +0200
-+++ b/exec/src/event_processor_with_human_output_tests.rs	2026-06-30 19:55:36.273703000 +0200
++++ b/exec/src/event_processor_with_human_output_tests.rs	2026-07-01 06:27:52.087655000 +0200
 @@ -1,3 +1,4 @@
 +use codex_app_server_protocol::CommandExecutionStatus;
  use codex_app_server_protocol::ServerNotification;
  use codex_app_server_protocol::ThreadItem;
  use codex_app_server_protocol::Turn;
-@@ -23,8 +24,10 @@
+@@ -20,11 +21,15 @@
+ use pretty_assertions::assert_eq;
+ 
+ use super::EventProcessorWithHumanOutput;
++use super::command_only_display_line;
  use super::config_summary_entries;
  use super::final_message_from_turn_items;
  use super::reasoning_text;
 +use super::should_print_command_output;
  use super::should_print_final_message_to_stdout;
  use super::should_print_final_message_to_tty;
++use super::should_print_turn_diff;
 +use crate::cli::ExecOutputMode;
  use crate::event_processor::EventProcessor;
  
  #[test]
-@@ -83,6 +86,30 @@
+@@ -83,6 +88,54 @@
  }
  
  #[test]
-+fn command_only_mode_hides_successful_command_output() {
++fn command_only_mode_hides_all_command_output() {
 +    assert!(should_print_command_output(
 +        ExecOutputMode::Full,
 +        CommandExecutionStatus::Completed,
@@ -5314,25 +5636,49 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        ExecOutputMode::CommandOnly,
 +        CommandExecutionStatus::Completed,
 +    ));
-+}
-+
-+#[test]
-+fn command_only_mode_keeps_unsuccessful_command_output() {
-+    assert!(should_print_command_output(
++    assert!(!should_print_command_output(
 +        ExecOutputMode::CommandOnly,
 +        CommandExecutionStatus::Failed,
 +    ));
-+    assert!(should_print_command_output(
++    assert!(!should_print_command_output(
 +        ExecOutputMode::CommandOnly,
 +        CommandExecutionStatus::Declined,
 +    ));
++    assert!(!should_print_command_output(
++        ExecOutputMode::CommandOnly,
++        CommandExecutionStatus::InProgress,
++    ));
++}
++
++#[test]
++fn command_only_display_line_keeps_single_line_commands() {
++    assert_eq!(
++        command_only_display_line("diff -ruN --exclude=target a b"),
++        "diff -ruN --exclude=target a b"
++    );
++}
++
++#[test]
++fn command_only_display_line_hides_multiline_command_body() {
++    let command = "\napply_patch <<'PATCH'\n*** Begin Patch\n*** Update File: src/lib.rs\nPATCH";
++
++    assert_eq!(command_only_display_line(command), "apply_patch <<'PATCH'");
++}
++
++#[test]
++fn command_only_mode_hides_turn_diffs() {
++    let diff = "diff --git a/src/lib.rs b/src/lib.rs\n";
++
++    assert!(should_print_turn_diff(ExecOutputMode::Full, diff));
++    assert!(!should_print_turn_diff(ExecOutputMode::CommandOnly, diff));
++    assert!(!should_print_turn_diff(ExecOutputMode::Full, " \n\t"));
 +}
 +
 +#[test]
  fn reasoning_text_prefers_summary_when_raw_reasoning_is_hidden() {
      let text = reasoning_text(
          &["summary".to_string()],
-@@ -296,6 +323,7 @@
+@@ -296,6 +349,7 @@
          magenta: Style::new(),
          red: Style::new(),
          yellow: Style::new(),
@@ -5340,7 +5686,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          show_agent_reasoning: true,
          show_raw_agent_reasoning: false,
          last_message_path: None,
-@@ -344,6 +372,7 @@
+@@ -344,6 +398,7 @@
          magenta: Style::new(),
          red: Style::new(),
          yellow: Style::new(),
@@ -5348,7 +5694,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          show_agent_reasoning: true,
          show_raw_agent_reasoning: false,
          last_message_path: None,
-@@ -393,6 +422,7 @@
+@@ -393,6 +448,7 @@
          magenta: Style::new(),
          red: Style::new(),
          yellow: Style::new(),
@@ -5356,7 +5702,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          show_agent_reasoning: true,
          show_raw_agent_reasoning: false,
          last_message_path: None,
-@@ -437,6 +467,7 @@
+@@ -437,6 +493,7 @@
          magenta: Style::new(),
          red: Style::new(),
          yellow: Style::new(),
@@ -5364,7 +5710,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          show_agent_reasoning: true,
          show_raw_agent_reasoning: false,
          last_message_path: None,
-@@ -482,6 +513,7 @@
+@@ -482,6 +539,7 @@
          magenta: Style::new(),
          red: Style::new(),
          yellow: Style::new(),
@@ -13271,8 +13617,28 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  [dev-dependencies]
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/sandboxing/src/windows.rs b/sandboxing/src/windows.rs
 --- a/sandboxing/src/windows.rs	2026-06-30 20:02:13.069810000 +0200
-+++ b/sandboxing/src/windows.rs	2026-06-30 18:48:35.578677000 +0200
-@@ -75,6 +75,7 @@
++++ b/sandboxing/src/windows.rs	2026-07-01 06:11:00.632186000 +0200
+@@ -1,14 +1,19 @@
++#[cfg(target_os = "windows")]
+ use std::collections::BTreeSet;
++#[cfg(target_os = "windows")]
+ use std::path::Path;
+ use std::path::PathBuf;
+ 
+ use codex_protocol::config_types::WindowsSandboxLevel;
+ use codex_protocol::models::PermissionProfile;
++#[cfg(target_os = "windows")]
+ use codex_protocol::permissions::FileSystemSandboxPolicy;
++#[cfg(target_os = "windows")]
+ use codex_protocol::protocol::WritableRoot;
+ use codex_utils_absolute_path::AbsolutePathBuf;
+ 
+ use crate::SandboxType;
++#[cfg(target_os = "windows")]
+ use crate::compatibility_sandbox_policy_for_permission_profile;
+ 
+ /// Resolved filesystem overrides for the Windows sandbox backends.
+@@ -75,6 +80,7 @@
      }
  }
  
@@ -13280,7 +13646,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub fn resolve_windows_restricted_token_filesystem_overrides(
      sandbox: SandboxType,
      permission_profile: &PermissionProfile,
-@@ -211,6 +212,17 @@
+@@ -211,6 +217,17 @@
      }))
  }
  
@@ -13298,12 +13664,10 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub fn resolve_windows_elevated_filesystem_overrides(
      sandbox: SandboxType,
      permission_profile: &PermissionProfile,
-@@ -338,6 +350,16 @@
-         additional_deny_read_paths,
-         additional_deny_write_paths,
+@@ -340,12 +357,24 @@
      }))
-+}
-+
+ }
+ 
 +#[cfg(not(target_os = "windows"))]
 +pub fn resolve_windows_elevated_filesystem_overrides(
 +    _sandbox: SandboxType,
@@ -13312,9 +13676,35 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    _use_windows_elevated_backend: bool,
 +) -> std::result::Result<Option<WindowsSandboxFilesystemOverrides>, String> {
 +    Ok(None)
++}
++
++#[cfg(target_os = "windows")]
+ fn normalize_windows_override_path(path: &Path) -> std::result::Result<PathBuf, String> {
+     AbsolutePathBuf::from_absolute_path(dunce::simplified(path))
+         .map(AbsolutePathBuf::into_path_buf)
+         .map_err(|err| err.to_string())
  }
  
- fn normalize_windows_override_path(path: &Path) -> std::result::Result<PathBuf, String> {
++#[cfg(target_os = "windows")]
+ fn windows_policy_has_root_read_access(
+     file_system_sandbox_policy: &FileSystemSandboxPolicy,
+     cwd: &AbsolutePathBuf,
+@@ -356,6 +385,7 @@
+     file_system_sandbox_policy.can_read_path_with_cwd(root, cwd.as_path())
+ }
+ 
++#[cfg(target_os = "windows")]
+ fn permission_profile_display_name(permission_profile: &PermissionProfile) -> &'static str {
+     match permission_profile {
+         PermissionProfile::Managed { .. } => "Managed",
+@@ -364,6 +394,7 @@
+     }
+ }
+ 
++#[cfg(target_os = "windows")]
+ fn has_reopened_writable_descendant(writable_roots: &[WritableRoot]) -> bool {
+     writable_roots.iter().any(|writable_root| {
+         writable_root
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/Cargo.toml b/tools/Cargo.toml
 --- a/tools/Cargo.toml	2026-06-30 20:02:13.079304000 +0200
 +++ b/tools/Cargo.toml	2026-06-30 06:30:24.952119000 +0200
@@ -13376,16 +13766,18 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use tool_call::ConversationHistory;
 diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/src/responses_api.rs b/tools/src/responses_api.rs
 --- a/tools/src/responses_api.rs	2026-06-30 20:02:13.079946000 +0200
-+++ b/tools/src/responses_api.rs	2026-06-30 06:30:51.581450000 +0200
-@@ -2,6 +2,7 @@
++++ b/tools/src/responses_api.rs	2026-07-01 06:11:05.897784000 +0200
+@@ -1,7 +1,9 @@
+ use crate::JsonSchema;
  use crate::ToolDefinition;
++#[cfg(not(target_os = "freebsd"))]
  use crate::ToolName;
  use crate::parse_dynamic_tool;
 +#[cfg(not(target_os = "freebsd"))]
  use crate::parse_mcp_tool;
  use codex_protocol::dynamic_tools::DynamicToolFunctionSpec;
  use serde::Deserialize;
-@@ -104,6 +105,7 @@
+@@ -104,6 +106,7 @@
      coalesced_specs
  }
  
@@ -13393,7 +13785,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub fn mcp_tool_to_responses_api_tool(
      tool_name: &ToolName,
      tool: &rmcp::model::Tool,
-@@ -113,6 +115,7 @@
+@@ -113,6 +116,7 @@
      ))
  }
  
