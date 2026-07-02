@@ -1,6 +1,1204 @@
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/Cargo.toml b/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/Cargo.lock b/Cargo.lock
+--- a/Cargo.lock	2026-06-29 06:20:21.000000000 +0200
++++ b/Cargo.lock	2026-06-30 02:37:20.000000000 +0200
+@@ -394,7 +394,7 @@
+ 
+ [[package]]
+ name = "app_test_support"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "base64 0.22.1",
+@@ -1863,7 +1863,7 @@
+ 
+ [[package]]
+ name = "codex-agent-graph-store"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-protocol",
+  "codex-state",
+@@ -1877,7 +1877,7 @@
+ 
+ [[package]]
+ name = "codex-agent-identity"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "base64 0.22.1",
+@@ -1896,7 +1896,7 @@
+ 
+ [[package]]
+ name = "codex-analytics"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-app-server-protocol",
+  "codex-git-utils",
+@@ -1917,7 +1917,7 @@
+ 
+ [[package]]
+ name = "codex-ansi-escape"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "ansi-to-tui",
+  "ratatui",
+@@ -1926,7 +1926,7 @@
+ 
+ [[package]]
+ name = "codex-api"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "assert_matches",
+@@ -1959,7 +1959,7 @@
+ 
+ [[package]]
+ name = "codex-app-server"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "app_test_support",
+@@ -2051,7 +2051,7 @@
+ 
+ [[package]]
+ name = "codex-app-server-client"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-app-server",
+  "codex-app-server-protocol",
+@@ -2078,7 +2078,7 @@
+ 
+ [[package]]
+ name = "codex-app-server-daemon"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-app-server-protocol",
+@@ -2099,7 +2099,7 @@
+ 
+ [[package]]
+ name = "codex-app-server-protocol"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -2127,7 +2127,7 @@
+ 
+ [[package]]
+ name = "codex-app-server-test-client"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -2149,7 +2149,7 @@
+ 
+ [[package]]
+ name = "codex-app-server-transport"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "axum",
+@@ -2188,7 +2188,7 @@
+ 
+ [[package]]
+ name = "codex-apply-patch"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "assert_cmd",
+@@ -2208,7 +2208,7 @@
+ 
+ [[package]]
+ name = "codex-arg0"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-apply-patch",
+@@ -2228,7 +2228,7 @@
+ 
+ [[package]]
+ name = "codex-async-utils"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "pretty_assertions",
+  "tokio",
+@@ -2237,7 +2237,7 @@
+ 
+ [[package]]
+ name = "codex-aws-auth"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "aws-config",
+  "aws-credential-types",
+@@ -2252,7 +2252,7 @@
+ 
+ [[package]]
+ name = "codex-backend-client"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-api",
+@@ -2269,7 +2269,7 @@
+ 
+ [[package]]
+ name = "codex-backend-openapi-models"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "serde",
+  "serde_json",
+@@ -2278,7 +2278,7 @@
+ 
+ [[package]]
+ name = "codex-bwrap"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "cc",
+  "libc",
+@@ -2287,7 +2287,7 @@
+ 
+ [[package]]
+ name = "codex-chatgpt"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -2309,7 +2309,7 @@
+ 
+ [[package]]
+ name = "codex-cli"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "assert_cmd",
+@@ -2385,7 +2385,7 @@
+ 
+ [[package]]
+ name = "codex-client"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "bytes",
+  "codex-utils-cargo-bin",
+@@ -2418,7 +2418,7 @@
+ 
+ [[package]]
+ name = "codex-cloud-config"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "base64 0.22.1",
+  "chrono",
+@@ -2442,7 +2442,7 @@
+ 
+ [[package]]
+ name = "codex-cloud-tasks"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -2473,7 +2473,7 @@
+ 
+ [[package]]
+ name = "codex-cloud-tasks-client"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -2487,7 +2487,7 @@
+ 
+ [[package]]
+ name = "codex-cloud-tasks-mock-client"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "chrono",
+  "codex-cloud-tasks-client",
+@@ -2496,26 +2496,20 @@
+ 
+ [[package]]
+ name = "codex-code-mode"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-code-mode-protocol",
+- "codex-protocol",
+- "deno_core_icudata",
+- "pretty_assertions",
+- "serde_json",
+  "tokio",
+  "tokio-util",
+- "tracing",
+- "v8",
+ ]
+ 
+ [[package]]
+ name = "codex-code-mode-host"
+-version = "0.0.0"
++version = "0.142.4"
+ 
+ [[package]]
+ name = "codex-code-mode-protocol"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-protocol",
+  "pretty_assertions",
+@@ -2527,11 +2521,11 @@
+ 
+ [[package]]
+ name = "codex-collaboration-mode-templates"
+-version = "0.0.0"
++version = "0.142.4"
+ 
+ [[package]]
+ name = "codex-config"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "base64 0.22.1",
+@@ -2579,7 +2573,7 @@
+ 
+ [[package]]
+ name = "codex-connectors"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-app-server-protocol",
+@@ -2596,7 +2590,7 @@
+ 
+ [[package]]
+ name = "codex-context-fragments"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-protocol",
+  "codex-utils-string",
+@@ -2604,7 +2598,7 @@
+ 
+ [[package]]
+ name = "codex-core"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "arc-swap",
+@@ -2728,7 +2722,7 @@
+ 
+ [[package]]
+ name = "codex-core-api"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-analytics",
+  "codex-app-server-protocol",
+@@ -2748,7 +2742,7 @@
+ 
+ [[package]]
+ name = "codex-core-plugins"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -2793,7 +2787,7 @@
+ 
+ [[package]]
+ name = "codex-core-skills"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-analytics",
+@@ -2828,7 +2822,7 @@
+ 
+ [[package]]
+ name = "codex-exec"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "assert_cmd",
+@@ -2874,7 +2868,7 @@
+ 
+ [[package]]
+ name = "codex-exec-server"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "arc-swap",
+@@ -2919,7 +2913,7 @@
+ 
+ [[package]]
+ name = "codex-execpolicy"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -2936,7 +2930,7 @@
+ 
+ [[package]]
+ name = "codex-execpolicy-legacy"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "allocative",
+  "anyhow",
+@@ -2956,7 +2950,7 @@
+ 
+ [[package]]
+ name = "codex-experimental-api-macros"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+@@ -2965,7 +2959,7 @@
+ 
+ [[package]]
+ name = "codex-extension-api"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-config",
+  "codex-context-fragments",
+@@ -2978,7 +2972,7 @@
+ 
+ [[package]]
+ name = "codex-external-agent-migration"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-hooks",
+  "pretty_assertions",
+@@ -2990,7 +2984,7 @@
+ 
+ [[package]]
+ name = "codex-external-agent-sessions"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "chrono",
+  "codex-app-server-protocol",
+@@ -3004,7 +2998,7 @@
+ 
+ [[package]]
+ name = "codex-features"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-otel",
+  "codex-protocol",
+@@ -3017,7 +3011,7 @@
+ 
+ [[package]]
+ name = "codex-feedback"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-login",
+@@ -3030,7 +3024,7 @@
+ 
+ [[package]]
+ name = "codex-file-search"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -3046,7 +3040,7 @@
+ 
+ [[package]]
+ name = "codex-file-system"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "bytes",
+  "codex-protocol",
+@@ -3058,7 +3052,7 @@
+ 
+ [[package]]
+ name = "codex-file-watcher"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "notify",
+  "pretty_assertions",
+@@ -3069,7 +3063,7 @@
+ 
+ [[package]]
+ name = "codex-git-utils"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -3094,7 +3088,7 @@
+ 
+ [[package]]
+ name = "codex-goal-extension"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -3116,7 +3110,7 @@
+ 
+ [[package]]
+ name = "codex-guardian"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-core",
+  "codex-extension-api",
+@@ -3125,7 +3119,7 @@
+ 
+ [[package]]
+ name = "codex-home"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-extension-api",
+  "codex-utils-absolute-path",
+@@ -3136,7 +3130,7 @@
+ 
+ [[package]]
+ name = "codex-hooks"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -3159,7 +3153,7 @@
+ 
+ [[package]]
+ name = "codex-image-generation-extension"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-api",
+  "codex-core",
+@@ -3182,7 +3176,7 @@
+ 
+ [[package]]
+ name = "codex-install-context"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-utils-absolute-path",
+  "codex-utils-home-dir",
+@@ -3192,7 +3186,7 @@
+ 
+ [[package]]
+ name = "codex-keyring-store"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "keyring",
+  "tracing",
+@@ -3200,7 +3194,7 @@
+ 
+ [[package]]
+ name = "codex-linux-sandbox"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "clap",
+  "codex-core",
+@@ -3224,7 +3218,7 @@
+ 
+ [[package]]
+ name = "codex-lmstudio"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-core",
+  "codex-model-provider-info",
+@@ -3238,7 +3232,7 @@
+ 
+ [[package]]
+ name = "codex-login"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "base64 0.22.1",
+@@ -3280,7 +3274,7 @@
+ 
+ [[package]]
+ name = "codex-mcp"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "arc-swap",
+@@ -3314,7 +3308,7 @@
+ 
+ [[package]]
+ name = "codex-mcp-extension"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-config",
+  "codex-core",
+@@ -3338,7 +3332,7 @@
+ 
+ [[package]]
+ name = "codex-mcp-server"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-arg0",
+@@ -3371,7 +3365,7 @@
+ 
+ [[package]]
+ name = "codex-memories-extension"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-core",
+  "codex-extension-api",
+@@ -3392,7 +3386,7 @@
+ 
+ [[package]]
+ name = "codex-memories-read"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-protocol",
+  "codex-shell-command",
+@@ -3402,7 +3396,7 @@
+ 
+ [[package]]
+ name = "codex-memories-write"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -3439,7 +3433,7 @@
+ 
+ [[package]]
+ name = "codex-message-history"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-config",
+  "memchr",
+@@ -3453,7 +3447,7 @@
+ 
+ [[package]]
+ name = "codex-model-provider"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-agent-identity",
+  "codex-api",
+@@ -3476,7 +3470,7 @@
+ 
+ [[package]]
+ name = "codex-model-provider-info"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-api",
+  "codex-app-server-protocol",
+@@ -3493,7 +3487,7 @@
+ 
+ [[package]]
+ name = "codex-models-manager"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "chrono",
+  "codex-app-server-protocol",
+@@ -3513,7 +3507,7 @@
+ 
+ [[package]]
+ name = "codex-network-proxy"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "base64 0.22.1",
+@@ -3548,7 +3542,7 @@
+ 
+ [[package]]
+ name = "codex-ollama"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "assert_matches",
+  "async-stream",
+@@ -3568,7 +3562,7 @@
+ 
+ [[package]]
+ name = "codex-otel"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "chrono",
+  "codex-api",
+@@ -3600,7 +3594,7 @@
+ 
+ [[package]]
+ name = "codex-plugin"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-config",
+  "codex-protocol",
+@@ -3612,7 +3606,7 @@
+ 
+ [[package]]
+ name = "codex-process-hardening"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "libc",
+  "pretty_assertions",
+@@ -3620,7 +3614,7 @@
+ 
+ [[package]]
+ name = "codex-prompts"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-context-fragments",
+@@ -3634,7 +3628,7 @@
+ 
+ [[package]]
+ name = "codex-protocol"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chardetng",
+@@ -3675,7 +3669,7 @@
+ 
+ [[package]]
+ name = "codex-realtime-webrtc"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "libwebrtc",
+  "thiserror 2.0.18",
+@@ -3684,7 +3678,7 @@
+ 
+ [[package]]
+ name = "codex-response-debug-context"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "base64 0.22.1",
+  "codex-api",
+@@ -3695,7 +3689,7 @@
+ 
+ [[package]]
+ name = "codex-responses-api-proxy"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -3712,7 +3706,7 @@
+ 
+ [[package]]
+ name = "codex-rmcp-client"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "axum",
+@@ -3754,7 +3748,7 @@
+ 
+ [[package]]
+ name = "codex-rollout"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -3779,7 +3773,7 @@
+ 
+ [[package]]
+ name = "codex-rollout-trace"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-code-mode",
+@@ -3795,7 +3789,7 @@
+ 
+ [[package]]
+ name = "codex-sandboxing"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-network-proxy",
+@@ -3818,7 +3812,7 @@
+ 
+ [[package]]
+ name = "codex-secrets"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "age",
+  "anyhow",
+@@ -3839,7 +3833,7 @@
+ 
+ [[package]]
+ name = "codex-shell-command"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "base64 0.22.1",
+@@ -3860,7 +3854,7 @@
+ 
+ [[package]]
+ name = "codex-shell-escalation"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -3880,7 +3874,7 @@
+ 
+ [[package]]
+ name = "codex-skills"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-utils-absolute-path",
+  "include_dir",
+@@ -3889,7 +3883,7 @@
+ 
+ [[package]]
+ name = "codex-skills-extension"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-core-skills",
+  "codex-exec-server",
+@@ -3911,7 +3905,7 @@
+ 
+ [[package]]
+ name = "codex-state"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "chrono",
+@@ -3935,7 +3929,7 @@
+ 
+ [[package]]
+ name = "codex-stdio-to-uds"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-uds",
+@@ -3947,7 +3941,7 @@
+ 
+ [[package]]
+ name = "codex-terminal-detection"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "pretty_assertions",
+  "tracing",
+@@ -3955,7 +3949,7 @@
+ 
+ [[package]]
+ name = "codex-test-binary-support"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-arg0",
+  "tempfile",
+@@ -3963,7 +3957,7 @@
+ 
+ [[package]]
+ name = "codex-thread-manager-sample"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "clap",
+@@ -3974,7 +3968,7 @@
+ 
+ [[package]]
+ name = "codex-thread-store"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "chrono",
+  "codex-git-utils",
+@@ -3995,7 +3989,7 @@
+ 
+ [[package]]
+ name = "codex-tools"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-app-server-protocol",
+  "codex-code-mode",
+@@ -4019,7 +4013,7 @@
+ 
+ [[package]]
+ name = "codex-tui"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "app_test_support",
+@@ -4129,7 +4123,7 @@
+ 
+ [[package]]
+ name = "codex-uds"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "async-io",
+  "pretty_assertions",
+@@ -4141,7 +4135,7 @@
+ 
+ [[package]]
+ name = "codex-utils-absolute-path"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "dirs",
+  "dunce",
+@@ -4155,14 +4149,14 @@
+ 
+ [[package]]
+ name = "codex-utils-approval-presets"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-protocol",
+ ]
+ 
+ [[package]]
+ name = "codex-utils-cache"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "lru 0.16.3",
+  "sha1 0.10.6",
+@@ -4171,7 +4165,7 @@
+ 
+ [[package]]
+ name = "codex-utils-cargo-bin"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "assert_cmd",
+  "runfiles",
+@@ -4180,7 +4174,7 @@
+ 
+ [[package]]
+ name = "codex-utils-cli"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "clap",
+  "codex-protocol",
+@@ -4192,15 +4186,15 @@
+ 
+ [[package]]
+ name = "codex-utils-elapsed"
+-version = "0.0.0"
++version = "0.142.4"
+ 
+ [[package]]
+ name = "codex-utils-fuzzy-match"
+-version = "0.0.0"
++version = "0.142.4"
+ 
+ [[package]]
+ name = "codex-utils-home-dir"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-utils-absolute-path",
+  "dirs",
+@@ -4210,20 +4204,15 @@
+ 
+ [[package]]
+ name = "codex-utils-image"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "base64 0.22.1",
+- "codex-utils-cache",
+- "divan",
+- "image",
+- "mime_guess",
+  "thiserror 2.0.18",
+- "tokio",
+ ]
+ 
+ [[package]]
+ name = "codex-utils-json-to-toml"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "pretty_assertions",
+  "serde_json",
+@@ -4232,17 +4221,14 @@
+ 
+ [[package]]
+ name = "codex-utils-oss"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-core",
+- "codex-lmstudio",
+- "codex-model-provider-info",
+- "codex-ollama",
+ ]
+ 
+ [[package]]
+ name = "codex-utils-output-truncation"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-protocol",
+  "codex-utils-string",
+@@ -4251,7 +4237,7 @@
+ 
+ [[package]]
+ name = "codex-utils-path"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-utils-absolute-path",
+  "dunce",
+@@ -4261,7 +4247,7 @@
+ 
+ [[package]]
+ name = "codex-utils-path-uri"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "base64 0.22.1",
+  "codex-utils-absolute-path",
+@@ -4277,7 +4263,7 @@
+ 
+ [[package]]
+ name = "codex-utils-plugins"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-exec-server",
+  "codex-utils-absolute-path",
+@@ -4290,7 +4276,7 @@
+ 
+ [[package]]
+ name = "codex-utils-pty"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "filedescriptor",
+@@ -4306,7 +4292,7 @@
+ 
+ [[package]]
+ name = "codex-utils-readiness"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "assert_matches",
+  "thiserror 2.0.18",
+@@ -4316,14 +4302,14 @@
+ 
+ [[package]]
+ name = "codex-utils-rustls-provider"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "rustls",
+ ]
+ 
+ [[package]]
+ name = "codex-utils-sandbox-summary"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-core",
+  "codex-model-provider-info",
+@@ -4334,7 +4320,7 @@
+ 
+ [[package]]
+ name = "codex-utils-sleep-inhibitor"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "core-foundation 0.9.4",
+  "libc",
+@@ -4344,14 +4330,14 @@
+ 
+ [[package]]
+ name = "codex-utils-stream-parser"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "pretty_assertions",
+ ]
+ 
+ [[package]]
+ name = "codex-utils-string"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "pretty_assertions",
+  "regex-lite",
+@@ -4361,14 +4347,14 @@
+ 
+ [[package]]
+ name = "codex-utils-template"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "pretty_assertions",
+ ]
+ 
+ [[package]]
+ name = "codex-v8-poc"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "pretty_assertions",
+  "v8",
+@@ -4376,7 +4362,7 @@
+ 
+ [[package]]
+ name = "codex-web-search-extension"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "codex-api",
+  "codex-core",
+@@ -4395,7 +4381,7 @@
+ 
+ [[package]]
+ name = "codex-windows-sandbox"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "base64 0.22.1",
+@@ -4492,12 +4478,6 @@
+ ]
+ 
+ [[package]]
+-name = "condtype"
+-version = "1.3.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "baf0a07a401f374238ab8e2f11a104d2851bf9ce711ec69804834de8af45c7af"
+-
+-[[package]]
+ name = "console"
+ version = "0.15.11"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -4652,7 +4632,7 @@
+ 
+ [[package]]
+ name = "core_test_support"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "assert_cmd",
+@@ -5231,12 +5211,6 @@
+ checksum = "26bf8fc351c5ed29b5c2f0cbbac1b209b74f60ecd62e675a998df72c49af5204"
+ 
+ [[package]]
+-name = "deno_core_icudata"
+-version = "0.77.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a9efff8990a82c1ae664292507e1a5c6749ddd2312898cdf9cd7cb1fd4bc64c6"
+-
+-[[package]]
+ name = "der"
+ version = "0.7.10"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -5494,31 +5468,6 @@
+ ]
+ 
+ [[package]]
+-name = "divan"
+-version = "0.1.21"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a405457ec78b8fe08b0e32b4a3570ab5dff6dd16eb9e76a5ee0a9d9cbd898933"
+-dependencies = [
+- "cfg-if",
+- "clap",
+- "condtype",
+- "divan-macros",
+- "libc",
+- "regex-lite",
+-]
+-
+-[[package]]
+-name = "divan-macros"
+-version = "0.1.21"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9556bc800956545d6420a640173e5ba7dfa82f38d3ea5a167eb555bc69ac3323"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn 2.0.117",
+-]
+-
+-[[package]]
+ name = "dns-lookup"
+ version = "3.0.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -9038,7 +8987,7 @@
+ 
+ [[package]]
+ name = "mcp_test_support"
+-version = "0.0.0"
++version = "0.142.4"
+ dependencies = [
+  "anyhow",
+  "codex-login",
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/Cargo.toml b/Cargo.toml
 --- a/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/Cargo.toml	2026-07-01 12:39:44.387240000 +0200
++++ b/Cargo.toml	2026-07-01 12:39:44.000000000 +0200
 @@ -190,7 +190,7 @@
  codex-keyring-store = { path = "keyring-store" }
  codex-linux-sandbox = { path = "linux-sandbox" }
@@ -22,9 +1220,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  rmcp = { version = "1.7.0", default-features = false }
  runfiles = { git = "https://github.com/dzbarsky/rules_rust", rev = "b56cbaa8465e74127f1ea216f813cd377295ad81" }
  rustls = { version = "0.23", default-features = false, features = [
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/Cargo.toml b/app-server/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/Cargo.toml b/app-server/Cargo.toml
 --- a/app-server/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/Cargo.toml	2026-07-01 18:26:36.571483000 +0200
++++ b/app-server/Cargo.toml	2026-07-01 18:26:36.000000000 +0200
 @@ -20,6 +20,23 @@
  [lints]
  workspace = true
@@ -126,9 +1324,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [target.'cfg(windows)'.dependencies]
  codex-windows-sandbox = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/chatgpt_apps.rs b/app-server/src/chatgpt_apps.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/chatgpt_apps.rs b/app-server/src/chatgpt_apps.rs
 --- a/app-server/src/chatgpt_apps.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server/src/chatgpt_apps.rs	2026-07-01 12:51:15.178151000 +0200
++++ b/app-server/src/chatgpt_apps.rs	2026-07-01 12:51:15.000000000 +0200
 @@ -0,0 +1,131 @@
 +#[cfg(feature = "chatgpt-apps")]
 +pub(crate) use codex_chatgpt::connectors;
@@ -261,9 +1459,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        merged
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/extensions.rs b/app-server/src/extensions.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/extensions.rs b/app-server/src/extensions.rs
 --- a/app-server/src/extensions.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/extensions.rs	2026-06-30 18:58:11.876445000 +0200
++++ b/app-server/src/extensions.rs	2026-06-30 18:58:11.000000000 +0200
 @@ -36,6 +36,7 @@
      pub(crate) thread_manager: Weak<ThreadManager>,
      pub(crate) goal_service: Arc<GoalService>,
@@ -339,9 +1537,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      Arc::new(builder.build())
  }
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/fs_watch_freebsd.rs b/app-server/src/fs_watch_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/fs_watch_freebsd.rs b/app-server/src/fs_watch_freebsd.rs
 --- a/app-server/src/fs_watch_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server/src/fs_watch_freebsd.rs	2026-06-30 18:51:20.118188000 +0200
++++ b/app-server/src/fs_watch_freebsd.rs	2026-06-30 18:51:20.000000000 +0200
 @@ -0,0 +1,39 @@
 +use crate::outgoing_message::ConnectionId;
 +use crate::outgoing_message::OutgoingMessageSender;
@@ -382,9 +1580,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +
 +    pub(crate) async fn connection_closed(&self, _connection_id: ConnectionId) {}
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/lib.rs b/app-server/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/lib.rs b/app-server/src/lib.rs
 --- a/app-server/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/lib.rs	2026-07-01 12:50:38.377103000 +0200
++++ b/app-server/src/lib.rs	2026-07-01 12:50:38.000000000 +0200
 @@ -83,6 +83,7 @@
  mod app_server_tracing;
  mod attestation;
@@ -435,9 +1633,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      #[cfg(debug_assertions)]
      if let Some(path) = test_user_config_file {
          let path = AbsolutePathBuf::from_absolute_path(path).map_err(|err| {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/mcp_refresh.rs b/app-server/src/mcp_refresh.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/mcp_refresh.rs b/app-server/src/mcp_refresh.rs
 --- a/app-server/src/mcp_refresh.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/mcp_refresh.rs	2026-06-30 15:34:52.753465000 +0200
++++ b/app-server/src/mcp_refresh.rs	2026-06-30 15:34:52.000000000 +0200
 @@ -216,6 +216,7 @@
              .expect("refresh tests require state db");
          let thread_store = thread_store_from_config(&good_config, Some(state_db.clone()));
@@ -454,9 +1652,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                          executor_skill_provider: Arc::clone(&executor_skill_provider),
                          thread_store: Arc::clone(&thread_store),
                      },
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/message_processor.rs b/app-server/src/message_processor.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/message_processor.rs b/app-server/src/message_processor.rs
 --- a/app-server/src/message_processor.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/message_processor.rs	2026-07-01 12:51:15.263959000 +0200
++++ b/app-server/src/message_processor.rs	2026-07-01 12:51:15.000000000 +0200
 @@ -5,6 +5,7 @@
  use std::sync::atomic::AtomicBool;
  
@@ -491,9 +1689,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                          executor_skill_provider: Arc::clone(&executor_skill_provider),
                          thread_store: Arc::clone(&thread_store),
                      },
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/account_processor.rs b/app-server/src/request_processors/account_processor.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/request_processors/account_processor.rs b/app-server/src/request_processors/account_processor.rs
 --- a/app-server/src/request_processors/account_processor.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/request_processors/account_processor.rs	2026-07-01 09:46:34.388224000 +0200
++++ b/app-server/src/request_processors/account_processor.rs	2026-07-01 09:46:34.000000000 +0200
 @@ -13,10 +13,12 @@
  const LOGIN_ISSUER_OVERRIDE_ENV_VAR: &str = "CODEX_APP_SERVER_LOGIN_ISSUER";
  
@@ -626,9 +1824,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          if matches!(
              self.config.forced_login_method,
              Some(ForcedLoginMethod::Api)
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/marketplace_processor_freebsd.rs b/app-server/src/request_processors/marketplace_processor_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/request_processors/marketplace_processor_freebsd.rs b/app-server/src/request_processors/marketplace_processor_freebsd.rs
 --- a/app-server/src/request_processors/marketplace_processor_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server/src/request_processors/marketplace_processor_freebsd.rs	2026-06-30 18:33:21.147995000 +0200
++++ b/app-server/src/request_processors/marketplace_processor_freebsd.rs	2026-06-30 18:33:21.000000000 +0200
 @@ -0,0 +1,39 @@
 +use super::*;
 +
@@ -669,9 +1867,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +fn unavailable() -> JSONRPCErrorError {
 +    invalid_request("plugin marketplaces are not available on this FreeBSD exec build")
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/plugins_freebsd.rs b/app-server/src/request_processors/plugins_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/request_processors/plugins_freebsd.rs b/app-server/src/request_processors/plugins_freebsd.rs
 --- a/app-server/src/request_processors/plugins_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server/src/request_processors/plugins_freebsd.rs	2026-06-30 18:34:06.116169000 +0200
++++ b/app-server/src/request_processors/plugins_freebsd.rs	2026-06-30 18:34:06.000000000 +0200
 @@ -0,0 +1,121 @@
 +use super::*;
 +
@@ -794,9 +1992,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +fn unavailable() -> JSONRPCErrorError {
 +    invalid_request("plugins are not available on this FreeBSD exec build")
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/thread_processor.rs b/app-server/src/request_processors/thread_processor.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/request_processors/thread_processor.rs b/app-server/src/request_processors/thread_processor.rs
 --- a/app-server/src/request_processors/thread_processor.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/request_processors/thread_processor.rs	2026-06-30 15:34:52.754095000 +0200
++++ b/app-server/src/request_processors/thread_processor.rs	2026-06-30 15:34:52.000000000 +0200
 @@ -1132,6 +1132,7 @@
          let mut thread_extension_init = ExtensionDataInit::new();
          if !selected_capability_roots.is_empty() {
@@ -805,9 +2003,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              codex_mcp_extension::initialize_executor_plugin_thread_data(&mut thread_extension_init);
          }
          let create_thread_started_at = std::time::Instant::now();
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors/turn_processor.rs b/app-server/src/request_processors/turn_processor.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/request_processors/turn_processor.rs b/app-server/src/request_processors/turn_processor.rs
 --- a/app-server/src/request_processors/turn_processor.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/request_processors/turn_processor.rs	2026-07-01 06:12:59.886127000 +0200
++++ b/app-server/src/request_processors/turn_processor.rs	2026-07-01 06:12:59.000000000 +0200
 @@ -66,6 +66,7 @@
  
  #[derive(Clone)]
@@ -842,9 +2040,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
          self.outgoing
              .record_request_turn_id(&request_id, &turn_id)
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/request_processors.rs b/app-server/src/request_processors.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/request_processors.rs b/app-server/src/request_processors.rs
 --- a/app-server/src/request_processors.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/request_processors.rs	2026-07-01 12:51:15.423478000 +0200
++++ b/app-server/src/request_processors.rs	2026-07-01 12:51:15.000000000 +0200
 @@ -1,5 +1,7 @@
  use crate::bespoke_event_handling::apply_bespoke_event_handling;
  use crate::bespoke_event_handling::maybe_emit_hook_prompt_item_completed;
@@ -1088,9 +2286,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  fn resolve_request_cwd(cwd: Option<PathBuf>) -> Result<Option<AbsolutePathBuf>, JSONRPCErrorError> {
      cwd.map(|cwd| {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/skills_watcher.rs b/app-server/src/skills_watcher.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/skills_watcher.rs b/app-server/src/skills_watcher.rs
 --- a/app-server/src/skills_watcher.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/skills_watcher.rs	2026-06-30 18:50:43.967807000 +0200
++++ b/app-server/src/skills_watcher.rs	2026-06-30 18:50:43.000000000 +0200
 @@ -3,6 +3,7 @@
  use std::time::Duration;
  
@@ -1107,9 +2305,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use codex_protocol::protocol::TurnEnvironmentSelection;
  use codex_utils_absolute_path::AbsolutePathBuf;
  use tokio_util::sync::CancellationToken;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/skills_watcher_freebsd.rs b/app-server/src/skills_watcher_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/skills_watcher_freebsd.rs b/app-server/src/skills_watcher_freebsd.rs
 --- a/app-server/src/skills_watcher_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server/src/skills_watcher_freebsd.rs	2026-06-30 18:51:11.887233000 +0200
++++ b/app-server/src/skills_watcher_freebsd.rs	2026-06-30 18:51:11.000000000 +0200
 @@ -0,0 +1,32 @@
 +use crate::outgoing_message::OutgoingMessageSender;
 +use crate::watch_registration::WatchRegistration;
@@ -1143,9 +2341,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        WatchRegistration::default()
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/thread_state.rs b/app-server/src/thread_state.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/thread_state.rs b/app-server/src/thread_state.rs
 --- a/app-server/src/thread_state.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server/src/thread_state.rs	2026-06-30 18:50:35.043522000 +0200
++++ b/app-server/src/thread_state.rs	2026-06-30 18:50:35.000000000 +0200
 @@ -8,7 +8,6 @@
  use codex_app_server_protocol::TurnError;
  use codex_core::CodexThread;
@@ -1163,9 +2361,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  type PendingInterruptQueue = Vec<ConnectionRequestId>;
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server/src/watch_registration.rs b/app-server/src/watch_registration.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server/src/watch_registration.rs b/app-server/src/watch_registration.rs
 --- a/app-server/src/watch_registration.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server/src/watch_registration.rs	2026-06-30 18:50:26.304196000 +0200
++++ b/app-server/src/watch_registration.rs	2026-06-30 18:50:26.000000000 +0200
 @@ -0,0 +1,6 @@
 +#[cfg(not(target_os = "freebsd"))]
 +pub(crate) use codex_file_watcher::WatchRegistration;
@@ -1173,9 +2371,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(target_os = "freebsd")]
 +#[derive(Debug, Default)]
 +pub(crate) struct WatchRegistration;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-client/Cargo.toml b/app-server-client/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-client/Cargo.toml b/app-server-client/Cargo.toml
 --- a/app-server-client/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server-client/Cargo.toml	2026-07-01 18:26:06.971848000 +0200
++++ b/app-server-client/Cargo.toml	2026-07-01 18:26:06.000000000 +0200
 @@ -12,13 +12,24 @@
  [lints]
  workspace = true
@@ -1217,9 +2415,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  pretty_assertions = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-client/src/lib.rs b/app-server-client/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-client/src/lib.rs b/app-server-client/src/lib.rs
 --- a/app-server-client/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server-client/src/lib.rs	2026-07-01 15:57:47.399781000 +0200
++++ b/app-server-client/src/lib.rs	2026-07-01 15:57:47.000000000 +0200
 @@ -16,6 +16,7 @@
  //! surfaces as channel-full errors rather than unbounded memory growth.
  
@@ -1342,9 +2540,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              Self::Remote(client) => AppServerRequestHandle::Remote(client.request_handle()),
          }
      }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-protocol/Cargo.toml b/app-server-protocol/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-protocol/Cargo.toml b/app-server-protocol/Cargo.toml
 --- a/app-server-protocol/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server-protocol/Cargo.toml	2026-06-30 06:30:24.952026000 +0200
++++ b/app-server-protocol/Cargo.toml	2026-06-30 06:30:24.000000000 +0200
 @@ -26,16 +26,18 @@
  serde_with = { workspace = true }
  strum_macros = { workspace = true }
@@ -1368,9 +2566,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  anyhow = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-protocol/src/protocol/v2/mcp.rs b/app-server-protocol/src/protocol/v2/mcp.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-protocol/src/protocol/v2/mcp.rs b/app-server-protocol/src/protocol/v2/mcp.rs
 --- a/app-server-protocol/src/protocol/v2/mcp.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server-protocol/src/protocol/v2/mcp.rs	2026-06-30 06:30:34.641587000 +0200
++++ b/app-server-protocol/src/protocol/v2/mcp.rs	2026-06-30 06:30:34.000000000 +0200
 @@ -261,6 +261,7 @@
      }
  }
@@ -1403,9 +2601,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  impl From<rmcp::model::CreateElicitationResult> for McpServerElicitationRequestResponse {
      fn from(value: rmcp::model::CreateElicitationResult) -> Self {
          Self {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/Cargo.toml b/app-server-transport/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-transport/Cargo.toml b/app-server-transport/Cargo.toml
 --- a/app-server-transport/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server-transport/Cargo.toml	2026-07-01 18:27:10.060038000 +0200
++++ b/app-server-transport/Cargo.toml	2026-07-01 18:27:10.000000000 +0200
 @@ -12,45 +12,73 @@
  [lints]
  workspace = true
@@ -1505,9 +2703,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  chrono = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/auth_stub.rs b/app-server-transport/src/transport/auth_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-transport/src/transport/auth_stub.rs b/app-server-transport/src/transport/auth_stub.rs
 --- a/app-server-transport/src/transport/auth_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server-transport/src/transport/auth_stub.rs	2026-07-01 18:06:48.867562000 +0200
++++ b/app-server-transport/src/transport/auth_stub.rs	2026-07-01 18:06:48.000000000 +0200
 @@ -0,0 +1,59 @@
 +use codex_utils_absolute_path::AbsolutePathBuf;
 +use std::io;
@@ -1568,10 +2766,10 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +) -> io::Result<WebsocketAuthPolicy> {
 +    Ok(WebsocketAuthPolicy)
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/mod.rs b/app-server-transport/src/transport/mod.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-transport/src/transport/mod.rs b/app-server-transport/src/transport/mod.rs
 --- a/app-server-transport/src/transport/mod.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/app-server-transport/src/transport/mod.rs	2026-07-01 16:02:38.045138000 +0200
-@@ -1,4 +1,8 @@
++++ b/app-server-transport/src/transport/mod.rs	2026-07-02 09:13:32.000000000 +0200
+@@ -1,9 +1,16 @@
 +#[cfg(feature = "server-transport")]
  pub mod auth;
 +#[cfg(not(feature = "server-transport"))]
@@ -1579,8 +2777,32 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +pub mod auth;
  
  use crate::outgoing_message::ConnectionId;
++#[cfg(feature = "server-transport")]
  use crate::outgoing_message::OutgoingError;
-@@ -23,11 +27,27 @@
++#[cfg(feature = "server-transport")]
+ use crate::outgoing_message::OutgoingMessage;
+ use crate::outgoing_message::QueuedOutgoingMessage;
++#[cfg(feature = "server-transport")]
+ use codex_app_server_protocol::JSONRPCErrorError;
+ use codex_app_server_protocol::JSONRPCMessage;
+ use codex_core::config::find_codex_home;
+@@ -11,11 +18,15 @@
+ use std::net::SocketAddr;
+ use std::path::Path;
+ use std::str::FromStr;
++#[cfg(feature = "server-transport")]
+ use std::sync::atomic::AtomicU64;
++#[cfg(feature = "server-transport")]
+ use std::sync::atomic::Ordering;
+ use tokio::sync::mpsc;
+ use tokio_util::sync::CancellationToken;
++#[cfg(feature = "server-transport")]
+ use tracing::error;
++#[cfg(feature = "server-transport")]
+ use tracing::warn;
+ 
+ /// Size of the bounded channels used to communicate between tasks. The value
+@@ -23,12 +34,28 @@
  /// plenty for an interactive CLI.
  pub const CHANNEL_CAPACITY: usize = 128;
  
@@ -1603,15 +2825,92 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(all(test, feature = "server-transport"))]
  mod unix_socket_tests;
 +#[cfg(feature = "server-transport")]
-+mod websocket;
+ mod websocket;
 +#[cfg(not(feature = "server-transport"))]
 +#[path = "websocket_stub.rs"]
- mod websocket;
++mod websocket;
  
  pub use remote_control::REMOTE_CONTROL_DISABLED_ENV_VAR;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/remote_control_stub.rs b/app-server-transport/src/transport/remote_control_stub.rs
+ pub use remote_control::RemoteControlDisabledByRequirements;
+@@ -47,6 +74,7 @@
+ pub use unix_socket::start_control_socket_acceptor;
+ pub use websocket::start_websocket_acceptor;
+ 
++#[cfg(feature = "server-transport")]
+ const OVERLOADED_ERROR_CODE: i64 = -32001;
+ 
+ const APP_SERVER_CONTROL_SOCKET_DIR_NAME: &str = "app-server-control";
+@@ -191,12 +219,15 @@
+     RemoteControl,
+ }
+ 
++#[cfg(feature = "server-transport")]
+ static CONNECTION_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
+ 
++#[cfg(feature = "server-transport")]
+ fn next_connection_id() -> ConnectionId {
+     ConnectionId(CONNECTION_ID_COUNTER.fetch_add(1, Ordering::Relaxed))
+ }
+ 
++#[cfg(feature = "server-transport")]
+ async fn forward_incoming_message(
+     transport_event_tx: &mpsc::Sender<TransportEvent>,
+     writer: &mpsc::Sender<QueuedOutgoingMessage>,
+@@ -214,6 +245,7 @@
+     }
+ }
+ 
++#[cfg(feature = "server-transport")]
+ async fn enqueue_incoming_message(
+     transport_event_tx: &mpsc::Sender<TransportEvent>,
+     writer: &mpsc::Sender<QueuedOutgoingMessage>,
+@@ -255,6 +287,7 @@
+     }
+ }
+ 
++#[cfg(feature = "server-transport")]
+ fn serialize_outgoing_message(outgoing_message: OutgoingMessage) -> Option<String> {
+     let value = match serde_json::to_value(outgoing_message) {
+         Ok(value) => value,
+@@ -274,6 +307,20 @@
+ 
+ #[cfg(test)]
+ mod tests {
++    use super::AppServerTransport;
++    use pretty_assertions::assert_eq;
++
++    #[test]
++    fn listen_off_parses_as_off_transport() {
++        assert_eq!(
++            AppServerTransport::from_listen_url("off"),
++            Ok(AppServerTransport::Off)
++        );
++    }
++}
++
++#[cfg(all(test, feature = "server-transport"))]
++mod server_transport_tests {
+     use super::*;
+     use codex_app_server_protocol::ConfigWarningNotification;
+     use codex_app_server_protocol::JSONRPCNotification;
+@@ -285,14 +332,6 @@
+     use serde_json::json;
+     use tokio::time::Duration;
+     use tokio::time::timeout;
+-
+-    #[test]
+-    fn listen_off_parses_as_off_transport() {
+-        assert_eq!(
+-            AppServerTransport::from_listen_url("off"),
+-            Ok(AppServerTransport::Off)
+-        );
+-    }
+ 
+     #[tokio::test]
+     async fn enqueue_incoming_request_returns_overload_error_when_queue_is_full() {
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-transport/src/transport/remote_control_stub.rs b/app-server-transport/src/transport/remote_control_stub.rs
 --- a/app-server-transport/src/transport/remote_control_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server-transport/src/transport/remote_control_stub.rs	2026-07-01 18:06:48.867622000 +0200
++++ b/app-server-transport/src/transport/remote_control_stub.rs	2026-07-01 18:06:48.000000000 +0200
 @@ -0,0 +1,224 @@
 +use super::TransportEvent;
 +use codex_app_server_protocol::RemoteControlClientsListParams;
@@ -1837,9 +3136,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +fn remote_control_unavailable_error() -> io::Error {
 +    io::Error::new(io::ErrorKind::InvalidInput, RemoteControlUnavailable)
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/stdio_stub.rs b/app-server-transport/src/transport/stdio_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-transport/src/transport/stdio_stub.rs b/app-server-transport/src/transport/stdio_stub.rs
 --- a/app-server-transport/src/transport/stdio_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server-transport/src/transport/stdio_stub.rs	2026-07-01 18:06:48.867668000 +0200
++++ b/app-server-transport/src/transport/stdio_stub.rs	2026-07-01 18:06:48.000000000 +0200
 @@ -0,0 +1,16 @@
 +use super::TransportEvent;
 +use std::io::Result as IoResult;
@@ -1857,9 +3156,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        "stdio app-server transport is disabled in api-only builds",
 +    ))
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/unix_socket_stub.rs b/app-server-transport/src/transport/unix_socket_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-transport/src/transport/unix_socket_stub.rs b/app-server-transport/src/transport/unix_socket_stub.rs
 --- a/app-server-transport/src/transport/unix_socket_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server-transport/src/transport/unix_socket_stub.rs	2026-07-01 18:06:48.867716000 +0200
++++ b/app-server-transport/src/transport/unix_socket_stub.rs	2026-07-01 18:06:48.000000000 +0200
 @@ -0,0 +1,30 @@
 +use super::TransportEvent;
 +use codex_utils_absolute_path::AbsolutePathBuf;
@@ -1891,9 +3190,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        "unix socket app-server transport is disabled in api-only builds",
 +    ))
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/app-server-transport/src/transport/websocket_stub.rs b/app-server-transport/src/transport/websocket_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/app-server-transport/src/transport/websocket_stub.rs b/app-server-transport/src/transport/websocket_stub.rs
 --- a/app-server-transport/src/transport/websocket_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/app-server-transport/src/transport/websocket_stub.rs	2026-07-01 18:06:48.867760000 +0200
++++ b/app-server-transport/src/transport/websocket_stub.rs	2026-07-01 18:06:48.000000000 +0200
 @@ -0,0 +1,19 @@
 +use super::TransportEvent;
 +use super::auth::WebsocketAuthPolicy;
@@ -1914,9 +3213,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        "websocket app-server transport is disabled in api-only builds",
 +    ))
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/backend-client/Cargo.toml b/backend-client/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/backend-client/Cargo.toml b/backend-client/Cargo.toml
 --- a/backend-client/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/backend-client/Cargo.toml	2026-07-01 18:27:56.550003000 +0200
++++ b/backend-client/Cargo.toml	2026-07-01 18:27:56.000000000 +0200
 @@ -12,13 +12,17 @@
  [lints]
  workspace = true
@@ -1936,9 +3235,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-client = { workspace = true }
  codex-login = { workspace = true }
  codex-model-provider = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cli/Cargo.toml b/cli/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/cli/Cargo.toml b/cli/Cargo.toml
 --- a/cli/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/cli/Cargo.toml	2026-07-01 12:39:44.387832000 +0200
++++ b/cli/Cargo.toml	2026-07-01 12:39:44.000000000 +0200
 @@ -17,30 +17,47 @@
  [lints]
  workspace = true
@@ -2000,9 +3299,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-utils-absolute-path = { workspace = true }
  codex-utils-path = { workspace = true }
  crossterm = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cli/src/login.rs b/cli/src/login.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/cli/src/login.rs b/cli/src/login.rs
 --- a/cli/src/login.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/cli/src/login.rs	2026-07-01 09:45:09.108312000 +0200
++++ b/cli/src/login.rs	2026-07-01 09:45:09.000000000 +0200
 @@ -10,15 +10,22 @@
  use codex_app_server_protocol::AuthMode;
  use codex_config::types::AuthCredentialsStoreMode;
@@ -2187,9 +3486,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  }
  
  pub async fn run_login_status(cli_config_overrides: CliConfigOverrides) -> ! {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cli/tests/login.rs b/cli/tests/login.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/cli/tests/login.rs b/cli/tests/login.rs
 --- a/cli/tests/login.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/cli/tests/login.rs	2026-07-01 09:24:21.965072000 +0200
++++ b/cli/tests/login.rs	2026-07-01 09:24:21.000000000 +0200
 @@ -3,6 +3,7 @@
  use anyhow::Context;
  use anyhow::Result;
@@ -2240,9 +3539,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
      Ok(())
  }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cloud-config/Cargo.toml b/cloud-config/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/cloud-config/Cargo.toml b/cloud-config/Cargo.toml
 --- a/cloud-config/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/cloud-config/Cargo.toml	2026-07-01 18:25:44.232969000 +0200
++++ b/cloud-config/Cargo.toml	2026-07-01 18:25:44.000000000 +0200
 @@ -7,14 +7,22 @@
  [lints]
  workspace = true
@@ -2269,9 +3568,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-protocol = { workspace = true }
  hmac = "0.12.1"
  serde = { workspace = true, features = ["derive"] }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/cloud-tasks/Cargo.toml b/cloud-tasks/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/cloud-tasks/Cargo.toml b/cloud-tasks/Cargo.toml
 --- a/cloud-tasks/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/cloud-tasks/Cargo.toml	2026-07-01 12:39:44.387607000 +0200
++++ b/cloud-tasks/Cargo.toml	2026-07-01 12:39:44.000000000 +0200
 @@ -12,6 +12,17 @@
  [lints]
  workspace = true
@@ -2302,9 +3601,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-utils-cli = { workspace = true }
  crossterm = { workspace = true, features = ["event-stream"] }
  owo-colors = { workspace = true, features = ["supports-colors"] }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/code-mode/Cargo.toml b/code-mode/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/code-mode/Cargo.toml b/code-mode/Cargo.toml
 --- a/code-mode/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/code-mode/Cargo.toml	2026-06-30 02:36:43.155555000 +0200
++++ b/code-mode/Cargo.toml	2026-06-30 02:36:43.000000000 +0200
 @@ -9,21 +9,10 @@
  name = "codex_code_mode"
  path = "src/lib.rs"
@@ -2328,9 +3627,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -
 -[dev-dependencies]
 -pretty_assertions = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/code-mode/src/lib.rs b/code-mode/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/code-mode/src/lib.rs b/code-mode/src/lib.rs
 --- a/code-mode/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/code-mode/src/lib.rs	2026-06-30 18:09:45.127028000 +0200
++++ b/code-mode/src/lib.rs	2026-06-30 18:09:45.000000000 +0200
 @@ -1,9 +1,141 @@
 -mod cell_actor;
 -mod runtime;
@@ -2480,9 +3779,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        error_text: Some(UNAVAILABLE.to_string()),
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/Cargo.toml b/codex-api/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-api/Cargo.toml b/codex-api/Cargo.toml
 --- a/codex-api/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/codex-api/Cargo.toml	2026-07-01 18:10:51.257356000 +0200
++++ b/codex-api/Cargo.toml	2026-07-01 18:10:51.000000000 +0200
 @@ -4,6 +4,10 @@
  edition.workspace = true
  license.workspace = true
@@ -2505,9 +3804,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  tracing = { workspace = true }
  eventsource-stream = { workspace = true }
  regex-lite = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/endpoint/mod.rs b/codex-api/src/endpoint/mod.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-api/src/endpoint/mod.rs b/codex-api/src/endpoint/mod.rs
 --- a/codex-api/src/endpoint/mod.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/codex-api/src/endpoint/mod.rs	2026-07-01 18:10:51.257470000 +0200
++++ b/codex-api/src/endpoint/mod.rs	2026-07-01 18:10:51.000000000 +0200
 @@ -3,8 +3,16 @@
  pub(crate) mod memories;
  pub(crate) mod models;
@@ -2525,9 +3824,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) mod responses_websocket;
  pub(crate) mod search;
  mod session;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/endpoint/realtime_websocket_stub.rs b/codex-api/src/endpoint/realtime_websocket_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-api/src/endpoint/realtime_websocket_stub.rs b/codex-api/src/endpoint/realtime_websocket_stub.rs
 --- a/codex-api/src/endpoint/realtime_websocket_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/codex-api/src/endpoint/realtime_websocket_stub.rs	2026-07-01 18:33:47.438951000 +0200
++++ b/codex-api/src/endpoint/realtime_websocket_stub.rs	2026-07-01 18:33:47.000000000 +0200
 @@ -0,0 +1,176 @@
 +#[path = "realtime_websocket/methods_common.rs"]
 +mod methods_common;
@@ -2705,9 +4004,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +fn websocket_disabled_error() -> ApiError {
 +    ApiError::Stream("realtime websocket support is disabled in this build".to_string())
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/endpoint/responses_websocket_stub.rs b/codex-api/src/endpoint/responses_websocket_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-api/src/endpoint/responses_websocket_stub.rs b/codex-api/src/endpoint/responses_websocket_stub.rs
 --- a/codex-api/src/endpoint/responses_websocket_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/codex-api/src/endpoint/responses_websocket_stub.rs	2026-07-01 18:10:51.257541000 +0200
++++ b/codex-api/src/endpoint/responses_websocket_stub.rs	2026-07-01 18:10:51.000000000 +0200
 @@ -0,0 +1,82 @@
 +use crate::auth::SharedAuthProvider;
 +use crate::common::ResponseStream;
@@ -2791,9 +4090,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +fn websocket_disabled_error() -> ApiError {
 +    ApiError::Stream("responses websocket support is disabled in this build".to_string())
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-api/src/telemetry.rs b/codex-api/src/telemetry.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-api/src/telemetry.rs b/codex-api/src/telemetry.rs
 --- a/codex-api/src/telemetry.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/codex-api/src/telemetry.rs	2026-07-01 18:14:52.052813000 +0200
++++ b/codex-api/src/telemetry.rs	2026-07-01 18:14:52.000000000 +0200
 @@ -11,7 +11,9 @@
  use std::sync::Arc;
  use std::time::Duration;
@@ -2825,9 +4124,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  }
  
  pub(crate) trait WithStatus {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-mcp/Cargo.toml b/codex-mcp/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-mcp/Cargo.toml b/codex-mcp/Cargo.toml
 --- a/codex-mcp/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/codex-mcp/Cargo.toml	2026-07-01 18:28:44.592922000 +0200
++++ b/codex-mcp/Cargo.toml	2026-07-01 18:28:44.000000000 +0200
 @@ -12,31 +12,43 @@
  [lints]
  workspace = true
@@ -2882,9 +4181,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  tracing = { workspace = true }
  url = { workspace = true }
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-mcp/src/freebsd_stub.rs b/codex-mcp/src/freebsd_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-mcp/src/freebsd_stub.rs b/codex-mcp/src/freebsd_stub.rs
 --- a/codex-mcp/src/freebsd_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/codex-mcp/src/freebsd_stub.rs	2026-06-30 18:09:45.331539000 +0200
++++ b/codex-mcp/src/freebsd_stub.rs	2026-06-30 18:09:45.000000000 +0200
 @@ -0,0 +1,1260 @@
 +use std::collections::BTreeMap;
 +use std::collections::BTreeSet;
@@ -4146,9 +5445,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        .filter(|value| !value.is_empty())
 +        .map(ToString::to_string)
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/codex-mcp/src/lib.rs b/codex-mcp/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/codex-mcp/src/lib.rs b/codex-mcp/src/lib.rs
 --- a/codex-mcp/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/codex-mcp/src/lib.rs	2026-06-30 18:09:45.332615000 +0200
++++ b/codex-mcp/src/lib.rs	2026-06-30 18:09:45.000000000 +0200
 @@ -1,84 +1,182 @@
 +#[cfg(target_os = "freebsd")]
 +mod freebsd_stub;
@@ -4332,9 +5631,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) mod server;
 +#[cfg(not(target_os = "freebsd"))]
  pub(crate) mod tools;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/config/Cargo.toml b/config/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/config/Cargo.toml b/config/Cargo.toml
 --- a/config/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/config/Cargo.toml	2026-06-30 03:20:08.193794000 +0200
++++ b/config/Cargo.toml	2026-06-30 03:20:08.000000000 +0200
 @@ -30,7 +30,6 @@
  gethostname = { workspace = true }
  indexmap = { workspace = true, features = ["serde"] }
@@ -4359,9 +5658,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [target.'cfg(unix)'.dependencies]
  dns-lookup = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/config/src/thread_config.rs b/config/src/thread_config.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/config/src/thread_config.rs b/config/src/thread_config.rs
 --- a/config/src/thread_config.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/config/src/thread_config.rs	2026-06-30 03:20:31.060677000 +0200
++++ b/config/src/thread_config.rs	2026-06-30 03:20:31.000000000 +0200
 @@ -11,7 +11,50 @@
  
  use crate::ConfigLayerEntry;
@@ -4413,9 +5712,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  pub use remote::RemoteThreadConfigLoader;
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/Cargo.toml b/core/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/Cargo.toml b/core/Cargo.toml
 --- a/core/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/Cargo.toml	2026-07-01 18:27:44.257876000 +0200
++++ b/core/Cargo.toml	2026-07-01 18:27:44.000000000 +0200
 @@ -15,6 +15,10 @@
  [lints]
  workspace = true
@@ -4499,9 +5798,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  assert_cmd = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/client.rs b/core/src/client.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/client.rs b/core/src/client.rs
 --- a/core/src/client.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/client.rs	2026-07-01 18:33:12.114013000 +0200
++++ b/core/src/client.rs	2026-07-01 18:33:12.000000000 +0200
 @@ -25,9 +25,12 @@
  
  use std::collections::HashMap;
@@ -4937,9 +6236,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  impl WebsocketTelemetry for ApiTelemetry {
      fn on_ws_request(&self, duration: Duration, error: Option<&ApiError>, connection_reused: bool) {
          let error_message = error.map(telemetry_api_error_message);
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/codex_thread.rs b/core/src/codex_thread.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/codex_thread.rs b/core/src/codex_thread.rs
 --- a/core/src/codex_thread.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/codex_thread.rs	2026-06-30 18:09:45.800686000 +0200
++++ b/core/src/codex_thread.rs	2026-06-30 18:09:45.000000000 +0200
 @@ -4,6 +4,7 @@
  use crate::session::SessionSettingsUpdate;
  use crate::session::SteerInputError;
@@ -4956,9 +6255,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use std::collections::BTreeMap;
  use std::collections::HashMap;
  use std::path::PathBuf;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/config/mod.rs b/core/src/config/mod.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/config/mod.rs b/core/src/config/mod.rs
 --- a/core/src/config/mod.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/config/mod.rs	2026-06-30 18:09:45.928481000 +0200
++++ b/core/src/config/mod.rs	2026-06-30 18:09:45.000000000 +0200
 @@ -73,10 +73,13 @@
  use codex_install_context::InstallContext;
  use codex_login::AuthManagerConfig;
@@ -4983,9 +6282,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use serde::Deserialize;
  use serde::Serialize;
  use std::collections::BTreeMap;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/context_manager/history.rs b/core/src/context_manager/history.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/context_manager/history.rs b/core/src/context_manager/history.rs
 --- a/core/src/context_manager/history.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/context_manager/history.rs	2026-06-30 06:15:06.495052000 +0200
++++ b/core/src/context_manager/history.rs	2026-06-30 06:15:06.000000000 +0200
 @@ -5,7 +5,9 @@
  use crate::event_mapping::is_contextual_dev_message_content;
  use crate::event_mapping::is_contextual_user_message_content;
@@ -5050,9 +6349,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  fn estimate_original_image_bytes(image_url: &str) -> Option<i64> {
      let key = sha1_digest(image_url.as_bytes());
      ORIGINAL_IMAGE_ESTIMATE_CACHE.get_or_insert_with(key, || {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/lib.rs b/core/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/lib.rs b/core/src/lib.rs
 --- a/core/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/lib.rs	2026-07-01 06:11:11.919568000 +0200
++++ b/core/src/lib.rs	2026-07-01 06:11:11.000000000 +0200
 @@ -52,6 +52,7 @@
  pub use landlock::spawn_command_under_linux_sandbox;
  pub(crate) mod mcp;
@@ -5071,9 +6370,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod mcp_tool_call;
  pub(crate) mod mention_syntax;
  pub(crate) mod utils;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/mcp_tool_call.rs b/core/src/mcp_tool_call.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/mcp_tool_call.rs b/core/src/mcp_tool_call.rs
 --- a/core/src/mcp_tool_call.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/mcp_tool_call.rs	2026-06-30 18:09:46.132490000 +0200
++++ b/core/src/mcp_tool_call.rs	2026-06-30 18:09:46.000000000 +0200
 @@ -41,7 +41,9 @@
  use codex_mcp::CODEX_APPS_MCP_SERVER_NAME;
  use codex_mcp::MCP_TOOL_CODEX_APPS_META_KEY;
@@ -5113,9 +6412,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          let params = build_mcp_tool_approval_elicitation_request(
              sess.as_ref(),
              turn_context.as_ref(),
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/mcp_tool_exposure_test.rs b/core/src/mcp_tool_exposure_test.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/mcp_tool_exposure_test.rs b/core/src/mcp_tool_exposure_test.rs
 --- a/core/src/mcp_tool_exposure_test.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/mcp_tool_exposure_test.rs	2026-06-30 18:10:55.690597000 +0200
++++ b/core/src/mcp_tool_exposure_test.rs	2026-06-30 18:10:55.000000000 +0200
 @@ -2,12 +2,12 @@
  use std::sync::Arc;
  
@@ -5132,9 +6431,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  use super::*;
  use crate::config::CONFIG_TOML_FILE;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/responses_metadata.rs b/core/src/responses_metadata.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/responses_metadata.rs b/core/src/responses_metadata.rs
 --- a/core/src/responses_metadata.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/responses_metadata.rs	2026-07-01 06:11:32.943209000 +0200
++++ b/core/src/responses_metadata.rs	2026-07-01 06:11:32.000000000 +0200
 @@ -187,6 +187,7 @@
          to_ascii_json_string(&self.turn_metadata_payload()).ok()
      }
@@ -5143,9 +6442,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      pub(crate) fn turn_metadata_value(&self) -> Option<Value> {
          serde_json::to_value(self.turn_metadata_payload()).ok()
      }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/handlers.rs b/core/src/session/handlers.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/session/handlers.rs b/core/src/session/handlers.rs
 --- a/core/src/session/handlers.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/session/handlers.rs	2026-06-30 18:09:46.194162000 +0200
++++ b/core/src/session/handlers.rs	2026-06-30 18:09:46.000000000 +0200
 @@ -50,6 +50,7 @@
  use codex_protocol::request_user_input::RequestUserInputResponse;
  
@@ -5167,9 +6466,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      };
      if let Err(err) = sess
          .resolve_elicitation(server_name, request_id, response)
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/mcp.rs b/core/src/session/mcp.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/session/mcp.rs b/core/src/session/mcp.rs
 --- a/core/src/session/mcp.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/session/mcp.rs	2026-07-01 06:11:47.614600000 +0200
++++ b/core/src/session/mcp.rs	2026-07-01 06:11:47.000000000 +0200
 @@ -1,7 +1,11 @@
  use super::*;
 +use codex_mcp::CreateElicitationRequestParams;
@@ -5251,9 +6550,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      }
  }
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/session/mod.rs b/core/src/session/mod.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/session/mod.rs b/core/src/session/mod.rs
 --- a/core/src/session/mod.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/session/mod.rs	2026-07-01 06:11:37.490183000 +0200
++++ b/core/src/session/mod.rs	2026-07-01 06:11:37.000000000 +0200
 @@ -73,9 +73,18 @@
  use codex_login::CodexAuth;
  use codex_login::auth_env_telemetry::collect_auth_env_telemetry;
@@ -5297,9 +6596,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      pub(crate) async fn get_connector_selection(&self) -> HashSet<String> {
          let state = self.state.lock().await;
          state.get_connector_selection()
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/state/session.rs b/core/src/state/session.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/state/session.rs b/core/src/state/session.rs
 --- a/core/src/state/session.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/state/session.rs	2026-07-01 06:11:42.064949000 +0200
++++ b/core/src/state/session.rs	2026-07-01 06:11:42.000000000 +0200
 @@ -254,6 +254,7 @@
      }
  
@@ -5308,9 +6607,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      pub(crate) fn get_connector_selection(&self) -> HashSet<String> {
          self.active_connector_selection.clone()
      }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/state/turn.rs b/core/src/state/turn.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/state/turn.rs b/core/src/state/turn.rs
 --- a/core/src/state/turn.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/state/turn.rs	2026-06-30 18:09:46.366258000 +0200
++++ b/core/src/state/turn.rs	2026-06-30 18:09:46.000000000 +0200
 @@ -8,6 +8,7 @@
  use tokio_util::task::AbortOnDropHandle;
  
@@ -5327,9 +6626,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use tokio::sync::oneshot;
  
  use crate::agent::control::AgentExecutionGuard;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/context.rs b/core/src/tools/context.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/tools/context.rs b/core/src/tools/context.rs
 --- a/core/src/tools/context.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/tools/context.rs	2026-07-01 06:11:18.708961000 +0200
++++ b/core/src/tools/context.rs	2026-07-01 06:11:18.000000000 +0200
 @@ -63,6 +63,7 @@
  }
  
@@ -5346,9 +6645,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  impl McpToolOutput {
      fn response_payload(&self) -> FunctionCallOutputPayload {
          let mut payload = self.result.as_function_call_output_payload();
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/handlers/mod.rs b/core/src/tools/handlers/mod.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/tools/handlers/mod.rs b/core/src/tools/handlers/mod.rs
 --- a/core/src/tools/handlers/mod.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/tools/handlers/mod.rs	2026-07-01 06:11:27.718265000 +0200
++++ b/core/src/tools/handlers/mod.rs	2026-07-01 06:11:27.000000000 +0200
 @@ -9,8 +9,11 @@
  pub(crate) mod get_context_remaining_spec;
  mod list_available_plugins_to_install;
@@ -5375,9 +6674,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use mcp_resource::ReadMcpResourceHandler;
  pub use new_context_window::NewContextWindowHandler;
  pub use plan::PlanHandler;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/handlers/request_plugin_install.rs b/core/src/tools/handlers/request_plugin_install.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/tools/handlers/request_plugin_install.rs b/core/src/tools/handlers/request_plugin_install.rs
 --- a/core/src/tools/handlers/request_plugin_install.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/tools/handlers/request_plugin_install.rs	2026-06-30 15:32:31.639302000 +0200
++++ b/core/src/tools/handlers/request_plugin_install.rs	2026-06-30 15:32:31.000000000 +0200
 @@ -4,6 +4,7 @@
  use codex_config::types::ToolSuggestDisabledTool;
  use codex_core_plugins::remote::REMOTE_GLOBAL_MARKETPLACE_NAME;
@@ -5394,9 +6693,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  use serde::Deserialize;
  use serde_json::Value;
  use tracing::warn;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/handlers/tool_search.rs b/core/src/tools/handlers/tool_search.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/tools/handlers/tool_search.rs b/core/src/tools/handlers/tool_search.rs
 --- a/core/src/tools/handlers/tool_search.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/tools/handlers/tool_search.rs	2026-06-30 18:18:10.762618000 +0200
++++ b/core/src/tools/handlers/tool_search.rs	2026-06-30 18:18:10.000000000 +0200
 @@ -180,19 +180,20 @@
      }
  }
@@ -5429,9 +6728,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
                      "type": "object",
                      "properties": {},
                      "additionalProperties": false,
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/tools/spec_plan.rs b/core/src/tools/spec_plan.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/tools/spec_plan.rs b/core/src/tools/spec_plan.rs
 --- a/core/src/tools/spec_plan.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/tools/spec_plan.rs	2026-06-30 18:09:46.634267000 +0200
++++ b/core/src/tools/spec_plan.rs	2026-06-30 18:09:46.000000000 +0200
 @@ -13,11 +13,15 @@
  use crate::tools::handlers::ExecCommandHandlerOptions;
  use crate::tools::handlers::GetContextRemainingHandler;
@@ -5509,9 +6808,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              }
          }
      }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core/src/turn_metadata.rs b/core/src/turn_metadata.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core/src/turn_metadata.rs b/core/src/turn_metadata.rs
 --- a/core/src/turn_metadata.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core/src/turn_metadata.rs	2026-07-01 06:12:00.543741000 +0200
++++ b/core/src/turn_metadata.rs	2026-07-01 06:12:00.000000000 +0200
 @@ -28,11 +28,15 @@
  use codex_protocol::protocol::ThreadSource;
  use codex_utils_absolute_path::AbsolutePathBuf;
@@ -5536,9 +6835,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      pub(crate) fn current_meta_value_for_mcp_request(
          &self,
          context: McpTurnMetadataContext<'_>,
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-plugins/Cargo.toml b/core-plugins/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core-plugins/Cargo.toml b/core-plugins/Cargo.toml
 --- a/core-plugins/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/core-plugins/Cargo.toml	2026-06-30 18:35:54.877268000 +0200
++++ b/core-plugins/Cargo.toml	2026-06-30 18:35:54.000000000 +0200
 @@ -14,34 +14,36 @@
  
  [dependencies]
@@ -5586,9 +6885,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  tokio = { workspace = true, features = ["fs", "macros", "rt", "time"] }
  toml = { workspace = true }
  tracing = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-plugins/src/freebsd_stub.rs b/core-plugins/src/freebsd_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core-plugins/src/freebsd_stub.rs b/core-plugins/src/freebsd_stub.rs
 --- a/core-plugins/src/freebsd_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/core-plugins/src/freebsd_stub.rs	2026-07-01 01:31:02.022834000 +0200
++++ b/core-plugins/src/freebsd_stub.rs	2026-07-01 01:31:02.000000000 +0200
 @@ -0,0 +1,1136 @@
 +use std::collections::HashMap;
 +use std::collections::HashSet;
@@ -6726,9 +8025,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +
 +pub use remote::RecommendedPlugin;
 +pub use remote::RecommendedPluginsMode;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/core-plugins/src/lib.rs b/core-plugins/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/core-plugins/src/lib.rs b/core-plugins/src/lib.rs
 --- a/core-plugins/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/core-plugins/src/lib.rs	2026-06-30 18:20:37.220904000 +0200
++++ b/core-plugins/src/lib.rs	2026-06-30 18:20:37.000000000 +0200
 @@ -1,60 +1,117 @@
 +#[cfg(target_os = "freebsd")]
 +mod freebsd_stub;
@@ -6848,9 +8147,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use remote::RecommendedPlugin;
 +#[cfg(not(target_os = "freebsd"))]
  pub use remote::RecommendedPluginsMode;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/Cargo.toml b/exec/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec/Cargo.toml b/exec/Cargo.toml
 --- a/exec/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec/Cargo.toml	2026-07-01 18:25:55.853829000 +0200
++++ b/exec/Cargo.toml	2026-07-01 18:25:55.000000000 +0200
 @@ -21,20 +21,38 @@
  [lints]
  workspace = true
@@ -6895,9 +8194,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-protocol = { workspace = true }
  codex-utils-absolute-path = { workspace = true }
  codex-utils-cli = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/cli.rs b/exec/src/cli.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec/src/cli.rs b/exec/src/cli.rs
 --- a/exec/src/cli.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec/src/cli.rs	2026-06-30 19:53:37.457043000 +0200
++++ b/exec/src/cli.rs	2026-06-30 19:53:37.000000000 +0200
 @@ -60,6 +60,15 @@
      #[arg(long = "color", value_enum, default_value_t = Color::Auto)]
      pub color: Color,
@@ -6929,9 +8228,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  }
  
  #[cfg(test)]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/cli_tests.rs b/exec/src/cli_tests.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec/src/cli_tests.rs b/exec/src/cli_tests.rs
 --- a/exec/src/cli_tests.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec/src/cli_tests.rs	2026-06-30 19:55:45.540139000 +0200
++++ b/exec/src/cli_tests.rs	2026-06-30 19:55:45.000000000 +0200
 @@ -75,6 +75,20 @@
  }
  
@@ -6953,9 +8252,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  fn removed_full_auto_flag_reports_migration_path() {
      let cli = Cli::parse_from(["codex-exec", "--full-auto", "summarize"]);
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/event_processor_with_human_output.rs b/exec/src/event_processor_with_human_output.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec/src/event_processor_with_human_output.rs b/exec/src/event_processor_with_human_output.rs
 --- a/exec/src/event_processor_with_human_output.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec/src/event_processor_with_human_output.rs	2026-07-01 06:27:42.724465000 +0200
++++ b/exec/src/event_processor_with_human_output.rs	2026-07-01 06:27:42.000000000 +0200
 @@ -16,6 +16,7 @@
  use owo_colors::OwoColorize;
  use owo_colors::Style;
@@ -7092,9 +8391,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        codex_protocol::num_format::format_with_separators(input)
 +    )
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/event_processor_with_human_output_tests.rs b/exec/src/event_processor_with_human_output_tests.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec/src/event_processor_with_human_output_tests.rs b/exec/src/event_processor_with_human_output_tests.rs
 --- a/exec/src/event_processor_with_human_output_tests.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec/src/event_processor_with_human_output_tests.rs	2026-07-01 18:35:50.991400000 +0200
++++ b/exec/src/event_processor_with_human_output_tests.rs	2026-07-01 18:35:50.000000000 +0200
 @@ -1,3 +1,4 @@
 +use codex_app_server_protocol::CommandExecutionStatus;
  use codex_app_server_protocol::ServerNotification;
@@ -7211,9 +8510,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          show_agent_reasoning: true,
          show_raw_agent_reasoning: false,
          last_message_path: None,
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec/src/lib.rs b/exec/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec/src/lib.rs b/exec/src/lib.rs
 --- a/exec/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec/src/lib.rs	2026-06-30 19:54:59.269390000 +0200
++++ b/exec/src/lib.rs	2026-06-30 19:54:59.000000000 +0200
 @@ -209,6 +209,7 @@
      dangerously_bypass_approvals_and_sandbox: bool,
      exec_span: tracing::Span,
@@ -7254,9 +8553,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          )),
      };
      if oss {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/Cargo.toml b/exec-server/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/Cargo.toml b/exec-server/Cargo.toml
 --- a/exec-server/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/Cargo.toml	2026-07-01 18:27:50.495582000 +0200
++++ b/exec-server/Cargo.toml	2026-07-01 18:27:50.000000000 +0200
 @@ -10,14 +10,21 @@
  [lints]
  workspace = true
@@ -7308,9 +8607,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [target.'cfg(windows)'.dependencies]
  windows-sys = { version = "0.52", features = [
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/client.rs b/exec-server/src/client.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/client.rs b/exec-server/src/client.rs
 --- a/exec-server/src/client.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/client.rs	2026-07-01 18:23:15.910938000 +0200
++++ b/exec-server/src/client.rs	2026-07-01 18:23:15.000000000 +0200
 @@ -415,11 +415,15 @@
      #[error("timed out connecting to exec-server websocket `{url}` after {timeout:?}")]
      WebSocketConnectTimeout { url: String, timeout: Duration },
@@ -7327,9 +8626,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      #[error("timed out waiting for exec-server initialize handshake after {timeout:?}")]
      InitializeTimedOut { timeout: Duration },
      #[error("exec-server transport closed")]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/client_transport.rs b/exec-server/src/client_transport.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/client_transport.rs b/exec-server/src/client_transport.rs
 --- a/exec-server/src/client_transport.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/client_transport.rs	2026-07-01 18:32:25.196532000 +0200
++++ b/exec-server/src/client_transport.rs	2026-07-01 18:32:25.000000000 +0200
 @@ -5,30 +5,45 @@
  use tokio::io::AsyncBufReadExt;
  use tokio::io::BufReader;
@@ -7608,9 +8907,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(all(test, feature = "remote-websocket", not(target_os = "freebsd")))]
  #[path = "client_transport_tests.rs"]
  mod tests;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/connection.rs b/exec-server/src/connection.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/connection.rs b/exec-server/src/connection.rs
 --- a/exec-server/src/connection.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/connection.rs	2026-07-01 18:22:25.514342000 +0200
++++ b/exec-server/src/connection.rs	2026-07-01 18:22:25.000000000 +0200
 @@ -5,11 +5,16 @@
  use std::sync::atomic::Ordering;
  use std::time::Duration;
@@ -7718,9 +9017,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod tests {
      use std::pin::Pin;
      use std::sync::Arc;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/environment_toml.rs b/exec-server/src/environment_toml.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/environment_toml.rs b/exec-server/src/environment_toml.rs
 --- a/exec-server/src/environment_toml.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/environment_toml.rs	2026-07-01 18:25:04.116203000 +0200
++++ b/exec-server/src/environment_toml.rs	2026-07-01 18:25:04.000000000 +0200
 @@ -5,7 +5,6 @@
  use std::time::Duration;
  
@@ -7738,9 +9037,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
          ExecServerError::Protocol(format!("environment url `{url}` is invalid: {err}"))
      })?;
      Ok(url.to_string())
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/lib.rs b/exec-server/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/lib.rs b/exec-server/src/lib.rs
 --- a/exec-server/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/lib.rs	2026-07-01 18:23:46.928152000 +0200
++++ b/exec-server/src/lib.rs	2026-07-01 18:23:46.000000000 +0200
 @@ -12,14 +12,21 @@
  mod fs_sandbox;
  mod local_file_system;
@@ -7763,9 +9062,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod relay_proto;
  mod remote;
  mod remote_file_system;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/noise_channel_freebsd.rs b/exec-server/src/noise_channel_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/noise_channel_freebsd.rs b/exec-server/src/noise_channel_freebsd.rs
 --- a/exec-server/src/noise_channel_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/exec-server/src/noise_channel_freebsd.rs	2026-06-30 03:29:36.291440000 +0200
++++ b/exec-server/src/noise_channel_freebsd.rs	2026-06-30 03:29:36.000000000 +0200
 @@ -0,0 +1,60 @@
 +use serde::Deserialize;
 +use serde::Serialize;
@@ -7827,9 +9126,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +    #[error("Noise channel transport failed: {0}")]
 +    Transport(String),
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/remote.rs b/exec-server/src/remote.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/remote.rs b/exec-server/src/remote.rs
 --- a/exec-server/src/remote.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/remote.rs	2026-07-01 18:24:46.115179000 +0200
++++ b/exec-server/src/remote.rs	2026-07-01 18:24:46.000000000 +0200
 @@ -9,30 +9,41 @@
  use http::HeaderValue;
  use reqwest::StatusCode;
@@ -7942,9 +9241,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(all(test, not(target_os = "freebsd")))]
  #[path = "remote/noise_tests.rs"]
  mod noise_tests;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/server/transport.rs b/exec-server/src/server/transport.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/server/transport.rs b/exec-server/src/server/transport.rs
 --- a/exec-server/src/server/transport.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/server/transport.rs	2026-07-01 18:23:39.078485000 +0200
++++ b/exec-server/src/server/transport.rs	2026-07-01 18:23:39.000000000 +0200
 @@ -1,7 +1,9 @@
  use axum::Router;
  use axum::body::Body;
@@ -8019,9 +9318,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +#[cfg(all(test, feature = "remote-websocket"))]
  #[path = "transport_tests.rs"]
  mod transport_tests;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/exec-server/src/server.rs b/exec-server/src/server.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/exec-server/src/server.rs b/exec-server/src/server.rs
 --- a/exec-server/src/server.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/exec-server/src/server.rs	2026-06-30 06:15:06.495198000 +0200
++++ b/exec-server/src/server.rs	2026-06-30 06:15:06.000000000 +0200
 @@ -7,6 +7,7 @@
  mod transport;
  
@@ -8030,9 +9329,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) use processor::ConnectionProcessor;
  pub use transport::DEFAULT_LISTEN_URL;
  pub use transport::ExecServerListenUrlParseError;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/Cargo.toml b/execpolicy/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/execpolicy/Cargo.toml b/execpolicy/Cargo.toml
 --- a/execpolicy/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/execpolicy/Cargo.toml	2026-06-30 04:01:55.365752000 +0200
++++ b/execpolicy/Cargo.toml	2026-06-30 04:01:55.000000000 +0200
 @@ -25,8 +25,10 @@
  serde = { workspace = true, features = ["derive"] }
  serde_json = { workspace = true }
@@ -8045,9 +9344,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  pretty_assertions = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/src/error.rs b/execpolicy/src/error.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/execpolicy/src/error.rs b/execpolicy/src/error.rs
 --- a/execpolicy/src/error.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/execpolicy/src/error.rs	2026-06-30 04:01:55.365970000 +0200
++++ b/execpolicy/src/error.rs	2026-06-30 04:01:55.000000000 +0200
 @@ -1,3 +1,4 @@
 +#[cfg(not(target_os = "freebsd"))]
  use starlark::Error as StarlarkError;
@@ -8069,9 +9368,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
              Error::Starlark(err) => err.span().map(|span| {
                  let resolved = span.resolve_span();
                  ErrorLocation {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/src/lib.rs b/execpolicy/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/execpolicy/src/lib.rs b/execpolicy/src/lib.rs
 --- a/execpolicy/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/execpolicy/src/lib.rs	2026-06-30 04:01:55.365860000 +0200
++++ b/execpolicy/src/lib.rs	2026-06-30 04:01:55.000000000 +0200
 @@ -3,6 +3,10 @@
  pub(crate) mod error;
  pub(crate) mod execpolicycheck;
@@ -8083,9 +9382,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) mod parser;
  pub(crate) mod policy;
  pub mod rule;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/src/parser_freebsd.rs b/execpolicy/src/parser_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/execpolicy/src/parser_freebsd.rs b/execpolicy/src/parser_freebsd.rs
 --- a/execpolicy/src/parser_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/execpolicy/src/parser_freebsd.rs	2026-06-30 04:02:47.729489000 +0200
++++ b/execpolicy/src/parser_freebsd.rs	2026-06-30 04:02:47.000000000 +0200
 @@ -0,0 +1,20 @@
 +use crate::error::Result;
 +use crate::policy::Policy;
@@ -8107,9 +9406,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        Policy::empty()
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/execpolicy/src/rule.rs b/execpolicy/src/rule.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/execpolicy/src/rule.rs b/execpolicy/src/rule.rs
 --- a/execpolicy/src/rule.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/execpolicy/src/rule.rs	2026-06-30 06:15:06.494737000 +0200
++++ b/execpolicy/src/rule.rs	2026-06-30 06:15:06.000000000 +0200
 @@ -1,11 +1,14 @@
  use crate::decision::Decision;
  use crate::error::Error;
@@ -8141,9 +9440,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub(crate) fn validate_not_match_examples(
      policy: &Policy,
      _rules: &[RuleRef],
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/feedback/Cargo.toml b/feedback/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/feedback/Cargo.toml b/feedback/Cargo.toml
 --- a/feedback/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/feedback/Cargo.toml	2026-06-30 02:36:43.155638000 +0200
++++ b/feedback/Cargo.toml	2026-06-30 02:36:43.000000000 +0200
 @@ -11,9 +11,11 @@
  anyhow = { workspace = true }
  codex-login = { workspace = true }
@@ -8157,9 +9456,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  pretty_assertions = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/feedback/src/lib.rs b/feedback/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/feedback/src/lib.rs b/feedback/src/lib.rs
 --- a/feedback/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/feedback/src/lib.rs	2026-06-30 02:36:43.155654000 +0200
++++ b/feedback/src/lib.rs	2026-06-30 02:36:43.000000000 +0200
 @@ -1,5 +1,6 @@
  use std::collections::BTreeMap;
  use std::collections::VecDeque;
@@ -8231,9 +9530,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  fn display_classification(classification: &str) -> String {
      match classification {
          "bug" => "Bug".to_string(),
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/Cargo.toml b/file-search/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/file-search/Cargo.toml b/file-search/Cargo.toml
 --- a/file-search/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/file-search/Cargo.toml	2026-06-30 18:55:30.362330000 +0200
++++ b/file-search/Cargo.toml	2026-06-30 18:55:30.000000000 +0200
 @@ -18,11 +18,13 @@
  
  [dependencies]
@@ -8249,9 +9548,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  serde_json = { workspace = true }
  tokio = { workspace = true, features = ["full"] }
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/src/freebsd_stub.rs b/file-search/src/freebsd_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/file-search/src/freebsd_stub.rs b/file-search/src/freebsd_stub.rs
 --- a/file-search/src/freebsd_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/file-search/src/freebsd_stub.rs	2026-06-30 18:55:30.361869000 +0200
++++ b/file-search/src/freebsd_stub.rs	2026-06-30 18:55:30.000000000 +0200
 @@ -0,0 +1,220 @@
 +use serde::Serialize;
 +use std::num::NonZero;
@@ -8473,9 +9772,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        other => other,
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/src/lib.rs b/file-search/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/file-search/src/lib.rs b/file-search/src/lib.rs
 --- a/file-search/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/file-search/src/lib.rs	2026-06-30 18:55:30.361807000 +0200
++++ b/file-search/src/lib.rs	2026-06-30 18:55:30.000000000 +0200
 @@ -1,1187 +1,9 @@
 -use crossbeam_channel::Receiver;
 -use crossbeam_channel::Sender;
@@ -9672,9 +10971,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +pub use freebsd_stub::*;
 +#[cfg(not(target_os = "freebsd"))]
 +pub use real::*;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/src/main.rs b/file-search/src/main.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/file-search/src/main.rs b/file-search/src/main.rs
 --- a/file-search/src/main.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/file-search/src/main.rs	2026-06-30 18:55:30.362240000 +0200
++++ b/file-search/src/main.rs	2026-06-30 18:55:30.000000000 +0200
 @@ -1,13 +1,22 @@
 +#[cfg(not(target_os = "freebsd"))]
  use std::io::IsTerminal;
@@ -9717,9 +11016,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  impl Reporter for StdioReporter {
      fn report_match(&self, file_match: &FileMatch) {
          if self.write_output_as_json {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/file-search/src/real.rs b/file-search/src/real.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/file-search/src/real.rs b/file-search/src/real.rs
 --- a/file-search/src/real.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/file-search/src/real.rs	2026-06-30 18:55:30.362119000 +0200
++++ b/file-search/src/real.rs	2026-06-30 18:55:30.000000000 +0200
 @@ -0,0 +1,1188 @@
 +use crossbeam_channel::Receiver;
 +use crossbeam_channel::Sender;
@@ -10909,9 +12208,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        );
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/keyring-store/Cargo.toml b/keyring-store/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/keyring-store/Cargo.toml b/keyring-store/Cargo.toml
 --- a/keyring-store/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/keyring-store/Cargo.toml	2026-06-30 02:36:43.155668000 +0200
++++ b/keyring-store/Cargo.toml	2026-06-30 02:36:43.000000000 +0200
 @@ -20,7 +20,7 @@
  [target.'cfg(target_os = "windows")'.dependencies]
  keyring = { workspace = true, features = ["windows-native"] }
@@ -10921,9 +12220,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  keyring = { workspace = true, features = ["sync-secret-service"] }
  
  [lib]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/keyring-store/src/lib.rs b/keyring-store/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/keyring-store/src/lib.rs b/keyring-store/src/lib.rs
 --- a/keyring-store/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/keyring-store/src/lib.rs	2026-06-30 02:36:43.155682000 +0200
++++ b/keyring-store/src/lib.rs	2026-06-30 02:36:43.000000000 +0200
 @@ -1,3 +1,4 @@
 +#[cfg(not(target_os = "freebsd"))]
  use keyring::Entry;
@@ -10964,9 +12263,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  impl KeyringStore for DefaultKeyringStore {
      fn load(&self, service: &str, account: &str) -> Result<Option<String>, CredentialStoreError> {
          trace!("keyring.load start, service={service}, account={account}");
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/Cargo.toml b/login/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/login/Cargo.toml b/login/Cargo.toml
 --- a/login/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/login/Cargo.toml	2026-07-01 09:42:53.860271000 +0200
++++ b/login/Cargo.toml	2026-07-01 09:42:53.000000000 +0200
 @@ -7,6 +7,13 @@
  [lints]
  workspace = true
@@ -11008,9 +12307,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  anyhow = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/src/auth/auth_tests.rs b/login/src/auth/auth_tests.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/login/src/auth/auth_tests.rs b/login/src/auth/auth_tests.rs
 --- a/login/src/auth/auth_tests.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/login/src/auth/auth_tests.rs	2026-07-01 09:33:57.583445000 +0200
++++ b/login/src/auth/auth_tests.rs	2026-07-01 09:33:57.000000000 +0200
 @@ -31,6 +31,21 @@
  const WORKSPACE_ID_SECOND_ALLOWED: &str = "123e4567-e89b-42d3-a456-426614174001";
  const WORKSPACE_ID_DISALLOWED: &str = "123e4567-e89b-42d3-a456-426614174002";
@@ -11106,9 +12405,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      );
  }
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/src/auth/manager.rs b/login/src/auth/manager.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/login/src/auth/manager.rs b/login/src/auth/manager.rs
 --- a/login/src/auth/manager.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/login/src/auth/manager.rs	2026-07-01 09:44:25.313174000 +0200
++++ b/login/src/auth/manager.rs	2026-07-01 09:44:25.000000000 +0200
 @@ -130,8 +130,23 @@
  pub const REFRESH_TOKEN_URL_OVERRIDE_ENV_VAR: &str = "CODEX_REFRESH_TOKEN_URL_OVERRIDE";
  pub const REVOKE_TOKEN_URL_OVERRIDE_ENV_VAR: &str = "CODEX_REVOKE_TOKEN_URL_OVERRIDE";
@@ -11189,9 +12488,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
      if let Some(required_method) = config.forced_login_method {
          let method_violation = match (required_method, auth.auth_mode()) {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/login/src/lib.rs b/login/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/login/src/lib.rs b/login/src/lib.rs
 --- a/login/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/login/src/lib.rs	2026-07-01 09:43:03.761638000 +0200
++++ b/login/src/lib.rs	2026-07-01 09:43:03.000000000 +0200
 @@ -2,20 +2,31 @@
  pub mod auth_env_telemetry;
  pub mod token_data;
@@ -11240,9 +12539,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use auth::load_auth_dot_json;
  pub use auth::login_with_access_token;
  pub use auth::login_with_api_key;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider/Cargo.toml b/model-provider/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/model-provider/Cargo.toml b/model-provider/Cargo.toml
 --- a/model-provider/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/model-provider/Cargo.toml	2026-07-01 18:28:36.772180000 +0200
++++ b/model-provider/Cargo.toml	2026-07-01 18:28:36.000000000 +0200
 @@ -12,21 +12,32 @@
  [lints]
  workspace = true
@@ -11281,17 +12580,17 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  pretty_assertions = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider/src/lib.rs b/model-provider/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/model-provider/src/lib.rs b/model-provider/src/lib.rs
 --- a/model-provider/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/model-provider/src/lib.rs	2026-06-30 02:36:43.155711000 +0200
++++ b/model-provider/src/lib.rs	2026-06-30 02:36:43.000000000 +0200
 @@ -1,3 +1,4 @@
 +#[cfg(not(target_os = "freebsd"))]
  mod amazon_bedrock;
  mod auth;
  mod bearer_auth_provider;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider/src/provider.rs b/model-provider/src/provider.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/model-provider/src/provider.rs b/model-provider/src/provider.rs
 --- a/model-provider/src/provider.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/model-provider/src/provider.rs	2026-06-30 02:36:43.155726000 +0200
++++ b/model-provider/src/provider.rs	2026-06-30 02:36:43.000000000 +0200
 @@ -17,6 +17,7 @@
  use codex_protocol::error::CodexErr;
  use codex_protocol::openai_models::ModelsResponse;
@@ -11322,9 +12621,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      }
  }
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/model-provider-info/Cargo.toml b/model-provider-info/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/model-provider-info/Cargo.toml b/model-provider-info/Cargo.toml
 --- a/model-provider-info/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/model-provider-info/Cargo.toml	2026-07-01 18:28:03.792974000 +0200
++++ b/model-provider-info/Cargo.toml	2026-07-01 18:28:03.000000000 +0200
 @@ -12,8 +12,12 @@
  [lints]
  workspace = true
@@ -11339,9 +12638,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-app-server-protocol = { workspace = true }
  codex-protocol = { workspace = true }
  http = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/Cargo.toml b/network-proxy/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/Cargo.toml b/network-proxy/Cargo.toml
 --- a/network-proxy/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/network-proxy/Cargo.toml	2026-06-30 18:42:11.404160000 +0200
++++ b/network-proxy/Cargo.toml	2026-06-30 18:42:11.000000000 +0200
 @@ -14,20 +14,20 @@
  
  [dependencies]
@@ -11387,9 +12686,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  rama-unix = { version = "=0.3.0-alpha.4" }
  
  [target.'cfg(target_os = "macos")'.dependencies]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/certs_freebsd.rs b/network-proxy/src/certs_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/certs_freebsd.rs b/network-proxy/src/certs_freebsd.rs
 --- a/network-proxy/src/certs_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/certs_freebsd.rs	2026-06-30 03:47:12.012575000 +0200
++++ b/network-proxy/src/certs_freebsd.rs	2026-06-30 03:47:12.000000000 +0200
 @@ -0,0 +1,17 @@
 +// Keep the public TLS-env surface available without compiling the managed MITM CA stack.
 +pub const CUSTOM_CA_ENV_KEYS: [&str; 10] = [
@@ -11408,9 +12707,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +pub fn is_managed_mitm_ca_trust_bundle_path(_path: &str) -> bool {
 +    false
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/lib.rs b/network-proxy/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/lib.rs b/network-proxy/src/lib.rs
 --- a/network-proxy/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/network-proxy/src/lib.rs	2026-06-30 18:44:26.172144000 +0200
++++ b/network-proxy/src/lib.rs	2026-06-30 18:44:26.000000000 +0200
 @@ -1,20 +1,59 @@
  #![deny(clippy::print_stdout, clippy::print_stderr)]
 +#![cfg_attr(target_os = "freebsd", allow(dead_code, unused_imports))]
@@ -11471,9 +12770,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod upstream;
  
  pub use certs::CUSTOM_CA_ENV_KEYS;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/mitm_freebsd.rs b/network-proxy/src/mitm_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/mitm_freebsd.rs b/network-proxy/src/mitm_freebsd.rs
 --- a/network-proxy/src/mitm_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/mitm_freebsd.rs	2026-06-30 03:47:20.364597000 +0200
++++ b/network-proxy/src/mitm_freebsd.rs	2026-06-30 03:47:20.000000000 +0200
 @@ -0,0 +1,16 @@
 +use anyhow::Result;
 +
@@ -11491,9 +12790,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        anyhow::bail!("managed network proxy MITM is disabled in FreeBSD exec builds")
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/mitm_hook_freebsd.rs b/network-proxy/src/mitm_hook_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/mitm_hook_freebsd.rs b/network-proxy/src/mitm_hook_freebsd.rs
 --- a/network-proxy/src/mitm_hook_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/mitm_hook_freebsd.rs	2026-06-30 03:47:38.220358000 +0200
++++ b/network-proxy/src/mitm_hook_freebsd.rs	2026-06-30 03:47:38.000000000 +0200
 @@ -0,0 +1,79 @@
 +#![cfg_attr(not(test), allow(dead_code))]
 +
@@ -11574,9 +12873,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +) -> HookEvaluation {
 +    HookEvaluation::NoHooksForHost
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/network_policy_freebsd.rs b/network-proxy/src/network_policy_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/network_policy_freebsd.rs b/network-proxy/src/network_policy_freebsd.rs
 --- a/network-proxy/src/network_policy_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/network_policy_freebsd.rs	2026-06-30 18:42:11.403873000 +0200
++++ b/network-proxy/src/network_policy_freebsd.rs	2026-06-30 18:42:11.000000000 +0200
 @@ -0,0 +1,148 @@
 +use std::future::Future;
 +use std::pin::Pin;
@@ -11726,16 +13025,16 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        Box::pin((self)(request))
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/policy_freebsd.rs b/network-proxy/src/policy_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/policy_freebsd.rs b/network-proxy/src/policy_freebsd.rs
 --- a/network-proxy/src/policy_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/policy_freebsd.rs	2026-06-30 18:42:11.403780000 +0200
++++ b/network-proxy/src/policy_freebsd.rs	2026-06-30 18:42:11.000000000 +0200
 @@ -0,0 +1,3 @@
 +pub fn normalize_host(host: &str) -> String {
 +    host.trim().trim_end_matches('.').to_ascii_lowercase()
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/proxy_freebsd.rs b/network-proxy/src/proxy_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/proxy_freebsd.rs b/network-proxy/src/proxy_freebsd.rs
 --- a/network-proxy/src/proxy_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/proxy_freebsd.rs	2026-06-30 03:51:04.182512000 +0200
++++ b/network-proxy/src/proxy_freebsd.rs	2026-06-30 03:51:04.000000000 +0200
 @@ -0,0 +1,388 @@
 +use crate::config;
 +use crate::network_policy::NetworkPolicyDecider;
@@ -12125,9 +13424,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        }
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/runtime.rs b/network-proxy/src/runtime.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/runtime.rs b/network-proxy/src/runtime.rs
 --- a/network-proxy/src/runtime.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/network-proxy/src/runtime.rs	2026-06-30 03:47:01.684815000 +0200
++++ b/network-proxy/src/runtime.rs	2026-06-30 03:47:01.000000000 +0200
 @@ -589,6 +589,7 @@
          Ok(guard.mitm.clone())
      }
@@ -12136,9 +13435,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      pub(crate) async fn evaluate_mitm_hook_request(
          &self,
          host: &str,
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/runtime_freebsd.rs b/network-proxy/src/runtime_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/runtime_freebsd.rs b/network-proxy/src/runtime_freebsd.rs
 --- a/network-proxy/src/runtime_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/runtime_freebsd.rs	2026-06-30 18:44:53.771346000 +0200
++++ b/network-proxy/src/runtime_freebsd.rs	2026-06-30 18:44:53.000000000 +0200
 @@ -0,0 +1,346 @@
 +use crate::config::NetworkDomainPermission;
 +use crate::config::NetworkMode;
@@ -12486,9 +13785,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +pub(crate) fn unix_socket_permissions_supported() -> bool {
 +    false
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/network-proxy/src/state_freebsd.rs b/network-proxy/src/state_freebsd.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/network-proxy/src/state_freebsd.rs b/network-proxy/src/state_freebsd.rs
 --- a/network-proxy/src/state_freebsd.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/network-proxy/src/state_freebsd.rs	2026-06-30 18:42:11.404034000 +0200
++++ b/network-proxy/src/state_freebsd.rs	2026-06-30 18:42:11.000000000 +0200
 @@ -0,0 +1,93 @@
 +use crate::config::NetworkDomainPermissions;
 +use crate::config::NetworkMode;
@@ -12583,9 +13882,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        anyhow::anyhow!(self)
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/Cargo.toml b/otel/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/Cargo.toml b/otel/Cargo.toml
 --- a/otel/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/otel/Cargo.toml	2026-07-01 18:28:25.227806000 +0200
++++ b/otel/Cargo.toml	2026-07-01 18:28:25.000000000 +0200
 @@ -12,15 +12,39 @@
  [lints]
  workspace = true
@@ -12646,9 +13945,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  opentelemetry_sdk = { workspace = true, features = [
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/events/session_telemetry.rs b/otel/src/events/session_telemetry.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/src/events/session_telemetry.rs b/otel/src/events/session_telemetry.rs
 --- a/otel/src/events/session_telemetry.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/otel/src/events/session_telemetry.rs	2026-07-01 18:20:52.084616000 +0200
++++ b/otel/src/events/session_telemetry.rs	2026-07-01 18:20:52.000000000 +0200
 @@ -693,6 +693,7 @@
          );
      }
@@ -12657,9 +13956,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      pub fn record_websocket_event(
          &self,
          result: &Result<
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/lib.rs b/otel/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/src/lib.rs b/otel/src/lib.rs
 --- a/otel/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/otel/src/lib.rs	2026-06-30 06:15:06.494367000 +0200
++++ b/otel/src/lib.rs	2026-06-30 06:15:06.000000000 +0200
 @@ -1,9 +1,12 @@
 +#![cfg_attr(target_os = "freebsd", allow(dead_code, unused_imports))]
 +
@@ -12673,9 +13972,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  mod otlp;
  mod targets;
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/metrics/client.rs b/otel/src/metrics/client.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/src/metrics/client.rs b/otel/src/metrics/client.rs
 --- a/otel/src/metrics/client.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/otel/src/metrics/client.rs	2026-06-30 03:14:03.728673000 +0200
++++ b/otel/src/metrics/client.rs	2026-06-30 03:14:03.000000000 +0200
 @@ -1,531 +1,94 @@
 -use crate::config::OtelExporter;
 -use crate::config::OtelHttpProtocol;
@@ -13280,7 +14579,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  }
 +
 +pub use imp::*;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/metrics/client_full.rs b/otel/src/metrics/client_full.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/src/metrics/client_full.rs b/otel/src/metrics/client_full.rs
 --- a/otel/src/metrics/client_full.rs	1970-01-01 01:00:00.000000000 +0100
 +++ b/otel/src/metrics/client_full.rs	2026-06-29 06:20:21.000000000 +0200
 @@ -0,0 +1,531 @@
@@ -13815,9 +15114,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        }
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/metrics/error.rs b/otel/src/metrics/error.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/src/metrics/error.rs b/otel/src/metrics/error.rs
 --- a/otel/src/metrics/error.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/otel/src/metrics/error.rs	2026-06-30 03:14:19.034572000 +0200
++++ b/otel/src/metrics/error.rs	2026-06-30 03:14:19.000000000 +0200
 @@ -20,6 +20,7 @@
      #[error("counter increment must be non-negative for {name}: {inc}")]
      NegativeCounterIncrement { name: String, inc: i64 },
@@ -13826,9 +15125,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      #[error("failed to build OTLP metrics exporter")]
      ExporterBuild {
          #[source]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/provider.rs b/otel/src/provider.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/src/provider.rs b/otel/src/provider.rs
 --- a/otel/src/provider.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/otel/src/provider.rs	2026-06-30 03:14:03.728600000 +0200
++++ b/otel/src/provider.rs	2026-06-30 03:14:03.000000000 +0200
 @@ -1,542 +1,55 @@
 -use crate::config::OtelExporter;
 -use crate::config::OtelHttpProtocol;
@@ -14406,7 +15705,7 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -    }
 -}
 +pub use imp::*;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/otel/src/provider_full.rs b/otel/src/provider_full.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/otel/src/provider_full.rs b/otel/src/provider_full.rs
 --- a/otel/src/provider_full.rs	1970-01-01 01:00:00.000000000 +0100
 +++ b/otel/src/provider_full.rs	2026-06-29 06:20:21.000000000 +0200
 @@ -0,0 +1,542 @@
@@ -14952,9 +16251,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +        }
 +    }
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/response-debug-context/Cargo.toml b/response-debug-context/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/response-debug-context/Cargo.toml b/response-debug-context/Cargo.toml
 --- a/response-debug-context/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/response-debug-context/Cargo.toml	2026-07-01 18:28:17.243780000 +0200
++++ b/response-debug-context/Cargo.toml	2026-07-01 18:28:17.000000000 +0200
 @@ -12,9 +12,13 @@
  [lints]
  workspace = true
@@ -14970,9 +16269,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  http = { workspace = true }
  serde_json = { workspace = true }
  
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/rmcp-client/Cargo.toml b/rmcp-client/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/rmcp-client/Cargo.toml b/rmcp-client/Cargo.toml
 --- a/rmcp-client/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/rmcp-client/Cargo.toml	2026-07-01 18:28:50.730188000 +0200
++++ b/rmcp-client/Cargo.toml	2026-07-01 18:28:50.000000000 +0200
 @@ -7,26 +7,46 @@
  [lints]
  workspace = true
@@ -15061,9 +16360,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  keyring = { workspace = true, features = ["sync-secret-service"] }
  
  [lib]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/rmcp-client/src/freebsd_stub.rs b/rmcp-client/src/freebsd_stub.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/rmcp-client/src/freebsd_stub.rs b/rmcp-client/src/freebsd_stub.rs
 --- a/rmcp-client/src/freebsd_stub.rs	1970-01-01 01:00:00.000000000 +0100
-+++ b/rmcp-client/src/freebsd_stub.rs	2026-06-30 20:05:15.894662000 +0200
++++ b/rmcp-client/src/freebsd_stub.rs	2026-06-30 20:05:15.000000000 +0200
 @@ -0,0 +1,639 @@
 +use std::borrow::Cow;
 +use std::collections::HashMap;
@@ -15704,9 +17003,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 +) -> Result<OauthLoginHandle> {
 +    bail!("MCP OAuth login is not available on this FreeBSD build")
 +}
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/rmcp-client/src/lib.rs b/rmcp-client/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/rmcp-client/src/lib.rs b/rmcp-client/src/lib.rs
 --- a/rmcp-client/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/rmcp-client/src/lib.rs	2026-06-30 12:16:07.818547000 +0200
++++ b/rmcp-client/src/lib.rs	2026-06-30 12:16:07.000000000 +0200
 @@ -1,39 +1,86 @@
 +#[cfg(not(target_os = "freebsd"))]
  mod auth_status;
@@ -15795,9 +17094,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use stdio_server_launcher::LocalStdioServerLauncher;
 +#[cfg(not(target_os = "freebsd"))]
  pub use stdio_server_launcher::StdioServerLauncher;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/sandboxing/Cargo.toml b/sandboxing/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/sandboxing/Cargo.toml b/sandboxing/Cargo.toml
 --- a/sandboxing/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/sandboxing/Cargo.toml	2026-06-30 18:48:23.122229000 +0200
++++ b/sandboxing/Cargo.toml	2026-06-30 18:48:23.000000000 +0200
 @@ -17,7 +17,6 @@
  codex-protocol = { workspace = true }
  codex-utils-absolute-path = { workspace = true }
@@ -15814,9 +17113,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  codex-utils-home-dir = { workspace = true }
  
  [dev-dependencies]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/sandboxing/src/windows.rs b/sandboxing/src/windows.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/sandboxing/src/windows.rs b/sandboxing/src/windows.rs
 --- a/sandboxing/src/windows.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/sandboxing/src/windows.rs	2026-07-01 06:11:00.632186000 +0200
++++ b/sandboxing/src/windows.rs	2026-07-01 06:11:00.000000000 +0200
 @@ -1,14 +1,19 @@
 +#[cfg(target_os = "windows")]
  use std::collections::BTreeSet;
@@ -15904,9 +17203,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  fn has_reopened_writable_descendant(writable_roots: &[WritableRoot]) -> bool {
      writable_roots.iter().any(|writable_root| {
          writable_root
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/Cargo.toml b/tools/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/tools/Cargo.toml b/tools/Cargo.toml
 --- a/tools/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/tools/Cargo.toml	2026-06-30 06:30:24.952119000 +0200
++++ b/tools/Cargo.toml	2026-06-30 06:30:24.000000000 +0200
 @@ -18,17 +18,19 @@
  codex-utils-pty = { workspace = true }
  codex-utils-string = { workspace = true }
@@ -15932,9 +17231,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [dev-dependencies]
  codex-utils-cargo-bin = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/src/lib.rs b/tools/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/tools/src/lib.rs b/tools/src/lib.rs
 --- a/tools/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/tools/src/lib.rs	2026-06-30 12:15:45.353928000 +0200
++++ b/tools/src/lib.rs	2026-06-30 12:15:45.000000000 +0200
 @@ -6,6 +6,7 @@
  mod function_call_error;
  mod image_detail;
@@ -15963,9 +17262,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub use responses_api::mcp_tool_to_responses_api_tool;
  pub use responses_api::tool_definition_to_responses_api_tool;
  pub use tool_call::ConversationHistory;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tools/src/responses_api.rs b/tools/src/responses_api.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/tools/src/responses_api.rs b/tools/src/responses_api.rs
 --- a/tools/src/responses_api.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/tools/src/responses_api.rs	2026-07-01 06:11:05.897784000 +0200
++++ b/tools/src/responses_api.rs	2026-07-01 06:11:05.000000000 +0200
 @@ -1,7 +1,9 @@
  use crate::JsonSchema;
  use crate::ToolDefinition;
@@ -15992,9 +17291,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  pub fn mcp_tool_to_deferred_responses_api_tool(
      tool_name: &ToolName,
      tool: &rmcp::model::Tool,
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tui/Cargo.toml b/tui/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/tui/Cargo.toml b/tui/Cargo.toml
 --- a/tui/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/tui/Cargo.toml	2026-07-01 12:40:53.944964000 +0200
++++ b/tui/Cargo.toml	2026-07-01 12:40:53.000000000 +0200
 @@ -21,13 +21,26 @@
  [lints]
  workspace = true
@@ -16041,9 +17340,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  uuid = { workspace = true }
  
  codex-windows-sandbox = { workspace = true }
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tui/src/app/history_ui.rs b/tui/src/app/history_ui.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/tui/src/app/history_ui.rs b/tui/src/app/history_ui.rs
 --- a/tui/src/app/history_ui.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/tui/src/app/history_ui.rs	2026-07-01 12:40:53.945119000 +0200
++++ b/tui/src/app/history_ui.rs	2026-07-01 12:40:53.000000000 +0200
 @@ -66,6 +66,7 @@
          self.insert_pending_usage_output(tui);
      }
@@ -16066,9 +17365,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
      }
  
      pub(super) fn open_desktop_thread(&mut self, thread_id: ThreadId) {
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/tui/src/onboarding/auth.rs b/tui/src/onboarding/auth.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/tui/src/onboarding/auth.rs b/tui/src/onboarding/auth.rs
 --- a/tui/src/onboarding/auth.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/tui/src/onboarding/auth.rs	2026-07-01 12:41:47.204618000 +0200
++++ b/tui/src/onboarding/auth.rs	2026-07-01 12:41:47.000000000 +0200
 @@ -993,6 +993,7 @@
      }
  }
@@ -16088,9 +17387,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  }
  
  #[cfg(test)]
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/image/Cargo.toml b/utils/image/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/utils/image/Cargo.toml b/utils/image/Cargo.toml
 --- a/utils/image/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/utils/image/Cargo.toml	2026-06-30 02:36:43.155754000 +0200
++++ b/utils/image/Cargo.toml	2026-06-30 02:36:43.000000000 +0200
 @@ -9,19 +9,7 @@
  
  [dependencies]
@@ -16111,9 +17410,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -[[bench]]
 -name = "prompt_images"
 -harness = false
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/image/src/lib.rs b/utils/image/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/utils/image/src/lib.rs b/utils/image/src/lib.rs
 --- a/utils/image/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/utils/image/src/lib.rs	2026-06-30 02:36:43.155770000 +0200
++++ b/utils/image/src/lib.rs	2026-06-30 02:36:43.000000000 +0200
 @@ -1,40 +1,58 @@
 -use std::io::Cursor;
 -use std::num::NonZeroUsize;
@@ -16569,9 +17868,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
 -#[cfg(test)]
 -#[path = "image_tests.rs"]
 -mod tests;
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/oss/Cargo.toml b/utils/oss/Cargo.toml
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/utils/oss/Cargo.toml b/utils/oss/Cargo.toml
 --- a/utils/oss/Cargo.toml	2026-06-29 06:20:21.000000000 +0200
-+++ b/utils/oss/Cargo.toml	2026-06-30 02:36:43.155784000 +0200
++++ b/utils/oss/Cargo.toml	2026-06-30 02:36:43.000000000 +0200
 @@ -9,9 +9,6 @@
  
  [dependencies]
@@ -16582,9 +17881,9 @@ diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.g
  
  [lib]
  doctest = false
-diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git --exclude=Cargo.lock a/utils/oss/src/lib.rs b/utils/oss/src/lib.rs
+diff -ruN --exclude=target --exclude=build-freebsd-exec-local.patch --exclude=.git a/utils/oss/src/lib.rs b/utils/oss/src/lib.rs
 --- a/utils/oss/src/lib.rs	2026-06-29 06:20:21.000000000 +0200
-+++ b/utils/oss/src/lib.rs	2026-06-30 02:36:43.155799000 +0200
++++ b/utils/oss/src/lib.rs	2026-06-30 02:36:43.000000000 +0200
 @@ -1,61 +1,16 @@
 -//! OSS provider utilities shared between TUI and exec.
 +//! OSS provider utilities are disabled in this FreeBSD codex-exec build.
